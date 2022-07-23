@@ -4,7 +4,6 @@ import { z } from 'zod';
 
 export const appRouter = trpc
   .router()
-  .query('hello', { resolve: () => 'Hi!' })
   .mutation('createProject', {
     input: z.object({ name: z.string().min(3) }),
     resolve: async (data) => {
@@ -19,11 +18,15 @@ export const appRouter = trpc
         });
       }
 
-      return await prisma.project.create({ data: { name: data.input.name } });
+      return await prisma.project.create({ data: { name: data.input.name }, select: { id: true, name: true } });
     },
   })
   .query('projects', {
-    resolve: async () => prisma.project.findMany(),
+    resolve: async () => await prisma.project.findMany(),
+  })
+  .query('config', {
+    input: z.object({ id: z.string() }),
+    resolve: async (data) => await prisma.config.findMany({ where: { projectId: data.input.id } }),
   });
 
 export type AppRouter = typeof appRouter;
