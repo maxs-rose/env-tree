@@ -2,7 +2,7 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { CssBaseline, GeistProvider } from '@geist-ui/core'
 import { withTRPC } from '@trpc/next'
-import { AppRouter } from '@backend/router'
+import { AppRouter } from 'src/backend/router'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return(
