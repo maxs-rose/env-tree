@@ -3,9 +3,10 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@utils/*": ["utils/*"],
-      "@pages/*": ["pages/*"],
-      "@backend/*": ["backend/*"]
+      "@utils/*": ["src/utils/*"],
+      "@pages/*": ["src/pages/*"],
+      "@backend/*": ["src/backend/*"],
+      "@components/*": ["src/components/*"]
     }
   },
   "include": [
