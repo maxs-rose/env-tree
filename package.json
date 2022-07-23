@@ -21,6 +21,5 @@
     "npm": ">=7.0.0",
     "node": ">=14.0.0"
   },
-  "dependencies": {},
-  "packageManager": "npm@8.12.1"
+  "packageManager": "yarn@3.2.2"
 }
