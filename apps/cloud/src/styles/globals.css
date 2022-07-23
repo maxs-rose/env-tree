@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --nav-height: 64px;
+}
+
+.page-height {
+  min-height: calc(100vh - var(--nav-height)) !important;
+}
+
+.nav-tabs .content {
+  display: none;
+}

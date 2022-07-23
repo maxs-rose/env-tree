@@ -6,7 +6,9 @@
       "@utils/*": ["src/utils/*"],
       "@pages/*": ["src/pages/*"],
       "@backend/*": ["src/backend/*"],
-      "@components/*": ["src/components/*"]
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@context/*": ["src/context/*"]
     }
   },
   "include": [
