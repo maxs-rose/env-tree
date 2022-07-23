@@ -48,7 +48,7 @@ export default withTRPC<AppRouter>({
   config({ ctx }) {
     const url = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api` : `http://localhost:3000/api`;
 
-    return { url };
+    return { url, queryClientConfig: { defaultOptions: { queries: { refetchOnWindowFocus: false } } } };
   },
   ssr: true,
 })(MyApp);

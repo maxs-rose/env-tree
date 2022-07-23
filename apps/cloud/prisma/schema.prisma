@@ -11,6 +11,17 @@ datasource db {
 }
 
 model Project {
-  id   String @id @default(uuid())
-  name String
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  configs     Config[]
+}
+
+model Config {
+  id        String  @id @default(uuid())
+  name      String
+  values    String // JSON string of env values
+  // We must be related to a project
+  Project   Project @relation(fields: [projectId], references: [id])
+  projectId String
 }
