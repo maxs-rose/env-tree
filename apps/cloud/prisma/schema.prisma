@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Team {
-  id   String @id
+model Project {
+  id   String @id @default(uuid())
   name String
 }
