@@ -40,7 +40,7 @@ const Nav: React.FC = () => {
                     </Tabs>
                 </div>
                 <div className="actions">
-                    <Button onClick={switchTheme} icon={isLightMode() ? <Sun /> : <Moon />}>{isLightMode() ? "Light" : "Dark" }</Button>
+                    <Button auto onClick={switchTheme} icon={isLightMode() ? <Sun /> : <Moon />}>{isLightMode() ? "Light" : "Dark" }</Button>
                 </div>
             </div>
         </div>
