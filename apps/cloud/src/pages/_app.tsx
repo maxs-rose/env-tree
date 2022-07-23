@@ -1,32 +1,33 @@
-import '../styles/globals.css';
-import type { AppProps } from 'next/app';
+import Nav from '@components/nav';
+import { ConfigProvider } from '@context/config';
 import { CssBaseline, GeistProvider, useTheme } from '@geist-ui/core';
 import { withTRPC } from '@trpc/next';
-import { AppRouter } from 'src/backend/router';
-import Nav from '@components/nav';
-import { useEffect, useState } from 'react';
-import { ConfigProvider } from '@context/config';
+import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { useEffect, useState } from 'react';
+import { AppRouter } from 'src/backend/router';
+import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const theme = useTheme();
   const [themeType, setThemeType] = useState(theme.type);
-  
-  const themeChange = (theme: "light" | "dark") => {
-    window.localStorage.setItem("theme", theme);
+
+  const themeChange = (theme: 'light' | 'dark') => {
+    window.localStorage.setItem('theme', theme);
     setThemeType(theme);
-  }
+  };
 
   useEffect(() => {
-    const theme = window.localStorage.getItem("theme");
+    const theme = window.localStorage.getItem('theme');
 
-    if(theme && (theme === "light" || theme === "dark"))
+    if (theme && (theme === 'light' || theme === 'dark')) {
       themeChange(theme);
-    else
-      themeChange("dark");
+    } else {
+      themeChange('dark');
+    }
   }, []);
 
-  return(
+  return (
     <GeistProvider themeType={themeType}>
       <CssBaseline />
       <ConfigProvider onThemeChange={themeChange}>
@@ -40,14 +41,14 @@ function MyApp({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </ConfigProvider>
     </GeistProvider>
-  )
+  );
 }
 
 export default withTRPC<AppRouter>({
   config({ ctx }) {
-    const url = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api` : `http://localhost:3000/api`
+    const url = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api` : `http://localhost:3000/api`;
 
     return { url };
-  }, 
-  ssr: true
+  },
+  ssr: true,
 })(MyApp);
