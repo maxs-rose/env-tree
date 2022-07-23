@@ -11,7 +11,8 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prisma": "yarn workspace @secrets/cloud prisma"
+    "prisma": "yarn workspace @secrets/cloud prisma",
+    "prisma:studio":  "yarn prisma studio"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
