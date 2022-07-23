@@ -1,15 +1,14 @@
-import React from "react";
-import { useMemo } from "react";
+import React, { useMemo } from 'react';
 
 type Config = {
-  onThemeChange: (theme: "light" | "dark") => void;
+  onThemeChange: (theme: 'light' | 'dark') => void;
 };
 
 type ConfigProviderProps = {
-  onThemeChange: (theme: "light" | "dark") => void;
-}
+  onThemeChange: (theme: 'light' | 'dark') => void;
+};
 
-const ConfigContext = React.createContext<Config>({});
+const ConfigContext = React.createContext<Config>({ onThemeChange: () => {} });
 
 const defaultProps = {};
 
@@ -17,13 +16,11 @@ export const ConfigProvider: React.FC<React.PropsWithChildren<ConfigProviderProp
   ({ onThemeChange, children }: React.PropsWithChildren<ConfigProviderProps> & typeof defaultProps) => {
     const initialValue = useMemo<Config>(() => ({ onThemeChange }), [onThemeChange]);
 
-    return (
-      <ConfigContext.Provider value={initialValue}>{children}</ConfigContext.Provider>
-    )
+    return <ConfigContext.Provider value={initialValue}>{children}</ConfigContext.Provider>;
   }
 );
 
 ConfigProvider.defaultProps = defaultProps;
-ConfigProvider.displayName = "SecretsConfigProvider";
+ConfigProvider.displayName = 'SecretsConfigProvider';
 
 export const useConfigs = (): Config => React.useContext(ConfigContext);
