@@ -26,6 +26,10 @@ export const appRouter = trpc
   .query('projects', {
     resolve: async () => await prisma.project.findMany(),
   })
+  .mutation('deleteProject', {
+    input: z.object({ id: z.string() }),
+    resolve: async ({ input }) => await prisma.project.delete({ where: { id: input.id } }),
+  })
   .query('config', {
     input: z.object({ id: z.string() }),
     resolve: async (data) => transformConfigs(await prisma.config.findMany({ where: { projectId: data.input.id } })),
