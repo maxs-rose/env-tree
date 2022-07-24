@@ -1,5 +1,5 @@
 import { prisma } from '@backend/prisma';
-import { transformConfigs } from '@backend/utils/config';
+import { configToEnvString, transformConfigs, transformConfigValues } from '@backend/utils/config';
 import { encryptConfig } from '@backend/utils/crypt';
 import * as trpc from '@trpc/server';
 import { z } from 'zod';
@@ -57,6 +57,24 @@ export const appRouter = trpc
         where: { id_projectId: { id: configId, projectId: projectId } },
         data: { values: transformedConfigValues },
       });
+    },
+  })
+  .query('configEnv', {
+    input: z.object({ projectId: z.string(), configId: z.string() }),
+    resolve: async ({ input }) => configToEnvString(input.projectId, input.configId),
+  })
+  .query('configJson', {
+    input: z.object({ projectId: z.string(), configId: z.string() }),
+    resolve: async ({ input }) => {
+      const config = await prisma.config.findUnique({
+        where: { id_projectId: { id: input.configId, projectId: input.projectId } },
+        select: { values: true },
+      });
+      if (!config) {
+        return '';
+      }
+
+      return transformConfigValues(config.values);
     },
   });
 
