@@ -36,7 +36,12 @@ export const appRouter = trpc
       await prisma.config.create({ data: { projectId: input.projectId, name: input.configName, values: '' } });
     },
   })
-  .mutation('deleteConfig', { resolve: () => '' })
+  .mutation('deleteConfig', {
+    input: z.object({ projectId: z.string(), configId: z.string() }),
+    resolve: async ({ input }) => {
+      await prisma.config.delete({ where: { id_projectId: { projectId: input.projectId, id: input.configId } } });
+    },
+  })
   .mutation('updateConfig', {
     input: z.object({ projectId: z.string(), config: z.object({ id: z.string(), values: z.any() }) }),
     resolve: async (data) => {
