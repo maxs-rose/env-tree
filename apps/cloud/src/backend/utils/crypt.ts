@@ -1,7 +1,10 @@
 import * as trpc from '@trpc/server';
-import { createCipheriv, createDecipheriv, scryptSync } from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 
-const getCipher = (encrypt = true) => {
+// 32 characters of padding to ensire we always have 1 block of padding
+const padding = '................................';
+
+const getCipher = (encrypt = true, presetIv?: string) => {
   const password = process.env.CONFIG_ENCRYPTION_SCRET;
   const saltBytes = process.env.SALT_BYTES;
   const ivBytes = process.env.IV_BYTES;
@@ -11,33 +14,33 @@ const getCipher = (encrypt = true) => {
   }
 
   const salt = Buffer.from(saltBytes.replaceAll(' ', ''), 'hex');
-  const iv = Buffer.from(saltBytes.replaceAll(' ', ''), 'hex');
+  const iv = presetIv ? Buffer.from(presetIv, 'hex') : randomBytes(16);
 
   const key = scryptSync(password, salt, 24);
   const algorithm = 'aes-192-cbc';
-  return encrypt ? createCipheriv(algorithm, key, iv) : createDecipheriv(algorithm, key, iv);
+  return {
+    cipher: encrypt ? createCipheriv(algorithm, key, iv) : createDecipheriv(algorithm, key, iv),
+    iv: iv.toString('hex'),
+  };
 };
 
 export const encryptConfig = (config: object): string => {
-  const strigified = JSON.stringify(config);
-  const cipher = getCipher();
+  const strigified = `${JSON.stringify(config)}${padding}`;
+  const { cipher, iv } = getCipher();
 
-  // Blocks should be of size 16 in length and we need to add padding onto the end
-  const chunks = (strigified.match(/.{1,16}/g) ?? []).map((c) => c.padEnd(16, '.'));
-  chunks.push(new Array(16).fill('.').join(''));
-
-  return chunks.map((c) => cipher.update(c, 'utf-8', 'hex') as string).join('-');
+  return `${cipher.update(strigified, 'utf-8', 'hex') as string}-${iv}`;
 };
 
 export const decryptConfig = (config: string): object => {
-  const cipher = getCipher(false);
+  if (!config) {
+    return {};
+  }
 
-  const result = config
-    .split('-')
-    .filter((c) => c)
-    .map((c) => cipher.update(c, 'hex', 'utf-8'))
-    .join('')
-    .replace(/}\.+$/, '}');
+  const [cipherText, iv] = config.split('-');
+
+  const { cipher } = getCipher(false, iv);
+
+  const result = (cipher.update(cipherText, 'hex', 'utf-8') as string).replace(/}\.+$/, '}');
 
   return JSON.parse(result || '{}');
 };
