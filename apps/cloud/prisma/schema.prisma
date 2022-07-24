@@ -23,7 +23,7 @@ model Config {
   values String // JSON string of env values
 
   // We must be related to a project
-  Project   Project @relation(fields: [projectId], references: [id])
+  Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
 
   @@id([id, projectId])

@@ -108,6 +108,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   const currentConfig = useRef<Config>();
   const configs = trpc.useQuery(['config', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
   const deleteConfigMutation = trpc.useMutation('deleteConfig');
+  const deleteProjectMutation = trpc.useMutation('deleteProject');
 
   useEffect(() => {
     if (!configId && project.configs.length > 0) {
@@ -213,6 +214,10 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
     setAddConfigVisible(false);
   };
 
+  const deleteProject = () => {
+    deleteProjectMutation.mutate({ id: project.id }, { onSuccess: () => router.push('/projects') });
+  };
+
   return (
     <>
       <Page className="page-height">
@@ -222,7 +227,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
               <Text span>{project?.name}</Text> Configurations
             </Text>
             <Button auto icon={<Plus />} px={0.6} type="success" onClick={() => setAddConfigVisible(true)} />
-            <Button auto icon={<Trash2 />} px={0.6} type="error" />
+            <Button auto icon={<Trash2 />} px={0.6} type="error" onClick={deleteProject} />
           </div>
         </Page.Header>
         <Page.Content className="flex items-center justify-center">{showContent()}</Page.Content>
