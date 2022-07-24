@@ -191,6 +191,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
     if (!configId && project.configs.length > 0) {
       router.push(`/projects/${project.id}/${project.configs[0].id}`, undefined, { shallow: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!project) {

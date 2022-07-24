@@ -25,8 +25,12 @@ type FileType = 'env' | 'json';
 const getFilename = (filename: string | undefined, downloadType: FileType) => {
   const trimmedName = filename?.trim();
 
-  if (trimmedName) return trimmedName;
-  if (downloadType === 'env') return '.env';
+  if (trimmedName) {
+    return trimmedName;
+  }
+  if (downloadType === 'env') {
+    return '.env';
+  }
   return 'secrets.json';
 };
 

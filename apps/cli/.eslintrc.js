@@ -3,7 +3,10 @@ module.exports = {
   extends: ['custom'],
   overrides: [
     {
-      'no-console': ["off"]
-    }
-  ]
+      files: '*.ts',
+      rules: {
+        'no-console': ['off'],
+      },
+    },
+  ],
 };

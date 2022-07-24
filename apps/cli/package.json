@@ -16,6 +16,8 @@
   },
   "devDependencies": {
     "@types/node": "^18.6.0",
+    "eslint": "7.32.0",
+    "eslint-config-custom": "*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
     "tsup": "^6.1.3",
