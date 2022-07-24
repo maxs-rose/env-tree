@@ -15,6 +15,7 @@ import {
   useModal,
 } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
+import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
 import { Check, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
 import { Config, ConfigProject } from '@utils/types';
@@ -31,6 +32,7 @@ const AddConfigValueModal: React.FC<{
   const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput('');
   const { state: valueValue, setState: setValue, bindings: valueBinding } = useInput('');
   const updateConfig = trpc.useMutation('updateConfig');
+  const [invalid, setInvalid] = useState<undefined | string>(undefined);
 
   if (!config.current) {
     return <></>;
@@ -39,10 +41,17 @@ const AddConfigValueModal: React.FC<{
   const configMap = new Map(Object.entries(config.current.values));
 
   const tryAddValue = () => {
-    const key = keyValue;
+    const key = keyValue.trim();
     const value = valueValue;
 
-    if (!key || !value || configMap.has(key)) {
+    if (!key) {
+      setKey(key);
+      setInvalid('Invalid property name');
+      return;
+    }
+
+    if (configMap.has(key)) {
+      setInvalid('Property already exists in config');
       return;
     }
 
@@ -63,6 +72,7 @@ const AddConfigValueModal: React.FC<{
   };
 
   const clearInput = () => {
+    setInvalid(undefined);
     setKey('');
     setValue('');
   };
@@ -73,17 +83,39 @@ const AddConfigValueModal: React.FC<{
     if (bindings.onClose) {
       bindings.onClose();
     }
+
+    onCloseModel();
+  };
+
+  const onInputChange = (b: (event: BindingsChangeTarget) => void) => {
+    return (e: BindingsChangeTarget) => {
+      setInvalid(undefined);
+      b(e);
+    };
   };
 
   return (
     <Modal visible={bindings.visible} onClose={modalClose}>
       <Modal.Title>Add secret</Modal.Title>
       <Modal.Content>
-        <Input placeholder="Property" value={propertyBinding.value} onChange={propertyBinding.onChange} width="100%" />
+        <Input
+          placeholder="Property"
+          value={propertyBinding.value}
+          onChange={onInputChange(propertyBinding.onChange)}
+          width="100%"
+        />
         <Spacer />
-        <Input placeholder="Value" value={valueBinding.value} onChange={valueBinding.onChange} width="100%" />
+        <Input
+          placeholder="Value"
+          value={valueBinding.value}
+          onChange={onInputChange(valueBinding.onChange)}
+          width="100%"
+        />
+        <Text p type="error">
+          {invalid}
+        </Text>
       </Modal.Content>
-      <Modal.Action onClick={onCloseModel}>Cancel</Modal.Action>
+      <Modal.Action onClick={modalClose}>Cancel</Modal.Action>
       <Modal.Action onClick={tryAddValue}>Create</Modal.Action>
     </Modal>
   );
@@ -95,19 +127,50 @@ const AddConfigModal: React.FC<{
   projectId: string;
 }> = ({ bindings, onCloseModel, projectId }) => {
   const updateConfig = trpc.useMutation('createConfig');
-  const { state: configName, bindings: configBindings } = useInput('');
+  const { state: configName, setState: setConfigName, bindings: configBindings } = useInput('');
+  const [invalidConfig, setInvalidConfig] = useState(false);
 
   const createConfig = () => {
-    updateConfig.mutate({ projectId, configName }, { onSuccess: onCloseModel });
+    if (!configName.trim()) {
+      setConfigName(configName.trim());
+      setInvalidConfig(true);
+      return;
+    }
+
+    updateConfig.mutate({ projectId, configName: configName.trim() }, { onSuccess: closeModal });
+  };
+
+  const closeModal = () => {
+    setInvalidConfig(false);
+    setConfigName('');
+    onCloseModel();
+  };
+
+  const inputChange: typeof configBindings.onChange = (e) => {
+    setInvalidConfig(false);
+    configBindings.onChange(e);
   };
 
   return (
-    <Modal {...bindings}>
-      <Modal.Title>Add secret</Modal.Title>
+    <Modal {...bindings} onClose={closeModal}>
+      <Modal.Title>Add Configuration</Modal.Title>
       <Modal.Content>
-        <Input placeholder="Config Name" value={configBindings.value} onChange={configBindings.onChange} width="100%" />
+        <Input
+          placeholder="Config Name"
+          value={configBindings.value}
+          onChange={inputChange}
+          width="100%"
+          type={invalidConfig ? 'error' : 'default'}
+        />
+        {invalidConfig ? (
+          <Text p type="error">
+            Invalid configuration name
+          </Text>
+        ) : (
+          <></>
+        )}
       </Modal.Content>
-      <Modal.Action onClick={onCloseModel}>Cancel</Modal.Action>
+      <Modal.Action onClick={closeModal}>Cancel</Modal.Action>
       <Modal.Action onClick={createConfig}>Create</Modal.Action>
     </Modal>
   );
@@ -145,7 +208,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
     }));
 
     return (
-      <Table data={tableData}>
+      <Table data={tableData} emptyText="-">
         <Table.Column prop="property" label="Property" />
         <Table.Column prop="value" label="Value" />
       </Table>
