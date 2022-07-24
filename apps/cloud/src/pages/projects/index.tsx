@@ -21,10 +21,11 @@ const CreateProjectModal: React.FC<{ onCloseModel: (status: boolean) => void; bi
 
   const submitProjectName = () => {
     createProject.mutate(
-      { name: inputBindings.value },
+      { name: inputBindings.value.trim() },
       {
         onSuccess: () => closeModal(true),
         onError: (error) => {
+          setInputState(inputBindings.value.trim());
           setCreateProjectSate({
             valid: false,
             errorMessage: error.data?.code === 'CONFLICT' ? error.message : 'Invalid project name',
