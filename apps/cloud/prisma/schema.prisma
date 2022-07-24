@@ -18,9 +18,10 @@ model Project {
 }
 
 model Config {
-  id        String  @default(uuid())
-  name      String
-  values    String // JSON string of env values
+  id     String @default(uuid())
+  name   String
+  values String // JSON string of env values
+
   // We must be related to a project
   Project   Project @relation(fields: [projectId], references: [id])
   projectId String
