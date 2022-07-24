@@ -1,14 +1,27 @@
 import { prisma } from '@backend/prisma';
 import { transformConfigProject } from '@backend/utils/config';
 import SecretLoader from '@components/loader';
-import { Button, Input, Modal, Page, Spacer, Table, Tabs, Text, useInput, useModal } from '@geist-ui/core';
+import {
+  Button,
+  ButtonDropdown,
+  Input,
+  Modal,
+  Page,
+  Spacer,
+  Table,
+  Tabs,
+  Text,
+  useInput,
+  useModal,
+} from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
-import { DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
+import { Check, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
 import { Config, ConfigProject } from '@utils/types';
+import fileDownload from 'js-file-download';
 import { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
-import React, { MutableRefObject, useEffect, useRef } from 'react';
+import React, { MutableRefObject, useEffect, useRef, useState } from 'react';
 
 const AddConfigValueModal: React.FC<{
   onCloseModel: () => void;
@@ -109,6 +122,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   const configs = trpc.useQuery(['config', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
   const deleteConfigMutation = trpc.useMutation('deleteConfig');
   const deleteProjectMutation = trpc.useMutation('deleteProject');
+  const [downloadType, setDownloadType] = useState<'env' | 'json'>('env');
 
   useEffect(() => {
     if (!configId && project.configs.length > 0) {
@@ -158,6 +172,25 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
       );
     };
 
+    const updateDownloadType = (type: 'env' | 'json') => setDownloadType(type);
+
+    const downloadSecrets = (config: Config) => {
+      const baseUrl = window.location.origin;
+      const dataUrl = `${baseUrl}/api/config${downloadType === 'env' ? 'Env' : 'Json'}?`;
+
+      const query = encodeURIComponent(JSON.stringify({ projectId: config.projectId, configId: config.id }));
+
+      fetch(dataUrl + `input=${query}`)
+        .then((res) => res.json())
+        .then((res) => res.result.data)
+        .then((data) =>
+          fileDownload(
+            downloadType === 'json' ? JSON.stringify(data, null, '\t') : data,
+            `${config.name}.${downloadType}`
+          )
+        );
+    };
+
     return configs.map((c) => (
       <Tabs.Tab label={c.name} key={c.id} value={c.id}>
         <div className="flex justify-center">
@@ -165,11 +198,23 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
             Add Secret
           </Button>
           <Spacer inline />
-          <Button auto ghost type="success" icon={<DownloadCloud />}>
-            Download secrets
-          </Button>
+          <ButtonDropdown auto icon={<DownloadCloud />} type="success">
+            <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
+              Download Secrets ({downloadType})
+            </ButtonDropdown.Item>
+            <ButtonDropdown.Item onClick={() => updateDownloadType('env')}>
+              <span className="w-full flex justify-around items-center">
+                ENV {downloadType === 'env' ? <Check /> : <span />}
+              </span>
+            </ButtonDropdown.Item>
+            <ButtonDropdown.Item onClick={() => updateDownloadType('json')}>
+              <span className="w-full flex justify-around items-center">
+                JSON {downloadType === 'json' ? <Check /> : <span />}
+              </span>
+            </ButtonDropdown.Item>
+          </ButtonDropdown>
           <Spacer inline />
-          <Button auto ghost type="error" icon={<Trash2 />} onClick={() => deleteConfig(c.projectId, c.id)}>
+          <Button auto type="error" icon={<Trash2 />} onClick={() => deleteConfig(c.projectId, c.id)}>
             Delete Configuration
           </Button>
         </div>
