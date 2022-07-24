@@ -106,6 +106,8 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings } = useModal();
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
   const currentConfig = useRef<Config>();
+  const configs = trpc.useQuery(['config', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
+  const deleteConfigMutation = trpc.useMutation('deleteConfig');
 
   useEffect(() => {
     if (!configId && project.configs.length > 0) {
@@ -120,11 +122,6 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
       </Page>
     );
   }
-
-  const configs = trpc.useQuery(['config', { id: project.id }], {
-    initialData: project.configs,
-    staleTime: 1000,
-  });
 
   const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
     const tableData = Array.from(new Map(Object.entries(config.values)).entries()).map(([property, value]) => ({
@@ -149,6 +146,16 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
       trpcContext.invalidateQueries(['config']);
       setAddConfigValueVisible(false);
     };
+    const deleteConfig = (pId: string, cId: string) => {
+      deleteConfigMutation.mutate(
+        { projectId: pId, configId: cId },
+        {
+          onSuccess: () => {
+            window.location.reload();
+          },
+        }
+      );
+    };
 
     return configs.map((c) => (
       <Tabs.Tab label={c.name} key={c.id} value={c.id}>
@@ -161,7 +168,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
             Download secrets
           </Button>
           <Spacer inline />
-          <Button auto ghost type="error" icon={<Trash2 />}>
+          <Button auto ghost type="error" icon={<Trash2 />} onClick={() => deleteConfig(c.projectId, c.id)}>
             Delete Configuration
           </Button>
         </div>
@@ -195,7 +202,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
     return (
       <div className="w-full">
         <Tabs initialValue={initialTab} onChange={tabChange}>
-          {showConfigs(configs.data ?? [])}
+          {showConfigs(configs.data)}
         </Tabs>
       </div>
     );
