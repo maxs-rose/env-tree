@@ -13,7 +13,8 @@
     "start": "yarn workspace @secrets/cloud start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prisma": "yarn workspace @secrets/cloud prisma",
-    "prisma:studio": "yarn prisma studio"
+    "prisma:studio": "yarn prisma studio",
+    "cloud": "yarn workspace @secrets/cloud"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
