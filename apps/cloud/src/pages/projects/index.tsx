@@ -12,7 +12,7 @@ const CreateProjectModal: React.FC<{ onCloseModel: (status: boolean) => void; bi
   onCloseModel,
   bindings,
 }) => {
-  const createProject = trpc.useMutation('createProject');
+  const createProject = trpc.useMutation('project-create');
   const { setState: setInputState, bindings: inputBindings } = useInput('');
   const [createProjectState, setCreateProjectSate] = useState<{
     valid: boolean;
@@ -97,13 +97,13 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
 
 const Projects: NextPage = () => {
   const trpcContext = trpc.useContext();
-  const projects = trpc.useQuery(['projects']);
+  const projects = trpc.useQuery(['project-get']);
 
   const { setVisible, bindings: modalBindings } = useModal();
 
   const closeModal = (status: boolean) => {
     if (status) {
-      trpcContext.invalidateQueries(['projects']);
+      trpcContext.invalidateQueries(['project-get']);
     }
     setVisible(false);
   };

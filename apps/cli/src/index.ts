@@ -1,10 +1,9 @@
 import chalk from 'chalk';
 import { program } from 'commander';
-import { fstat, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import fetch from 'node-fetch';
 import ora from 'ora';
-import { exit, openStdin } from 'process';
-import { titleCase } from 'title-case';
+import { exit } from 'process';
 
 program
   .name('@cloud/secrets CLI')
@@ -46,7 +45,7 @@ let spinner = ora(
 ).start();
 const query = encodeURIComponent(JSON.stringify({ projectId, configId }));
 
-fetch(`${url}/api/config${titleCase(type)}?input=${query}`)
+fetch(`${url}/api/config-${type}?input=${query}`)
   .catch((e) => {
     spinner.fail(`Failed to fetch config! Error: ${chalk.red(e.errno)}`);
 

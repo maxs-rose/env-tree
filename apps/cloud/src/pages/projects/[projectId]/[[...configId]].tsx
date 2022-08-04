@@ -31,7 +31,7 @@ const AddConfigValueModal: React.FC<{
 }> = ({ bindings, config, onCloseModel }) => {
   const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput('');
   const { state: valueValue, setState: setValue, bindings: valueBinding } = useInput('');
-  const updateConfig = trpc.useMutation('updateConfig');
+  const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
 
   if (!config.current) {
@@ -126,7 +126,7 @@ const AddConfigModal: React.FC<{
   bindings: ModalHooksBindings;
   projectId: string;
 }> = ({ bindings, onCloseModel, projectId }) => {
-  const updateConfig = trpc.useMutation('createConfig');
+  const updateConfig = trpc.useMutation('config-create');
   const { state: configName, setState: setConfigName, bindings: configBindings } = useInput('');
   const [invalidConfig, setInvalidConfig] = useState(false);
 
@@ -182,9 +182,9 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings } = useModal();
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
   const currentConfig = useRef<Config>();
-  const configs = trpc.useQuery(['config', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
-  const deleteConfigMutation = trpc.useMutation('deleteConfig');
-  const deleteProjectMutation = trpc.useMutation('deleteProject');
+  const configs = trpc.useQuery(['config-get', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
+  const deleteConfigMutation = trpc.useMutation('config-delete');
+  const deleteProjectMutation = trpc.useMutation('project-delete');
   const [downloadType, setDownloadType] = useState<'env' | 'json'>('env');
 
   useEffect(() => {
@@ -222,7 +222,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
       setAddConfigValueVisible(true);
     };
     const closeConfigValueModal = () => {
-      trpcContext.invalidateQueries(['config']);
+      trpcContext.invalidateQueries(['config-get']);
       setAddConfigValueVisible(false);
     };
     const deleteConfig = (pId: string, cId: string) => {
@@ -240,7 +240,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
 
     const downloadSecrets = (config: Config) => {
       const baseUrl = window.location.origin;
-      const dataUrl = `${baseUrl}/api/config${downloadType === 'env' ? 'Env' : 'Json'}?`;
+      const dataUrl = `${baseUrl}/api/config-${downloadType}?`;
 
       const query = encodeURIComponent(JSON.stringify({ projectId: config.projectId, configId: config.id }));
 
@@ -319,7 +319,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   };
 
   const closeConfigModal = () => {
-    trpcContext.invalidateQueries(['config']);
+    trpcContext.invalidateQueries(['config-get']);
     setAddConfigVisible(false);
   };
 
