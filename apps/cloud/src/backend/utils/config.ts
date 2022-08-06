@@ -1,4 +1,3 @@
-import { prisma } from '@backend/prisma';
 import { decryptConfig } from '@backend/utils/crypt';
 import { Config as PrismaConfig, Project as PrismaProject } from '@prisma/client';
 import { Config, ConfigProject } from '@utils/types';
@@ -13,19 +12,10 @@ export const transformConfig = (config: PrismaConfig): Config => {
   return { ...config, values: transformConfigValues(config.values) } as Config;
 };
 
-export const transformConfigValues = (values: string): {} => decryptConfig(values);
+export const transformConfigValues = (values: string): { [key: string]: string } => decryptConfig(values);
 
-export const configToEnvString = async (projectId: string, configId: string) => {
-  const config = await prisma.config.findUnique({
-    where: { id_projectId: { id: configId, projectId: projectId } },
-    select: { values: true },
-  });
-
-  if (!config) {
-    return '';
-  }
-
-  return Object.entries(transformConfigValues(config.values))
+export const configToEnvString = (config: { [key: string]: string }) => {
+  return Object.entries(config)
     .map(([k, v]) => `${k}=${v}`)
     .join('\n');
 };

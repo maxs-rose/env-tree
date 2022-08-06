@@ -1,3 +1,4 @@
+import { ConfigType } from '@backend/api/config';
 import { AddConfigValueModal } from '@components/config/AddConfigValueModal';
 import { Button, ButtonDropdown, Spacer, Table, Tabs, useModal } from '@geist-ui/core';
 import { Check, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
@@ -26,7 +27,7 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[] }> = ({ configs
   const trpcContext = trpc.useContext();
   const currentConfig = useRef<Config>();
   const deleteConfigMutation = trpc.useMutation('config-delete');
-  const [downloadType, setDownloadType] = useState<'env' | 'json'>('env');
+  const [downloadType, setDownloadType] = useState<ConfigType>('env');
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings } = useModal();
 
   const openConfigModal = (conf: Config) => {

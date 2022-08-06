@@ -60,7 +60,7 @@ export const encryptConfig = (config: object): string => {
   return `${cipher.update(strigified, 'utf-8', 'hex') as string}-${salt}-${iv}`;
 };
 
-export const decryptConfig = (config: string): object => {
+export const decryptConfig = (config: string): { [key: string]: string } => {
   if (!config) {
     return {};
   }
