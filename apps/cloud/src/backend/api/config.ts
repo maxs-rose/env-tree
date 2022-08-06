@@ -1,6 +1,7 @@
 import { prisma } from '@backend/prisma';
 import { configToEnvString, transformConfigs, transformConfigValues } from '@backend/utils/config';
 import { encryptConfig } from '@backend/utils/crypt';
+import { ConfigValue } from '@utils/types';
 
 export const getConfigs = async (projectId: string) =>
   prisma.config.findMany({ where: { projectId } }).then(transformConfigs);
@@ -8,7 +9,7 @@ export const getConfigs = async (projectId: string) =>
 export const createConfig = async (projectId: string, configName: string) =>
   prisma.config.create({ data: { projectId, name: configName, values: '' } });
 
-export const updateConfig = async (projectId: string, configId: string, configValue: { [key: string]: string }) =>
+export const updateConfig = async (projectId: string, configId: string, configValue: ConfigValue) =>
   prisma.config.update({
     where: { id_projectId: { id: configId, projectId: projectId } },
     data: { values: encryptConfig(configValue) },
