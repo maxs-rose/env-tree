@@ -1,5 +1,5 @@
 import { prisma } from '@backend/prisma';
-import { configToEnvString, transformConfigs, transformConfigValues } from '@backend/utils/config';
+import { configToEnvString, configToJsonObject, transformConfigs, transformConfigValues } from '@backend/utils/config';
 import { encryptConfig } from '@backend/utils/crypt';
 import { ConfigValue } from '@utils/types';
 
@@ -48,6 +48,6 @@ export const exportConfig = async <T extends ConfigType>(
     case 'env':
       return configToEnvString(config) as ConfigExportType<T>;
     case 'json':
-      return config as ConfigExportType<T>;
+      return configToJsonObject(config) as ConfigExportType<T>;
   }
 };

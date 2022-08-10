@@ -1,4 +1,5 @@
 import * as trpc from '@trpc/server';
+import { ConfigValue } from '@utils/types';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 
 const algorithm = 'aes-192-cbc';
@@ -34,13 +35,13 @@ const getDecryptionCipher = (salt: string, iv: string) => {
   return createDecipheriv(algorithm, key, Buffer.from(iv, 'hex'));
 };
 
-export const encryptConfig = (config: object): string => {
+export const encryptConfig = (config: ConfigValue): string => {
   const { cipher, salt, iv } = getEncryptionCipher();
 
   return `${cipher.update(JSON.stringify(config), 'utf-8', 'hex') + cipher.final('hex')}-${salt}-${iv}`;
 };
 
-export const decryptConfig = (config: string): { [key: string]: string } => {
+export const decryptConfig = (config: string): ConfigValue => {
   if (!config) {
     return {};
   }

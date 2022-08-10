@@ -1,7 +1,7 @@
 import { ConfigType } from '@backend/api/config';
 import { AddConfigValueModal } from '@components/config/AddConfigValueModal';
-import { Button, ButtonDropdown, Spacer, Table, Tabs, useModal } from '@geist-ui/core';
-import { Check, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
+import { Button, ButtonDropdown, Input, Spacer, Table, Tabs, useModal } from '@geist-ui/core';
+import { Check, DownloadCloud, PenTool, Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
 import { Config } from '@utils/types';
 import fileDownload from 'js-file-download';
@@ -10,16 +10,81 @@ import { catchError, EMPTY, map, of, withLatestFrom } from 'rxjs';
 import { fromFetch } from 'rxjs/internal/observable/dom/fetch';
 
 const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
+  const trpcContext = trpc.useContext();
+  const updateConfig = trpc.useMutation('config-update');
+
+  const editValue = useRef<string | undefined>(undefined);
+  const currentConfig = useRef(config);
+  const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
+
   const tableData = Array.from(new Map(Object.entries(config.values)).entries()).map(([property, value]) => ({
     property,
-    value,
+    value:
+      value.hidden && value.value ? (
+        <Input.Password readOnly width="100%" value={value.value} />
+      ) : (
+        <Input readOnly width="100%" value={value.value ?? '-'} />
+      ),
+    editProperty: property,
+    deleteProperty: property,
   }));
 
+  const renderDelete = (value: string) => {
+    const deleteConfigValue = () => {
+      const newConfig = { ...config, values: { ...config.values } };
+      delete newConfig.values[value];
+
+      updateConfig.mutate(
+        {
+          projectId: config.projectId,
+          config: { id: config.id, values: newConfig.values },
+        },
+        {
+          onSuccess: () => {
+            trpcContext.invalidateQueries('config-get');
+          },
+        }
+      );
+    };
+
+    return <Button type="error" auto font="12px" icon={<Trash2 />} onClick={deleteConfigValue} />;
+  };
+
+  const renderEdit = (value: string) => {
+    const editConfig = () => {
+      currentConfig.current = config;
+      editValue.current = value;
+      setAddConfigValueVisible(true);
+    };
+
+    return <Button type="success" auto font="12px" icon={<PenTool />} onClick={editConfig} />;
+  };
+
+  const closeConfigValueModal = () => {
+    setAddConfigValueVisible(false);
+    trpcContext.invalidateQueries(['config-get']);
+  };
+
   return (
-    <Table data={tableData} emptyText="-">
-      <Table.Column prop="property" label="Property" />
-      <Table.Column prop="value" label="Value" />
-    </Table>
+    <>
+      <Table data={tableData} emptyText="-">
+        <Table.Column prop="property" label="Property" />
+        <Table.Column prop="value" label="Value" />
+        <Table.Column width={50} prop="editProperty" label="Edit" render={renderEdit} />
+        <Table.Column width={50} prop="deleteProperty" label="Delete" render={renderDelete} />
+      </Table>
+
+      {visible ? (
+        <AddConfigValueModal
+          bindings={addConfigValueModalBindings}
+          config={currentConfig}
+          onCloseModel={closeConfigValueModal}
+          editValue={editValue.current}
+        />
+      ) : (
+        <></>
+      )}
+    </>
   );
 };
 

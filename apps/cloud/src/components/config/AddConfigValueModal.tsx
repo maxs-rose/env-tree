@@ -1,17 +1,28 @@
-import { Input, Modal, Spacer, Text, useInput } from '@geist-ui/core';
+import { Input, Modal, Spacer, Text, Toggle, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
 import { trpc } from '@utils/trpc';
-import { Config } from '@utils/types';
+import { Config, ConfigValue } from '@utils/types';
 import React, { MutableRefObject, useState } from 'react';
 
 export const AddConfigValueModal: React.FC<{
   onCloseModel: () => void;
   bindings: ModalHooksBindings;
   config: MutableRefObject<Config | undefined>;
-}> = ({ bindings, config, onCloseModel }) => {
-  const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput('');
-  const { state: valueValue, setState: setValue, bindings: valueBinding } = useInput('');
+  editValue?: string;
+}> = ({ bindings, config, onCloseModel, editValue }) => {
+  const getConfigValue = (conf: Config | undefined, edit: string | undefined, target: keyof ConfigValue[string]) =>
+    conf?.values?.[edit ?? '']?.[target]?.toString();
+
+  const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(editValue ?? '');
+  const {
+    state: valueValue,
+    setState: setValue,
+    bindings: valueBinding,
+  } = useInput(getConfigValue(config.current, editValue, 'value') ?? '');
+  const { state: valueHidden, setState: setValueHidden } = useInput(
+    getConfigValue(config.current, editValue, 'hidden') ?? 'false'
+  );
   const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
 
@@ -23,7 +34,7 @@ export const AddConfigValueModal: React.FC<{
 
   const tryAddValue = () => {
     const key = keyValue.trim();
-    const value = valueValue;
+    const value = { value: valueValue, hidden: valueHidden === 'true' };
 
     if (!key) {
       setKey(key);
@@ -31,7 +42,7 @@ export const AddConfigValueModal: React.FC<{
       return;
     }
 
-    if (configMap.has(key)) {
+    if (!editValue && configMap.has(key)) {
       setInvalid('Property already exists in config');
       return;
     }
@@ -56,6 +67,7 @@ export const AddConfigValueModal: React.FC<{
     setInvalid(undefined);
     setKey('');
     setValue('');
+    setValueHidden('false');
   };
 
   const modalClose = () => {
@@ -80,6 +92,7 @@ export const AddConfigValueModal: React.FC<{
       <Modal.Title>Add secret</Modal.Title>
       <Modal.Content>
         <Input
+          disabled={!!editValue}
           placeholder="Property"
           value={propertyBinding.value}
           onChange={onInputChange(propertyBinding.onChange)}
@@ -92,12 +105,22 @@ export const AddConfigValueModal: React.FC<{
           onChange={onInputChange(valueBinding.onChange)}
           width="100%"
         />
+        <Spacer />
+        <div className="flex items-center gap-2">
+          <label htmlFor="hiddenToggle">Hidden</label>
+          <Toggle
+            id="hiddenToggle"
+            padding={0}
+            initialChecked={valueHidden === 'true'}
+            onChange={(e) => setValueHidden(e.target.checked.toString())}
+          />
+        </div>
         <Text p type="error">
           {invalid}
         </Text>
       </Modal.Content>
       <Modal.Action onClick={modalClose}>Cancel</Modal.Action>
-      <Modal.Action onClick={tryAddValue}>Create</Modal.Action>
+      <Modal.Action onClick={tryAddValue}>{!editValue ? 'Create' : 'Update'}</Modal.Action>
     </Modal>
   );
 };
