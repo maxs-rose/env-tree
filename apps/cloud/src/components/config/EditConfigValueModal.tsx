@@ -5,24 +5,22 @@ import { trpc } from '@utils/trpc';
 import { Config, ConfigValue } from '@utils/types';
 import React, { MutableRefObject, useState } from 'react';
 
-export const AddConfigValueModal: React.FC<{
+const getConfigValue = <T,>(conf: Config | undefined, edit: string | undefined, target: keyof ConfigValue[string]) =>
+  conf?.values?.[edit ?? '']?.[target] as T | undefined;
+
+export const EditConfigValueModal: React.FC<{
   onCloseModel: () => void;
   bindings: ModalHooksBindings;
   config: MutableRefObject<Config | undefined>;
   editValue?: string;
 }> = ({ bindings, config, onCloseModel, editValue }) => {
-  const getConfigValue = (conf: Config | undefined, edit: string | undefined, target: keyof ConfigValue[string]) =>
-    conf?.values?.[edit ?? '']?.[target]?.toString();
-
   const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(editValue ?? '');
   const {
     state: valueValue,
     setState: setValue,
     bindings: valueBinding,
-  } = useInput(getConfigValue(config.current, editValue, 'value') ?? '');
-  const { state: valueHidden, setState: setValueHidden } = useInput(
-    getConfigValue(config.current, editValue, 'hidden') ?? 'false'
-  );
+  } = useInput(getConfigValue<string>(config.current, editValue, 'value') ?? '');
+  const [hidden, setHidden] = useState(getConfigValue<boolean>(config.current, editValue, 'hidden') ?? false);
   const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
 
@@ -34,7 +32,7 @@ export const AddConfigValueModal: React.FC<{
 
   const tryAddValue = () => {
     const key = keyValue.trim();
-    const value = { value: valueValue, hidden: valueHidden === 'true' };
+    const value = { value: valueValue, hidden };
 
     if (!key) {
       setKey(key);
@@ -67,7 +65,7 @@ export const AddConfigValueModal: React.FC<{
     setInvalid(undefined);
     setKey('');
     setValue('');
-    setValueHidden('false');
+    setHidden(false);
   };
 
   const modalClose = () => {
@@ -80,10 +78,10 @@ export const AddConfigValueModal: React.FC<{
     onCloseModel();
   };
 
-  const onInputChange = (b: (event: BindingsChangeTarget) => void) => {
-    return (e: BindingsChangeTarget) => {
+  const onInputChange = (binding: (event: BindingsChangeTarget) => void) => {
+    return (event: BindingsChangeTarget) => {
       setInvalid(undefined);
-      b(e);
+      binding(event);
     };
   };
 
@@ -108,12 +106,7 @@ export const AddConfigValueModal: React.FC<{
         <Spacer />
         <div className="flex items-center gap-2">
           <label htmlFor="hiddenToggle">Hidden</label>
-          <Toggle
-            id="hiddenToggle"
-            padding={0}
-            initialChecked={valueHidden === 'true'}
-            onChange={(e) => setValueHidden(e.target.checked.toString())}
-          />
+          <Toggle id="hiddenToggle" padding={0} initialChecked={hidden} onChange={(e) => setHidden(e.target.checked)} />
         </div>
         <Text p type="error">
           {invalid}

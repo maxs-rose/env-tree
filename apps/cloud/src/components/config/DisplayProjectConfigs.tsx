@@ -1,5 +1,5 @@
 import { ConfigType } from '@backend/api/config';
-import { AddConfigValueModal } from '@components/config/AddConfigValueModal';
+import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
 import { Button, ButtonDropdown, Input, Spacer, Table, Tabs, useModal } from '@geist-ui/core';
 import { Check, DownloadCloud, PenTool, Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
@@ -75,7 +75,7 @@ const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
       </Table>
 
       {visible ? (
-        <AddConfigValueModal
+        <EditConfigValueModal
           bindings={addConfigValueModalBindings}
           config={currentConfig}
           onCloseModel={closeConfigValueModal}
@@ -175,7 +175,7 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[] }> = ({ configs
         </Tabs.Tab>
       ))}
 
-      <AddConfigValueModal
+      <EditConfigValueModal
         bindings={addConfigValueModalBindings}
         config={currentConfig}
         onCloseModel={closeConfigValueModal}
