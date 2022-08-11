@@ -1,20 +1,21 @@
 import {
   createConfig,
   deleteConfig,
-  duplicateConfig,
-  exportConfig,
-  getConfigs,
+  duplicateConfig$,
+  exportConfig$,
+  getConfigs$,
   updateConfig,
 } from '@backend/api/config';
 import * as trpc from '@trpc/server';
 import { ZConfigValue } from '@utils/types';
+import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
 
 export const configRouter = trpc
   .router()
   .query('get', {
     input: z.object({ id: z.string() }),
-    resolve: async ({ input }) => await getConfigs(input.id),
+    resolve: ({ input }) => firstValueFrom(getConfigs$(input.id)),
   })
   .mutation('create', {
     input: z.object({ projectId: z.string(), configName: z.string() }),
@@ -22,7 +23,7 @@ export const configRouter = trpc
   })
   .mutation('duplicate', {
     input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
-    resolve: async ({ input }) => await duplicateConfig(input.projectId, input.targetConfig, input.configName),
+    resolve: ({ input }) => firstValueFrom(duplicateConfig$(input.projectId, input.targetConfig, input.configName)),
   })
   .mutation('update', {
     input: z.object({ projectId: z.string(), config: z.object({ id: z.string(), values: ZConfigValue }) }),
@@ -36,9 +37,9 @@ export const configRouter = trpc
   })
   .query('env', {
     input: z.object({ projectId: z.string(), configId: z.string() }),
-    resolve: async ({ input }) => (await exportConfig(input.projectId, input.configId, 'env')) ?? '',
+    resolve: ({ input }) => firstValueFrom(exportConfig$(input.projectId, input.configId, 'env')),
   })
   .query('json', {
     input: z.object({ projectId: z.string(), configId: z.string() }),
-    resolve: async ({ input }) => (await exportConfig(input.projectId, input.configId, 'json')) ?? {},
+    resolve: ({ input }) => firstValueFrom(exportConfig$(input.projectId, input.configId, 'json')),
   });
