@@ -14,26 +14,24 @@ import { z } from 'zod';
 export const configRouter = trpc
   .router()
   .query('get', {
-    input: z.object({ id: z.string() }),
-    resolve: ({ input }) => firstValueFrom(getConfigs$(input.id)),
+    input: z.object({ projectId: z.string() }),
+    resolve: ({ input }) => firstValueFrom(getConfigs$(input.projectId)),
   })
   .mutation('create', {
     input: z.object({ projectId: z.string(), configName: z.string() }),
-    resolve: async ({ input }) => await createConfig(input.projectId, input.configName),
+    resolve: ({ input }) => createConfig(input.projectId, input.configName),
   })
   .mutation('duplicate', {
     input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
     resolve: ({ input }) => firstValueFrom(duplicateConfig$(input.projectId, input.targetConfig, input.configName)),
   })
   .mutation('update', {
-    input: z.object({ projectId: z.string(), config: z.object({ id: z.string(), values: ZConfigValue }) }),
-    resolve: async ({ input }) => await updateConfig(input.projectId, input.config.id, input.config.values),
+    input: z.object({ projectId: z.string(), configId: z.string(), values: ZConfigValue }),
+    resolve: ({ input }) => updateConfig(input.projectId, input.configId, input.values),
   })
   .mutation('delete', {
     input: z.object({ projectId: z.string(), configId: z.string() }),
-    resolve: async ({ input }) => {
-      await deleteConfig(input.projectId, input.configId);
-    },
+    resolve: ({ input }) => deleteConfig(input.projectId, input.configId),
   })
   .query('env', {
     input: z.object({ projectId: z.string(), configId: z.string() }),

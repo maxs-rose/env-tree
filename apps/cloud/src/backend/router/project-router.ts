@@ -13,6 +13,6 @@ export const projectRouter = trpc
     resolve: ({ input }) => firstValueFrom(createProject$(input.name)),
   })
   .mutation('delete', {
-    input: z.object({ id: z.string() }),
-    resolve: ({ input }) => deleteProject(input.id),
+    input: z.object({ projectId: z.string() }),
+    resolve: ({ input }) => deleteProject(input.projectId),
   });

@@ -38,7 +38,8 @@ const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
       updateConfig.mutate(
         {
           projectId: config.projectId,
-          config: { id: config.id, values: newConfig.values },
+          configId: config.id,
+          values: newConfig.values,
         },
         {
           onSuccess: () => {

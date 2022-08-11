@@ -50,7 +50,8 @@ export const EditConfigValueModal: React.FC<{
     updateConfig.mutate(
       {
         projectId: config.current!.projectId,
-        config: { id: config.current!.id, values: Object.fromEntries(configMap) },
+        configId: config.current!.id,
+        values: Object.fromEntries(configMap),
       },
       {
         onSuccess: () => {

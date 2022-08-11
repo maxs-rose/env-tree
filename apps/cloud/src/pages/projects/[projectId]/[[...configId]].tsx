@@ -12,11 +12,13 @@ import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 
 const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = ({ project, configId }) => {
-  const trpcContext = trpc.useContext();
   const router = useRouter();
+  const trpcContext = trpc.useContext();
   const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
-  const configs = trpc.useQuery(['config-get', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
+  const configs = trpc.useQuery(['config-get', { projectId: project?.id ?? '' }], {
+    initialData: project?.configs ?? [],
+  });
   const deleteProjectMutation = trpc.useMutation('project-delete');
 
   useEffect(() => {
@@ -67,7 +69,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   };
 
   const deleteProject = () => {
-    deleteProjectMutation.mutate({ id: project.id }, { onSuccess: () => router.push('/projects') });
+    deleteProjectMutation.mutate({ projectId: project.id }, { onSuccess: () => router.push('/projects') });
   };
 
   return (
