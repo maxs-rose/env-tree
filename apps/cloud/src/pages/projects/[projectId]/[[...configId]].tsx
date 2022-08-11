@@ -3,7 +3,7 @@ import { transformConfigProject } from '@backend/utils/config';
 import { AddConfigModal } from '@components/config/AddConfigModal';
 import { DisplayProjectConfigs } from '@components/config/DisplayProjectConfigs';
 import SecretLoader from '@components/loader';
-import { Button, Page, Tabs, Text, useModal } from '@geist-ui/core';
+import { Button, Page, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
 import { ConfigProject } from '@utils/types';
@@ -14,6 +14,7 @@ import React, { useEffect } from 'react';
 const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = ({ project, configId }) => {
   const trpcContext = trpc.useContext();
   const router = useRouter();
+  const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
   const configs = trpc.useQuery(['config-get', { id: project?.id ?? '' }], { initialData: project?.configs ?? [] });
   const deleteProjectMutation = trpc.useMutation('project-delete');
@@ -21,6 +22,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
   useEffect(() => {
     if (!configId && project.configs.length > 0) {
       router.push(`/projects/${project.id}/${project.configs[0].id}`, undefined, { shallow: true });
+      setTabState(project.configs[0].id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -46,20 +48,22 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
       return <Text p>No configurations for project</Text>;
     }
 
-    const initialTab = configId ?? configs.data[0]?.id ?? 'none';
-
     return (
       <div className="w-full">
-        <Tabs initialValue={initialTab} onChange={tabChange}>
-          <DisplayProjectConfigs configs={configs.data} />
+        <Tabs {...tabBindings} onChange={tabChange}>
+          <DisplayProjectConfigs configs={configs.data} updateTab={setTabState} />
         </Tabs>
       </div>
     );
   };
 
-  const closeConfigModal = () => {
+  const closeConfigModal = (newConfigId?: string) => {
     trpcContext.invalidateQueries(['config-get']);
     setAddConfigVisible(false);
+
+    if (newConfigId) {
+      setTabState(newConfigId);
+    }
   };
 
   const deleteProject = () => {

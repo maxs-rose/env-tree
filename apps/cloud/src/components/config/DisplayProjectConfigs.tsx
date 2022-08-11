@@ -1,7 +1,8 @@
 import { ConfigType } from '@backend/api/config';
+import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
 import { Button, ButtonDropdown, Input, Spacer, Table, Tabs, useModal } from '@geist-ui/core';
-import { Check, DownloadCloud, PenTool, Plus, Trash2 } from '@geist-ui/icons';
+import { Check, Copy, DownloadCloud, PenTool, Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
 import { Config } from '@utils/types';
 import fileDownload from 'js-file-download';
@@ -88,27 +89,49 @@ const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   );
 };
 
-export const DisplayProjectConfigs: React.FC<{ configs: Config[] }> = ({ configs }) => {
+export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (configId: string) => void }> = ({
+  configs,
+  updateTab,
+}) => {
   const trpcContext = trpc.useContext();
   const currentConfig = useRef<Config>();
   const deleteConfigMutation = trpc.useMutation('config-delete');
   const [downloadType, setDownloadType] = useState<ConfigType>('env');
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings } = useModal();
+  const { setVisible: setDuplicateConfigVisible, bindings: duplicateConfigModalBindings } = useModal();
 
   const openConfigModal = (conf: Config) => {
     currentConfig.current = conf;
     setAddConfigValueVisible(true);
   };
+
+  const openDuplicateModal = (conf: Config) => {
+    currentConfig.current = conf;
+    setDuplicateConfigVisible(true);
+  };
+
   const closeConfigValueModal = () => {
     trpcContext.invalidateQueries(['config-get']);
     setAddConfigValueVisible(false);
+    setDuplicateConfigVisible(false);
   };
+
+  const closeDuplicateModal = (newConfigId?: string) => {
+    closeConfigValueModal();
+
+    if (newConfigId) {
+      updateTab(newConfigId);
+    }
+  };
+
   const deleteConfig = (pId: string, cId: string) => {
     deleteConfigMutation.mutate(
       { projectId: pId, configId: cId },
       {
         onSuccess: () => {
-          window.location.reload();
+          trpcContext.invalidateQueries(['config-get']).then(() => {
+            window.location.reload();
+          });
         },
       }
     );
@@ -150,6 +173,10 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[] }> = ({ configs
               Add Secret
             </Button>
             <Spacer inline />
+            <Button auto ghost icon={<Copy />} onClick={() => openDuplicateModal(c)}>
+              Duplicate Config
+            </Button>
+            <Spacer inline />
             <ButtonDropdown auto icon={<DownloadCloud />} type="success">
               <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
                 Download Secrets ({downloadType})
@@ -174,6 +201,13 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[] }> = ({ configs
           <ConfigGrid config={c} />
         </Tabs.Tab>
       ))}
+
+      <DuplicateConfigModal
+        bindings={duplicateConfigModalBindings}
+        projectId={currentConfig.current?.projectId ?? ''}
+        configId={currentConfig.current?.id ?? ''}
+        onCloseModel={closeDuplicateModal}
+      />
 
       <EditConfigValueModal
         bindings={addConfigValueModalBindings}

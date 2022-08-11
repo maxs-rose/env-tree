@@ -1,14 +1,17 @@
 import { Input, Modal, Text, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { trpc } from '@utils/trpc';
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 
-export const AddConfigModal: React.FC<{
+export const DuplicateConfigModal: React.FC<{
   onCloseModel: (configId?: string) => void;
   bindings: ModalHooksBindings;
   projectId: string;
-}> = ({ bindings, onCloseModel, projectId }) => {
-  const updateConfig = trpc.useMutation('config-create');
+  configId: string;
+}> = ({ bindings, onCloseModel, projectId, configId }) => {
+  const router = useRouter();
+  const updateConfig = trpc.useMutation('config-duplicate');
   const { state: configName, setState: setConfigName, bindings: configBindings } = useInput('');
   const [invalidConfig, setInvalidConfig] = useState(false);
 
@@ -19,13 +22,21 @@ export const AddConfigModal: React.FC<{
       return;
     }
 
-    updateConfig.mutate({ projectId, configName: configName.trim() }, { onSuccess: ({ id }) => closeModal(id) });
+    updateConfig.mutate(
+      { projectId, targetConfig: configId, configName: configName.trim() },
+      {
+        onSuccess: ({ projectId, id }) => {
+          closeModal(id);
+          router.push(`/projects/${projectId}/${id}`, undefined, { shallow: false });
+        },
+      }
+    );
   };
 
-  const closeModal = (id?: string) => {
+  const closeModal = (configId?: string) => {
     setInvalidConfig(false);
     setConfigName('');
-    onCloseModel(id);
+    onCloseModel(configId);
   };
 
   const inputChange: typeof configBindings.onChange = (e) => {
@@ -35,7 +46,7 @@ export const AddConfigModal: React.FC<{
 
   return (
     <Modal {...bindings} onClose={closeModal}>
-      <Modal.Title>Add Configuration</Modal.Title>
+      <Modal.Title>Duplicate Configuration</Modal.Title>
       <Modal.Content>
         <Input
           placeholder="Config Name"

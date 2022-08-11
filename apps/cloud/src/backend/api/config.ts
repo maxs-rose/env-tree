@@ -1,6 +1,7 @@
 import { prisma } from '@backend/prisma';
 import { configToEnvString, configToJsonObject, transformConfigs, transformConfigValues } from '@backend/utils/config';
-import { encryptConfig } from '@backend/utils/crypt';
+import { decryptConfig, encryptConfig } from '@backend/utils/crypt';
+import * as trpc from '@trpc/server';
 import { ConfigValue } from '@utils/types';
 
 export const getConfigs = async (projectId: string) =>
@@ -8,6 +9,19 @@ export const getConfigs = async (projectId: string) =>
 
 export const createConfig = async (projectId: string, configName: string) =>
   prisma.config.create({ data: { projectId, name: configName, values: '' } });
+
+export const duplicateConfig = async (projectId: string, targetConfigId: string, configName: string) =>
+  prisma.config
+    .findUnique({ where: { id_projectId: { projectId, id: targetConfigId } } })
+    .then((config) => {
+      if (!config) {
+        throw new trpc.TRPCError({ code: 'NOT_FOUND', message: 'Target config to duplicate was not found' });
+      }
+
+      return decryptConfig(config.values);
+    })
+    .then((configValues) => encryptConfig(configValues))
+    .then((configValues) => prisma.config.create({ data: { projectId, name: configName, values: configValues } }));
 
 export const updateConfig = async (projectId: string, configId: string, configValue: ConfigValue) =>
   prisma.config.update({

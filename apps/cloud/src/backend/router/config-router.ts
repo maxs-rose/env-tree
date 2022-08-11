@@ -1,4 +1,11 @@
-import { createConfig, deleteConfig, exportConfig, getConfigs, updateConfig } from '@backend/api/config';
+import {
+  createConfig,
+  deleteConfig,
+  duplicateConfig,
+  exportConfig,
+  getConfigs,
+  updateConfig,
+} from '@backend/api/config';
 import * as trpc from '@trpc/server';
 import { ZConfigValue } from '@utils/types';
 import { z } from 'zod';
@@ -12,6 +19,10 @@ export const configRouter = trpc
   .mutation('create', {
     input: z.object({ projectId: z.string(), configName: z.string() }),
     resolve: async ({ input }) => await createConfig(input.projectId, input.configName),
+  })
+  .mutation('duplicate', {
+    input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
+    resolve: async ({ input }) => await duplicateConfig(input.projectId, input.targetConfig, input.configName),
   })
   .mutation('update', {
     input: z.object({ projectId: z.string(), config: z.object({ id: z.string(), values: ZConfigValue }) }),
