@@ -4,7 +4,7 @@ import { trpc } from '@utils/trpc';
 import React, { useState } from 'react';
 
 export const AddConfigModal: React.FC<{
-  onCloseModel: (configId?: string) => void;
+  onCloseModel: (projectId?: string) => void;
   bindings: ModalHooksBindings;
   projectId: string;
 }> = ({ bindings, onCloseModel, projectId }) => {
@@ -22,10 +22,10 @@ export const AddConfigModal: React.FC<{
     updateConfig.mutate({ projectId, configName: configName.trim() }, { onSuccess: ({ id }) => closeModal(id) });
   };
 
-  const closeModal = (id?: string) => {
+  const closeModal = (projectId?: string) => {
     setInvalidConfig(false);
     setConfigName('');
-    onCloseModel(id);
+    onCloseModel(projectId);
   };
 
   const inputChange: typeof configBindings.onChange = (e) => {

@@ -13,3 +13,11 @@
 .nav-tabs .content {
   display: none;
 }
+
+.btn-dropdown {
+  height: 40px;
+}
+
+.btn-dropdown > button  {
+  height: revert !important;
+}

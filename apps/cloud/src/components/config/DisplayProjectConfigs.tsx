@@ -72,8 +72,12 @@ const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
       <Table data={tableData} emptyText="-">
         <Table.Column prop="property" label="Property" />
         <Table.Column prop="value" label="Value" />
-        <Table.Column width={50} prop="editProperty" label="Edit" render={renderEdit} />
-        <Table.Column width={50} prop="deleteProperty" label="Delete" render={renderDelete} />
+        <Table.Column width={50} prop="editProperty" render={renderEdit}>
+          <div className="w-full text-center">Edit</div>
+        </Table.Column>
+        <Table.Column width={50} prop="deleteProperty" render={renderDelete}>
+          <div className="w-full text-center">Delete</div>
+        </Table.Column>
       </Table>
 
       {visible ? (
