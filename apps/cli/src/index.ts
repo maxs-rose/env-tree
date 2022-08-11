@@ -43,29 +43,33 @@ const url = options.url;
 let spinner = ora(
   `Getting configuration ${chalk.green(configId)} from ${chalk.green(url)} for project ${chalk.green(projectId)}`
 ).start();
-const query = encodeURIComponent(JSON.stringify({ projectId, configId }));
+const formData = JSON.stringify({ projectId, configId, type });
 
-fetch(`${url}/api/config-${type}?input=${query}`)
+fetch(`${url}/api/config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: formData })
   .catch((e) => {
     spinner.fail(`Failed to fetch config! Error: ${chalk.red(e.errno)}`);
 
     exit(1);
   })
-  .then((res) => res.json())
-  .then((res: any) => {
-    if (res.result.data) {
-      spinner.succeed('Got configuration');
+  .then((res) => {
+    if (res.status !== 200) {
+      spinner.fail(`Failed to fetch a config with id ${chalk.red(configId)} for project ${chalk.red(projectId)}`);
 
-      spinner.start(`Writing secret file to ${filepath}`);
-      return res.result.data;
+      exit(1);
     }
-    spinner.fail(`Failed to fetch a config with id ${chalk.red(configId)} for project ${chalk.red(projectId)}`);
 
-    exit(1);
+    return res;
+  })
+  .then((res) => (type === 'json' ? res.json() : res.text()) as string | object)
+  .then((data) => {
+    spinner.succeed('Got configuration');
+
+    spinner.start(`Writing secret file to ${filepath}`);
+    return data;
   })
   .then((data) => {
     try {
-      writeFileSync(filepath, type === 'json' ? JSON.stringify(data, null, '\t') : data);
+      writeFileSync(filepath, type === 'json' ? JSON.stringify(data, null, '\t') : (data as string));
       spinner.succeed();
     } catch (e: any) {
       spinner.fail(`Failed to write file: ${chalk.red(e.message)}`);

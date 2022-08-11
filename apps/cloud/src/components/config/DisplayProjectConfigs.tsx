@@ -141,25 +141,20 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
   const downloadSecrets = (config: Config) => {
     const baseUrl = window.location.origin;
 
-    const query = encodeURIComponent(JSON.stringify({ projectId: config.projectId, configId: config.id }));
+    const formData = JSON.stringify({ projectId: config.projectId, configId: config.id, type: downloadType });
 
-    fromFetch(`${baseUrl}/api/config-${downloadType}?input=${query}`, {
-      selector: (response) => response.json(),
+    fromFetch(`${baseUrl}/api/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: formData,
+      selector: (response) => (downloadType === 'env' ? response.text() : response.json()),
     })
       .pipe(
-        map((res) => res.result.data),
         catchError((error) => {
           console.error(error);
           return EMPTY;
         }),
-        map((secretData): string => {
-          switch (downloadType) {
-            case 'env':
-              return secretData;
-            case 'json':
-              return JSON.stringify(secretData, null, '\t');
-          }
-        }),
+        map((data) => (downloadType === 'json' ? JSON.stringify(data, null, '\t') : data)),
         withLatestFrom(of(`${config.name}.${downloadType}`))
       )
       .subscribe(([data, filename]) => fileDownload(data, filename));

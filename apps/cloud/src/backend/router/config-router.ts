@@ -1,11 +1,4 @@
-import {
-  createConfig,
-  deleteConfig,
-  duplicateConfig$,
-  exportConfig$,
-  getConfigs$,
-  updateConfig,
-} from '@backend/api/config';
+import { createConfig, deleteConfig, duplicateConfig$, getConfigs$, updateConfig } from '@backend/api/config';
 import * as trpc from '@trpc/server';
 import { ZConfigValue } from '@utils/types';
 import { firstValueFrom } from 'rxjs';
@@ -32,12 +25,4 @@ export const configRouter = trpc
   .mutation('delete', {
     input: z.object({ projectId: z.string(), configId: z.string() }),
     resolve: ({ input }) => deleteConfig(input.projectId, input.configId),
-  })
-  .query('env', {
-    input: z.object({ projectId: z.string(), configId: z.string() }),
-    resolve: ({ input }) => firstValueFrom(exportConfig$(input.projectId, input.configId, 'env')),
-  })
-  .query('json', {
-    input: z.object({ projectId: z.string(), configId: z.string() }),
-    resolve: ({ input }) => firstValueFrom(exportConfig$(input.projectId, input.configId, 'json')),
   });

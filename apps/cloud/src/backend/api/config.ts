@@ -3,7 +3,9 @@ import { configToEnvString, configToJsonObject, transformConfigs, transformConfi
 import { decryptConfig, encryptConfig } from '@backend/utils/crypt';
 import * as trpc from '@trpc/server';
 import { ConfigValue } from '@utils/types';
-import { from, map, Observable, switchMap } from 'rxjs';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { firstValueFrom, from, map, Observable, switchMap } from 'rxjs';
+import { z } from 'zod';
 
 export const getConfigs$ = (projectId: string) =>
   from(prisma.config.findMany({ where: { projectId } })).pipe(map(transformConfigs));
@@ -43,7 +45,7 @@ export const deleteConfig = async (projectId: string, configId: string) =>
 export type ConfigType = 'env' | 'json';
 type ConfigExportType<T> = T extends 'env' ? string : T extends 'json' ? { [key: string]: string } : never;
 
-export const exportConfig$ = <T extends ConfigType>(
+const exportConfig$ = <T extends ConfigType>(
   projectId: string,
   configId: string,
   type: T
@@ -69,3 +71,45 @@ export const exportConfig$ = <T extends ConfigType>(
       }
     })
   );
+
+const zFormData = z.object({
+  projectId: z.string().min(1),
+  configId: z.string().min(1),
+  type: z.union([z.literal('env'), z.literal('json')]),
+});
+
+export const handleConfigExport = async (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method !== 'POST') {
+    res.status(405).send({});
+    return;
+  }
+
+  const parseResult = zFormData.safeParse(req.body);
+
+  if (!parseResult.success) {
+    res.status(400).send(parseResult.error.issues);
+    return;
+  }
+
+  const formData = parseResult.data;
+
+  return await firstValueFrom(exportConfig$(formData.projectId, formData.configId, formData.type))
+    .then((data) => {
+      if (data === undefined) {
+        res.status(404).send('Could not find config');
+        return;
+      }
+
+      res.status(200);
+
+      if (formData.type === 'env') {
+        res.setHeader('Content-Type', 'plain/text');
+        res.send(data ?? '');
+      } else {
+        res.json(data ?? {});
+      }
+    })
+    .catch(() => {
+      res.status(500).send({ message: 'Error when exporting config' });
+    });
+};
