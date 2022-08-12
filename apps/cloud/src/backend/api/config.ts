@@ -19,16 +19,31 @@ export const createConfig = async (projectId: string, configName: string) =>
   prisma.config.create({ data: { projectId, name: configName, values: '' } });
 
 export const duplicateConfig$ = (projectId: string, targetConfigId: string, configName: string) =>
-  from(prisma.config.findUnique({ where: { id_projectId: { projectId, id: targetConfigId } } })).pipe(
+  from(
+    prisma.config.findUnique({
+      where: { id_projectId: { projectId, id: targetConfigId } },
+      include: { linkedParent: true },
+    })
+  ).pipe(
     map((config) => {
       if (!config) {
         throw new trpc.TRPCError({ code: 'NOT_FOUND', message: 'Target config to duplicate was not found' });
       }
 
-      return decryptConfig(config.values);
+      return { ...config, values: decryptConfig(config.values) };
     }),
-    map(encryptConfig),
-    switchMap((confValues) => prisma.config.create({ data: { projectId, name: configName, values: confValues } }))
+    map((config) => ({ ...config, values: encryptConfig(config.values) })),
+    switchMap((config) =>
+      prisma.config.create({
+        data: {
+          projectId,
+          name: configName,
+          values: config.values,
+          linkedConfigId: config.linkedConfigId,
+          linkedProjectConfigId: config.linkedProjectConfigId,
+        },
+      })
+    )
   );
 
 export const linkedConfig = async (projectId: string, targetConfigId: string, configName: string) =>
