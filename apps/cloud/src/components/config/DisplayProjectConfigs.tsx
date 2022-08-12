@@ -28,26 +28,26 @@ const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const currentConfig = useRef(config);
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
 
-  const parentConfigData = Array.from(new Map(Object.entries(getConfigValues(config.linkedParent))).entries()).map(
-    ([property, value]) => ({
-      property: (
-        <Tooltip placement="right" text="Imported from parent config">
-          <span className="flex gap-2">
-            {property}
-            <Info color="#0070f3" />
-          </span>
-        </Tooltip>
+  const parentConfigData = Array.from(
+    new Map(Object.entries(getConfigValues(config.linkedParent ?? null))).entries()
+  ).map(([property, value]) => ({
+    property: (
+      <Tooltip placement="right" text="Imported from parent config">
+        <span className="flex gap-2">
+          {property}
+          <Info color="#0070f3" />
+        </span>
+      </Tooltip>
+    ),
+    value:
+      value.hidden && value.value ? (
+        <Input.Password readOnly width="100%" value={value.value} />
+      ) : (
+        <Input readOnly width="100%" value={value.value ?? '-'} />
       ),
-      value:
-        value.hidden && value.value ? (
-          <Input.Password readOnly width="100%" value={value.value} />
-        ) : (
-          <Input readOnly width="100%" value={value.value ?? '-'} />
-        ),
-      editProperty: undefined,
-      deleteProperty: undefined,
-    })
-  );
+    editProperty: undefined,
+    deleteProperty: undefined,
+  }));
 
   const currentConfigData = Array.from(new Map(Object.entries(config.values)).entries()).map(([property, value]) => ({
     property,
