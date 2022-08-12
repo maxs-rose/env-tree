@@ -1,4 +1,11 @@
-import { createConfig, deleteConfig, duplicateConfig$, getConfigs$, updateConfig } from '@backend/api/config';
+import {
+  createConfig,
+  deleteConfig,
+  duplicateConfig$,
+  getConfigs$,
+  linkedConfig,
+  updateConfig,
+} from '@backend/api/config';
 import * as trpc from '@trpc/server';
 import { ZConfigValue } from '@utils/types';
 import { firstValueFrom } from 'rxjs';
@@ -17,6 +24,10 @@ export const configRouter = trpc
   .mutation('duplicate', {
     input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
     resolve: ({ input }) => firstValueFrom(duplicateConfig$(input.projectId, input.targetConfig, input.configName)),
+  })
+  .mutation('link', {
+    input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
+    resolve: ({ input }) => linkedConfig(input.projectId, input.targetConfig, input.configName),
   })
   .mutation('update', {
     input: z.object({ projectId: z.string(), configId: z.string(), values: ZConfigValue }),

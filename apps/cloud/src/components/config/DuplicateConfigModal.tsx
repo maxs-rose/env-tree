@@ -9,9 +9,10 @@ export const DuplicateConfigModal: React.FC<{
   bindings: ModalHooksBindings;
   projectId: string;
   configId: string;
-}> = ({ bindings, onCloseModel, projectId, configId }) => {
+  link: boolean;
+}> = ({ bindings, onCloseModel, projectId, configId, link }) => {
   const router = useRouter();
-  const updateConfig = trpc.useMutation('config-duplicate');
+  const updateConfig = trpc.useMutation(link ? 'config-link' : 'config-duplicate');
   const { state: configName, setState: setConfigName, bindings: configBindings } = useInput('');
   const [invalidConfig, setInvalidConfig] = useState(false);
 
@@ -63,8 +64,8 @@ export const DuplicateConfigModal: React.FC<{
           <></>
         )}
       </Modal.Content>
-      <Modal.Action onClick={() => closeModal}>Cancel</Modal.Action>
-      <Modal.Action onClick={createConfig}>Duplicate</Modal.Action>
+      <Modal.Action onClick={() => closeModal()}>Cancel</Modal.Action>
+      <Modal.Action onClick={createConfig}>{link ? 'Link' : 'Duplicate'}</Modal.Action>
     </Modal>
   );
 };

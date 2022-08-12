@@ -26,5 +26,11 @@ model Config {
   Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
 
+  // Linked config
+  linkedConfigId        String?
+  linkedProjectConfigId String?
+  linkedParent          Config?  @relation("ConfigLink", fields: [linkedConfigId, linkedProjectConfigId], references: [id, projectId], onDelete: Cascade)
+  linkChild             Config[] @relation("ConfigLink")
+
   @@id([id, projectId])
 }

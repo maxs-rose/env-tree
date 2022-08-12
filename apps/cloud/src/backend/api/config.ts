@@ -1,5 +1,10 @@
 import { prisma } from '@backend/prisma';
-import { configToEnvString, configToJsonObject, transformConfigs, transformConfigValues } from '@backend/utils/config';
+import {
+  configToEnvString,
+  configToJsonObject,
+  transformConfigs,
+  transformConfigWithParent,
+} from '@backend/utils/config';
 import { decryptConfig, encryptConfig } from '@backend/utils/crypt';
 import * as trpc from '@trpc/server';
 import { ConfigValue } from '@utils/types';
@@ -8,7 +13,7 @@ import { firstValueFrom, from, map, Observable, switchMap } from 'rxjs';
 import { z } from 'zod';
 
 export const getConfigs$ = (projectId: string) =>
-  from(prisma.config.findMany({ where: { projectId } })).pipe(map(transformConfigs));
+  from(prisma.config.findMany({ where: { projectId }, include: { linkedParent: true } })).pipe(map(transformConfigs));
 
 export const createConfig = async (projectId: string, configName: string) =>
   prisma.config.create({ data: { projectId, name: configName, values: '' } });
@@ -25,6 +30,17 @@ export const duplicateConfig$ = (projectId: string, targetConfigId: string, conf
     map(encryptConfig),
     switchMap((confValues) => prisma.config.create({ data: { projectId, name: configName, values: confValues } }))
   );
+
+export const linkedConfig = async (projectId: string, targetConfigId: string, configName: string) =>
+  prisma.config.create({
+    data: {
+      projectId,
+      name: configName,
+      values: '',
+      linkedProjectConfigId: projectId,
+      linkedConfigId: targetConfigId,
+    },
+  });
 
 export const updateConfig = async (projectId: string, configId: string, configValue: ConfigValue) =>
   prisma.config.update({
@@ -53,21 +69,22 @@ const exportConfig$ = <T extends ConfigType>(
   from(
     prisma.config.findUnique({
       where: { id_projectId: { id: configId, projectId: projectId } },
-      select: { values: true },
+      include: { linkedParent: true },
     })
   ).pipe(
-    map((configValues) => {
-      if (!configValues) {
+    map((config) => {
+      if (!config) {
         return undefined;
       }
 
-      const config = transformConfigValues(configValues.values);
+      const transformedConfig = transformConfigWithParent(config);
+      const configValues = { ...transformedConfig.linkedParent?.values, ...transformedConfig.values };
 
       switch (type) {
         case 'env':
-          return configToEnvString(config) as ConfigExportType<T>;
+          return configToEnvString(configValues) as ConfigExportType<T>;
         case 'json':
-          return configToJsonObject(config) as ConfigExportType<T>;
+          return configToJsonObject(configValues) as ConfigExportType<T>;
       }
     })
   );

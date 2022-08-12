@@ -2,11 +2,23 @@ import { decryptConfig } from '@backend/utils/crypt';
 import { Config as PrismaConfig, Project as PrismaProject } from '@prisma/client';
 import { Config, ConfigProject, ConfigValue } from '@utils/types';
 
-export const transformConfigProject = (project: PrismaProject & { configs: PrismaConfig[] }): ConfigProject => {
-  return { ...project, configs: project.configs.map(transformConfig) };
+type PrismaConfigWithParent = PrismaConfig & { linkedParent: PrismaConfig | null };
+
+export const transformConfigProject = (
+  project: PrismaProject & { configs: PrismaConfigWithParent[] }
+): ConfigProject => {
+  return { ...project, configs: project.configs.map(transformConfigWithParent) };
 };
 
-export const transformConfigs = (config: PrismaConfig[]) => config.map(transformConfig);
+export const transformConfigs = (config: PrismaConfigWithParent[]) => config.map(transformConfigWithParent);
+
+export const transformConfigWithParent = (config: PrismaConfigWithParent): Config => {
+  return {
+    ...config,
+    linkedParent: config.linkedParent ? transformConfig(config.linkedParent) : null,
+    values: transformConfigValues(config.values),
+  };
+};
 
 export const transformConfig = (config: PrismaConfig): Config => {
   return { ...config, values: transformConfigValues(config.values) } as Config;

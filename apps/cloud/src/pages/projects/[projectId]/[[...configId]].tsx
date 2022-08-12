@@ -1,24 +1,24 @@
 import { prisma } from '@backend/prisma';
-import { transformConfigProject } from '@backend/utils/config';
 import { AddConfigModal } from '@components/config/AddConfigModal';
 import { DisplayProjectConfigs } from '@components/config/DisplayProjectConfigs';
 import SecretLoader from '@components/loader';
 import { Button, Page, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
-import { ConfigProject } from '@utils/types';
+import { Project } from '@utils/types';
 import { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 
-const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = ({ project, configId }) => {
+const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: string }> }; configId?: string }> = ({
+  project,
+  configId,
+}) => {
   const router = useRouter();
   const trpcContext = trpc.useContext();
   const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
-  const configs = trpc.useQuery(['config-get', { projectId: project?.id ?? '' }], {
-    initialData: project?.configs ?? [],
-  });
+  const configs = trpc.useQuery(['config-get', { projectId: project?.id ?? '' }]);
   const deleteProjectMutation = trpc.useMutation('project-delete');
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const ProjectConfigs: NextPage<{ project: ConfigProject; configId?: string }> = 
 
   const showContent = () => {
     const tabChange = (val: string) => {
-      router.push(`/projects/${project.id}/${val}`, undefined, { shallow: true });
+      router.push(`/projects/${project?.id}/${val}`, undefined, { shallow: true });
     };
 
     if (configs.isLoading) {
@@ -106,7 +106,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const configId = project.configs.some((c) => c.id === config) ? config : null;
 
   return {
-    props: { project: transformConfigProject(project), configId },
+    props: { project, configId },
   };
 };
 
