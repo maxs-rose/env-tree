@@ -1,10 +1,9 @@
-import { Button, Tabs, useTheme } from '@geist-ui/core';
 import { addColorAlpha } from '@components/utils/colours';
-import { useState } from 'react';
-import { useEffect } from 'react';
 import { useConfigs } from '@context/config';
-import { Sun, Moon } from '@geist-ui/icons';
+import { Button, Tabs, useTheme } from '@geist-ui/core';
+import { Moon, Sun } from '@geist-ui/icons';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 const Nav: React.FC = () => {
   const router = useRouter();
@@ -31,7 +30,7 @@ const Nav: React.FC = () => {
     <>
       <div className="h-[var(--nav-height)]">
         <div
-          className="menu fixed top-0 left-0 right-0 h-[var(--nav-height)] backdrop-blur backdrop-saturate-[180] z-[999]"
+          className="menu fixed top-0 left-0 right-0 h-[var(--nav-height)] backdrop-blur z-[999]"
           style={{
             backgroundColor: addColorAlpha(theme.palette.background, 0.8),
             boxShadow: theme.type === 'dark' ? '0 0 0 1px #333' : '0 0 15px 0 rgba(0, 0, 0, 0.1)',
