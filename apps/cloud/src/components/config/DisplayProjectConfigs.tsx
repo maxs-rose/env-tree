@@ -225,7 +225,7 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
             </Button>
             <Spacer inline />
             <Button auto ghost icon={<Copy />} onClick={() => openLinkModal(c)}>
-              Link Config
+              Create Linked Config
             </Button>
             <Spacer inline />
             <ButtonDropdown auto icon={<DownloadCloud />} type="success">
