@@ -1,7 +1,7 @@
 import { ConfigType } from '@backend/api/config';
 import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
-import { Button, ButtonDropdown, Input, Spacer, Table, Tabs, Tooltip, useModal } from '@geist-ui/core';
+import { Button, ButtonDropdown, Input, Snippet, Spacer, Table, Tabs, Tooltip, useModal } from '@geist-ui/core';
 import { AlertTriangle, Check, Copy, DownloadCloud, Info, PenTool, Plus, Trash2 } from '@geist-ui/icons';
 import { flattenConfigValues } from '@utils/config';
 import { trpc } from '@utils/trpc';
@@ -250,6 +250,8 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
           </div>
           <Spacer />
           <ConfigGrid config={c} />
+          <Spacer />
+          <Snippet text={`${c.projectId} ${c.id}`} symbol="Project and Config ID:" type="secondary" />
         </Tabs.Tab>
       ))}
 
