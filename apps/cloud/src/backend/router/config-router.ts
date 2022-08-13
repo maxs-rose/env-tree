@@ -2,7 +2,7 @@ import {
   createConfig,
   deleteConfig,
   duplicateConfig$,
-  getConfigs$,
+  getExpandedConfigs$,
   linkedConfig,
   updateConfig,
 } from '@backend/api/config';
@@ -15,7 +15,7 @@ export const configRouter = trpc
   .router()
   .query('get', {
     input: z.object({ projectId: z.string() }),
-    resolve: ({ input }) => firstValueFrom(getConfigs$(input.projectId)),
+    resolve: ({ input }) => firstValueFrom(getExpandedConfigs$(input.projectId)),
   })
   .mutation('create', {
     input: z.object({ projectId: z.string(), configName: z.string() }),

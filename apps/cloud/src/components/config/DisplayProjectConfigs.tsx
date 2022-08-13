@@ -2,23 +2,14 @@ import { ConfigType } from '@backend/api/config';
 import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
 import { Button, ButtonDropdown, Input, Spacer, Table, Tabs, Tooltip, useModal } from '@geist-ui/core';
-import { Check, Copy, DownloadCloud, Info, PenTool, Plus, Trash2 } from '@geist-ui/icons';
+import { AlertTriangle, Check, Copy, DownloadCloud, Info, PenTool, Plus, Trash2 } from '@geist-ui/icons';
+import { flattenConfigValues } from '@utils/config';
 import { trpc } from '@utils/trpc';
 import { Config, ConfigValue } from '@utils/types';
 import fileDownload from 'js-file-download';
 import React, { useRef, useState } from 'react';
 import { catchError, EMPTY, map, of, withLatestFrom } from 'rxjs';
 import { fromFetch } from 'rxjs/internal/observable/dom/fetch';
-
-const getConfigValues = (config: Config | null): ConfigValue => {
-  if (config?.linkedParent) {
-    const parentValues = getConfigValues(config.linkedParent);
-
-    return { ...config.values, ...parentValues };
-  }
-
-  return config?.values ?? {};
-};
 
 const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const trpcContext = trpc.useContext();
@@ -28,40 +19,43 @@ const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const currentConfig = useRef(config);
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
 
-  const parentConfigData = Array.from(
-    new Map(Object.entries(getConfigValues(config.linkedParent ?? null))).entries()
-  ).map(([property, value]) => ({
-    property: (
-      <Tooltip placement="right" text="Imported from parent config">
-        <span className="flex gap-2">
-          {property}
-          <Info color="#0070f3" />
-        </span>
-      </Tooltip>
-    ),
+  const getPropertyNameDisplay = (property: string, value: ConfigValue[string]) => {
+    if (value.parentName) {
+      return (
+        <Tooltip placement="right" text={`Imported from ${value.parentName}`}>
+          <span className="flex gap-2">
+            {property}
+            <Info color="#0070f3" />
+          </span>
+        </Tooltip>
+      );
+    }
+
+    if (value.overrides) {
+      return (
+        <Tooltip placement="right" text={`Overrides ${value.overrides}`}>
+          <span className="flex gap-2">
+            {property}
+            <AlertTriangle color="red" />
+          </span>
+        </Tooltip>
+      );
+    }
+
+    return property;
+  };
+
+  const tableData = Array.from(Object.entries(flattenConfigValues(config))).map(([property, value]) => ({
+    property: getPropertyNameDisplay(property, value),
     value:
       value.hidden && value.value ? (
         <Input.Password readOnly width="100%" value={value.value} />
       ) : (
         <Input readOnly width="100%" value={value.value ?? '-'} />
       ),
-    editProperty: undefined,
-    deleteProperty: undefined,
+    editProperty: value.parentName ? undefined : property,
+    deleteProperty: value.parentName ? undefined : property,
   }));
-
-  const currentConfigData = Array.from(new Map(Object.entries(config.values)).entries()).map(([property, value]) => ({
-    property,
-    value:
-      value.hidden && value.value ? (
-        <Input.Password readOnly width="100%" value={value.value} />
-      ) : (
-        <Input readOnly width="100%" value={value.value ?? '-'} />
-      ),
-    editProperty: property,
-    deleteProperty: property,
-  }));
-
-  const tableData = [...parentConfigData, ...currentConfigData];
 
   const renderDelete = (value?: string) => {
     const deleteConfigValue = () => {
@@ -230,14 +224,10 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
               Duplicate Config
             </Button>
             <Spacer inline />
-            {!!c.linkedParent ? undefined : (
-              <>
-                <Button auto ghost icon={<Copy />} onClick={() => openLinkModal(c)}>
-                  Link Config
-                </Button>
-                <Spacer inline />
-              </>
-            )}
+            <Button auto ghost icon={<Copy />} onClick={() => openLinkModal(c)}>
+              Link Config
+            </Button>
+            <Spacer inline />
             <ButtonDropdown auto icon={<DownloadCloud />} type="success">
               <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
                 Download Secrets ({downloadType})

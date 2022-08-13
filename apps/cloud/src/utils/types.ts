@@ -1,7 +1,12 @@
 import { Config as PrismaConfig, Project as PrismaProject } from '@prisma/client';
 import { z } from 'zod';
 
-const ZConfigObject = z.object({ value: z.string().nullable(), hidden: z.boolean().optional() });
+const ZConfigObject = z.object({
+  value: z.string().nullable(),
+  hidden: z.boolean().optional(),
+  parentName: z.string().optional(),
+  overrides: z.string().optional(),
+});
 
 export const ZConfigValue = z.record(ZConfigObject);
 

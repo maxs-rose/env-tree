@@ -1,19 +1,43 @@
 import { prisma } from '@backend/prisma';
-import {
-  configToEnvString,
-  configToJsonObject,
-  transformConfigs,
-  transformConfigWithParent,
-} from '@backend/utils/config';
+import { configToEnvString, configToJsonObject, PrismaConfigWithParent, transformConfigs } from '@backend/utils/config';
 import { decryptConfig, encryptConfig } from '@backend/utils/crypt';
+import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
+import { flattenConfigValues } from '@utils/config';
 import { ConfigValue } from '@utils/types';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { firstValueFrom, from, map, Observable, switchMap } from 'rxjs';
 import { z } from 'zod';
 
-export const getConfigs$ = (projectId: string) =>
-  from(prisma.config.findMany({ where: { projectId }, include: { linkedParent: true } })).pipe(map(transformConfigs));
+const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[]) => {
+  // Create a new object so we don't edit the original
+  const result = { ...config } as PrismaConfigWithParent;
+
+  // If it's a linked config try to find its parent
+  // If the parent is not found set the linked parent to null
+  if (config.linkedConfigId) {
+    const parentConfig = projectConfigs.find((c) => c.id === config.linkedConfigId);
+
+    if (parentConfig) {
+      // Expand the parents parent configs
+      const expandedParent = expandConfig(parentConfig, projectConfigs);
+      result.linkedParent = expandedParent ?? null;
+    } else {
+      result.linkedParent = null;
+    }
+  }
+
+  return result;
+};
+
+export const getExpandedConfigs$ = (projectId: string) => {
+  return from(prisma.config.findMany({ where: { projectId } })).pipe(
+    map((configs) => {
+      return configs.map((config) => expandConfig(config, configs));
+    }),
+    map(transformConfigs)
+  );
+};
 
 export const createConfig = async (projectId: string, configName: string) =>
   prisma.config.create({ data: { projectId, name: configName, values: '' } });
@@ -81,25 +105,20 @@ const exportConfig$ = <T extends ConfigType>(
   configId: string,
   type: T
 ): Observable<ConfigExportType<T> | undefined> =>
-  from(
-    prisma.config.findUnique({
-      where: { id_projectId: { id: configId, projectId: projectId } },
-      include: { linkedParent: true },
-    })
-  ).pipe(
+  getExpandedConfigs$(projectId).pipe(
+    map((configs) => configs.find((c) => c.id === configId)),
     map((config) => {
       if (!config) {
         return undefined;
       }
 
-      const transformedConfig = transformConfigWithParent(config);
-      const configValues = { ...transformedConfig.linkedParent?.values, ...transformedConfig.values };
+      const flatValues = flattenConfigValues(config);
 
       switch (type) {
         case 'env':
-          return configToEnvString(configValues) as ConfigExportType<T>;
+          return configToEnvString(flatValues) as ConfigExportType<T>;
         case 'json':
-          return configToJsonObject(configValues) as ConfigExportType<T>;
+          return configToJsonObject(flatValues) as ConfigExportType<T>;
       }
     })
   );
