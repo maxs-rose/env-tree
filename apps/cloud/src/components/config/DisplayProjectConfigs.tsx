@@ -1,136 +1,15 @@
 import { ConfigType } from '@backend/api/config';
+import { ConfigGrid } from '@components/config/ConfigGrid';
 import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
-import { Button, ButtonDropdown, Input, Snippet, Spacer, Table, Tabs, Tooltip, useModal } from '@geist-ui/core';
-import { AlertTriangle, Check, Copy, DownloadCloud, Info, PenTool, Plus, Trash2 } from '@geist-ui/icons';
-import { flattenConfigValues } from '@utils/config';
+import { Button, ButtonDropdown, Snippet, Spacer, Tabs, useModal } from '@geist-ui/core';
+import { Check, Copy, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
-import { Config, ConfigValue } from '@utils/types';
+import { Config } from '@utils/types';
 import fileDownload from 'js-file-download';
 import React, { useRef, useState } from 'react';
 import { catchError, EMPTY, map, of, withLatestFrom } from 'rxjs';
 import { fromFetch } from 'rxjs/internal/observable/dom/fetch';
-
-const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
-  const trpcContext = trpc.useContext();
-  const updateConfig = trpc.useMutation('config-update');
-
-  const editValue = useRef<string | undefined>(undefined);
-  const currentConfig = useRef(config);
-  const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
-
-  const getPropertyNameDisplay = (property: string, value: ConfigValue[string]) => {
-    if (value.parentName) {
-      return (
-        <Tooltip placement="right" text={`Imported from ${value.parentName}`}>
-          <span className="flex gap-2">
-            {property}
-            <Info color="#0070f3" />
-          </span>
-        </Tooltip>
-      );
-    }
-
-    if (value.overrides) {
-      return (
-        <Tooltip placement="right" text={`Overrides ${value.overrides}`}>
-          <span className="flex gap-2">
-            {property}
-            <AlertTriangle color="red" />
-          </span>
-        </Tooltip>
-      );
-    }
-
-    return property;
-  };
-
-  const tableData = Array.from(Object.entries(flattenConfigValues(config))).map(([property, value]) => ({
-    property: getPropertyNameDisplay(property, value),
-    value:
-      value.hidden && value.value ? (
-        <Input.Password readOnly width="100%" value={value.value} />
-      ) : (
-        <Input readOnly width="100%" value={value.value ?? '-'} />
-      ),
-    editProperty: value.parentName ? undefined : property,
-    deleteProperty: value.parentName ? undefined : property,
-  }));
-
-  const renderDelete = (value?: string) => {
-    const deleteConfigValue = () => {
-      const newConfig = { ...config, values: { ...config.values } };
-      delete newConfig.values[value!];
-
-      updateConfig.mutate(
-        {
-          projectId: config.projectId,
-          configId: config.id,
-          values: newConfig.values,
-        },
-        {
-          onSuccess: () => {
-            trpcContext.invalidateQueries('config-get');
-          },
-        }
-      );
-    };
-
-    return (
-      <Button
-        disabled={value === undefined}
-        type="error"
-        auto
-        font="12px"
-        icon={<Trash2 />}
-        onClick={deleteConfigValue}
-      />
-    );
-  };
-
-  const renderEdit = (value?: string) => {
-    const editConfig = () => {
-      currentConfig.current = config;
-      editValue.current = value;
-      setAddConfigValueVisible(true);
-    };
-
-    return (
-      <Button disabled={value === undefined} type="success" auto font="12px" icon={<PenTool />} onClick={editConfig} />
-    );
-  };
-
-  const closeConfigValueModal = () => {
-    setAddConfigValueVisible(false);
-    trpcContext.invalidateQueries(['config-get']);
-  };
-
-  return (
-    <>
-      <Table data={tableData} emptyText="-">
-        <Table.Column prop="property" label="Property" />
-        <Table.Column prop="value" label="Value" />
-        <Table.Column width={50} prop="editProperty" render={renderEdit}>
-          <div className="w-full text-center">Edit</div>
-        </Table.Column>
-        <Table.Column width={50} prop="deleteProperty" render={renderDelete}>
-          <div className="w-full text-center">Delete</div>
-        </Table.Column>
-      </Table>
-
-      {visible ? (
-        <EditConfigValueModal
-          bindings={addConfigValueModalBindings}
-          config={currentConfig}
-          onCloseModel={closeConfigValueModal}
-          editValue={editValue.current}
-        />
-      ) : (
-        <></>
-      )}
-    </>
-  );
-};
 
 export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (configId: string) => void }> = ({
   configs,
