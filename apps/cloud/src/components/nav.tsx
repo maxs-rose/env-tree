@@ -1,7 +1,7 @@
-import { addColorAlpha } from '@components/utils/colours';
 import { useConfigs } from '@context/config';
 import { Button, Tabs, useTheme } from '@geist-ui/core';
 import { Moon, Sun } from '@geist-ui/icons';
+import { addColorAlpha } from '@utils/colours';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
