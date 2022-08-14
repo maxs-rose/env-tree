@@ -23,25 +23,17 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
 
   useEffect(() => {
     if (!configId && project.configs.length > 0) {
-      router.push(`/projects/${project.id}/${project.configs[0].id}`, undefined, { shallow: true });
+      tabChange(project.configs[0].id);
       setTabState(project.configs[0].id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!project) {
-    return (
-      <Page className="page-height flex items-center">
-        <SecretLoader loadingText="Loading project" />
-      </Page>
-    );
-  }
+  const tabChange = (configId: string) => {
+    router.push(`/projects/${project?.id}/${configId}`, undefined, { shallow: true });
+  };
 
   const showContent = () => {
-    const tabChange = (val: string) => {
-      router.push(`/projects/${project?.id}/${val}`, undefined, { shallow: true });
-    };
-
     if (configs.isLoading) {
       return <SecretLoader loadingText="Loading configurations" />;
     }
@@ -71,6 +63,14 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
   const deleteProject = () => {
     deleteProjectMutation.mutate({ projectId: project.id }, { onSuccess: () => router.push('/projects') });
   };
+
+  if (!project) {
+    return (
+      <Page className="page-height flex items-center">
+        <SecretLoader loadingText="Loading project" />
+      </Page>
+    );
+  }
 
   return (
     <>
