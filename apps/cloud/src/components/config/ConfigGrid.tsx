@@ -6,7 +6,7 @@ import { trpc } from '@utils/trpc';
 import { Config, ConfigValue } from '@utils/types';
 import React, { useRef } from 'react';
 
-const getPropertyNameDisplay = (property: string, value: ConfigValue[string]) => {
+const propertyName = (property: string, value: ConfigValue[string]) => {
   if (value.parentName || value.overrides) {
     return (
       <Tooltip
@@ -24,6 +24,18 @@ const getPropertyNameDisplay = (property: string, value: ConfigValue[string]) =>
   return property;
 };
 
+const propertyValue = ({ value, hidden }: { value: string | null; hidden?: boolean }) => {
+  if (!value) {
+    return null;
+  }
+
+  return hidden ? (
+    <Input.Password readOnly width="100%" value={value} />
+  ) : (
+    <Input readOnly width="100%" value={value} />
+  );
+};
+
 export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const trpcContext = trpc.useContext();
   const updateConfig = trpc.useMutation('config-update');
@@ -33,13 +45,8 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
 
   const tableData = Array.from(Object.entries(flattenConfigValues(config))).map(([property, value]) => ({
-    property: getPropertyNameDisplay(property, value),
-    value:
-      value.hidden && value.value ? (
-        <Input.Password readOnly width="100%" value={value.value} />
-      ) : (
-        <Input readOnly width="100%" value={value.value ?? '-'} />
-      ),
+    property: propertyName(property, value),
+    value: propertyValue(value),
     editProperty: value.parentName ? undefined : property,
     deleteProperty: value.parentName ? undefined : property,
   }));
