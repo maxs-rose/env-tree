@@ -11,7 +11,7 @@ import {
 } from '@geist-ui/icons';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
-import React from 'react';
+import React, { useState } from 'react';
 
 const HomeCloud: React.FC = () => {
   const options = [
@@ -25,7 +25,9 @@ const HomeCloud: React.FC = () => {
     <UploadCloud size="100%" />,
   ];
 
-  return <div className="max-h-[80vh]">{options[Math.floor(Math.random() * options.length)]}</div>;
+  const [randomSelection] = useState(options[Math.floor(Math.random() * options.length)]);
+
+  return <div className="max-h-[80vh]">{randomSelection}</div>;
 };
 
 const NoSSRCloud = dynamic(() => Promise.resolve(HomeCloud), { ssr: false });
