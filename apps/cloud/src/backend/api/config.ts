@@ -1,11 +1,13 @@
 import { prisma } from '@backend/prisma';
 import { configToEnvString, configToJsonObject, PrismaConfigWithParent, transformConfigs } from '@backend/utils/config';
 import { decryptConfig, encryptConfig } from '@backend/utils/crypt';
+import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
 import { flattenConfigValues } from '@utils/config';
 import { ConfigValue } from '@utils/types';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { unstable_getServerSession, User } from 'next-auth';
 import { firstValueFrom, from, map, Observable, switchMap } from 'rxjs';
 import { z } from 'zod';
 
@@ -30,14 +32,25 @@ const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[]) => {
   return result;
 };
 
-export const getExpandedConfigs$ = (projectId: string) => {
-  return from(prisma.config.findMany({ where: { projectId } })).pipe(
+export const getExpandedConfigs$ = (userId: string, projectId: string) =>
+  from(
+    prisma.usersOnProject.findUnique({
+      where: { projectId_userId: { projectId, userId } },
+      include: { project: { include: { configs: true } } },
+    })
+  ).pipe(
+    map((res) => {
+      if (!res) {
+        throw new trpc.TRPCError({ code: 'UNAUTHORIZED', message: 'Not authorized for project' });
+      }
+
+      return res.project.configs;
+    }),
     map((configs) => {
       return configs.map((config) => expandConfig(config, configs));
     }),
     map(transformConfigs)
   );
-};
 
 export const createConfig = async (projectId: string, configName: string) =>
   prisma.config.create({ data: { projectId, name: configName, values: '' } });
@@ -101,11 +114,12 @@ export type ConfigType = 'env' | 'json';
 type ConfigExportType<T> = T extends 'env' ? string : T extends 'json' ? { [key: string]: string } : never;
 
 const exportConfig$ = <T extends ConfigType>(
+  userId: string,
   projectId: string,
   configId: string,
   type: T
 ): Observable<ConfigExportType<T> | undefined> =>
-  getExpandedConfigs$(projectId).pipe(
+  getExpandedConfigs$(userId, projectId).pipe(
     map((configs) => configs.find((c) => c.id === configId)),
     map((config) => {
       if (!config) {
@@ -135,6 +149,13 @@ export const handleConfigExport = async (req: NextApiRequest, res: NextApiRespon
     return;
   }
 
+  const user = (await unstable_getServerSession(req, res, authOptions))?.user as (User & { id: string }) | null;
+
+  if (!user) {
+    res.status(401).send({});
+    return;
+  }
+
   const parseResult = zFormData.safeParse(req.body);
 
   if (!parseResult.success) {
@@ -144,7 +165,7 @@ export const handleConfigExport = async (req: NextApiRequest, res: NextApiRespon
 
   const formData = parseResult.data;
 
-  return await firstValueFrom(exportConfig$(formData.projectId, formData.configId, formData.type))
+  return await firstValueFrom(exportConfig$(user.id, formData.projectId, formData.configId, formData.type))
     .then((data) => {
       if (data === undefined) {
         res.status(404).send('Could not find config');

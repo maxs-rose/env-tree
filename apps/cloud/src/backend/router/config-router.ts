@@ -6,16 +6,15 @@ import {
   linkedConfig,
   updateConfig,
 } from '@backend/api/config';
-import * as trpc from '@trpc/server';
+import { createRouter } from '@backend/createRouter';
 import { ZConfigValue } from '@utils/types';
 import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
 
-export const configRouter = trpc
-  .router()
+export const configRouter = createRouter()
   .query('get', {
     input: z.object({ projectId: z.string() }),
-    resolve: ({ input }) => firstValueFrom(getExpandedConfigs$(input.projectId)),
+    resolve: ({ ctx, input }) => firstValueFrom(getExpandedConfigs$(ctx.user.id, input.projectId)),
   })
   .mutation('create', {
     input: z.object({ projectId: z.string(), configName: z.string() }),

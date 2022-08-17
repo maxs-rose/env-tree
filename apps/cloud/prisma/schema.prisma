@@ -11,10 +11,11 @@ datasource db {
 }
 
 model Project {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  configs     Config[]
+  id             String           @id @default(uuid())
+  name           String
+  description    String?
+  configs        Config[]
+  UsersOnProject UsersOnProject[]
 }
 
 model Config {
@@ -33,4 +34,61 @@ model Config {
   linkChild             Config[] @relation("ConfigLink")
 
   @@id([id, projectId])
+}
+
+model User {
+  id             String           @id @default(cuid())
+  name           String?
+  email          String?          @unique
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+  UsersOnProject UsersOnProject[]
+}
+
+model UsersOnProject {
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  // If we delete a user need to check its not the last user for the config so dont cascade the delete
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@id([projectId, userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  created_at        Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

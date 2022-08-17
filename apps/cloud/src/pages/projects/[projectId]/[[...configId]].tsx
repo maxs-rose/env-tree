@@ -4,9 +4,11 @@ import { DisplayProjectConfigs } from '@components/config/DisplayProjectConfigs'
 import SecretLoader from '@components/loader';
 import { Button, Page, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Trash2 } from '@geist-ui/icons';
+import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/trpc';
 import { Project } from '@utils/types';
 import { GetServerSideProps, NextPage } from 'next';
+import { unstable_getServerSession } from 'next-auth';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 
@@ -92,21 +94,33 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const user = (await unstable_getServerSession(ctx.req, ctx.res, authOptions))?.user as { id: string } | null;
+
+  if (!user) {
+    return {
+      redirect: { destination: '/', permanent: false },
+    };
+  }
+
   if (typeof ctx.params?.projectId !== 'string') {
     return { notFound: true };
   }
-  const project = await prisma.project.findUnique({ where: { id: ctx.params?.projectId }, include: { configs: true } });
 
-  if (!project) {
-    return { notFound: true };
+  const uop = await prisma.usersOnProject.findUnique({
+    where: { projectId_userId: { projectId: ctx.params?.projectId, userId: user.id } },
+    include: { project: { include: { configs: true } } },
+  });
+
+  if (!uop) {
+    return { redirect: { destination: '/projects', permanent: false } };
   }
 
   let config = ctx.params?.configId?.[0];
 
-  const configId = project.configs.some((c) => c.id === config) ? config : null;
+  const configId = uop.project.configs.some((c) => c.id === config) ? config : null;
 
   return {
-    props: { project, configId },
+    props: { project: uop.project, configId },
   };
 };
 

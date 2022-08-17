@@ -1,9 +1,31 @@
 import { useConfigs } from '@context/config';
-import { Button, Tabs, useTheme } from '@geist-ui/core';
-import { Moon, Sun } from '@geist-ui/icons';
+import { Button, ButtonGroup, Spacer, Tabs, User, useTheme } from '@geist-ui/core';
+import { LogOut, Moon, Settings, Sun } from '@geist-ui/icons';
 import { addColorAlpha } from '@utils/colours';
+import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+
+const UserDisplay = () => {
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  if (!session) {
+    return <Button onClick={() => router.push('/user/login')}>Login</Button>;
+  }
+
+  return (
+    <>
+      <User name={session.user?.name} src={session.user?.image ?? undefined}>
+        {session.user?.email}
+      </User>
+      <ButtonGroup>
+        <Button auto onClick={() => router.push('/user/settings')} icon={<Settings />} />
+        <Button auto onClick={() => signOut()} icon={<LogOut />} />
+      </ButtonGroup>
+    </>
+  );
+};
 
 const Nav: React.FC = () => {
   const router = useRouter();
@@ -54,7 +76,9 @@ const Nav: React.FC = () => {
                 <Tabs.Item label="Docs" value="docs" />
               </Tabs>
             </div>
-            <div className="actions">
+            <div className="flex justify-end items-center">
+              <UserDisplay />
+              <Spacer inline />
               <Button auto onClick={switchTheme} icon={isLightMode() ? <Sun /> : <Moon />}>
                 {isLightMode() ? 'Light' : 'Dark'}
               </Button>

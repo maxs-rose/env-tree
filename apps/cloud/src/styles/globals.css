@@ -6,6 +6,11 @@
   --nav-height: 64px;
 }
 
+html,
+body {
+  min-height: 100vh;
+}
+
 .page-height {
   min-height: calc(100vh - var(--nav-height)) !important;
 }
