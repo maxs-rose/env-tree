@@ -1,12 +1,12 @@
 import { User } from '@backend/api/user';
 import SecretLoader from '@components/loader';
-import { Button, Page, Snippet, Text } from '@geist-ui/core';
+import { Button, Input, Page, Snippet, Text, useInput } from '@geist-ui/core';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/trpc';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
-import { signOut } from 'next-auth/react';
-import React from 'react';
+import { signOut, useSession } from 'next-auth/react';
+import React, { useEffect } from 'react';
 
 const Token: React.FC<{ user: User }> = ({ user }) => {
   const trpcContext = trpc.useContext();
@@ -30,12 +30,24 @@ const Token: React.FC<{ user: User }> = ({ user }) => {
 };
 
 const UserSettings: NextPage = () => {
+  const trpcContext = trpc.useContext();
+  const {} = useSession();
   const user = trpc.useQuery(['user-current']);
   const deleteUser = trpc.useMutation(['user-delete'], {
     onSuccess: () => {
       signOut();
     },
   });
+  const updateUsername = trpc.useMutation(['user-rename'], {
+    onSuccess: () => {
+      trpcContext.invalidateQueries(['user-current']);
+    },
+  });
+  const { state: usernameState, setState: setUsernameState, bindings: usernameBindings } = useInput('');
+
+  useEffect(() => {
+    setUsernameState(user.data?.name ?? '');
+  }, [user.data]);
 
   if (user.isLoading || user.isError || !user.data) {
     return <SecretLoader loadingText="Loading" />;
@@ -47,6 +59,10 @@ const UserSettings: NextPage = () => {
         <Text h2>User settings</Text>
       </Page.Header>
       <Page.Content>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Input {...usernameBindings} />
+          <Button onClick={() => updateUsername.mutate({ name: usernameState })}>Update username</Button>
+        </div>
         <Token user={user.data} />
         <div>
           <Button onClick={() => deleteUser.mutate()}>Delete account</Button>

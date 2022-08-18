@@ -24,6 +24,9 @@ export const generateAuthToken$ = (userId: string) => {
   return from(prisma.user.update({ where: { id: userId }, data: { authToken } }));
 };
 
+export const renameUser$ = (userId: string, name: string) =>
+  from(prisma.user.update({ data: { name }, where: { id: userId } }));
+
 export const deleteUser$ = (userId: string) =>
   from(
     prisma.usersOnProject.findMany({ where: { userId }, include: { project: { include: { UsersOnProject: true } } } })

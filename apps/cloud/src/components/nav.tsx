@@ -2,6 +2,7 @@ import { useConfigs } from '@context/config';
 import { Button, ButtonGroup, Spacer, Tabs, User, useTheme } from '@geist-ui/core';
 import { LogOut, Moon, Settings, Sun } from '@geist-ui/icons';
 import { addColorAlpha } from '@utils/colours';
+import { trpc } from '@utils/trpc';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import { useEffect, useState } from 'react';
 const UserDisplay = () => {
   const router = useRouter();
   const { data: session } = useSession();
+  const user = trpc.useQuery(['user-current'], { enabled: !!session });
 
   if (!session) {
     return <Button onClick={() => router.push('/user/login')}>Login</Button>;
@@ -16,7 +18,7 @@ const UserDisplay = () => {
 
   return (
     <>
-      <User name={session.user?.name} src={session.user?.image ?? undefined}>
+      <User name={user.data?.name ?? ''} src={session.user?.image ?? undefined}>
         {session.user?.email}
       </User>
       <ButtonGroup>
