@@ -1,10 +1,10 @@
 import {
-  createConfig,
-  deleteConfig,
+  createConfig$,
+  deleteConfig$,
   duplicateConfig$,
   getExpandedConfigs$,
-  linkedConfig,
-  updateConfig,
+  linkedConfig$,
+  updateConfig$,
 } from '@backend/api/config';
 import { createRouter } from '@backend/createRouter';
 import { ZConfigValue } from '@utils/types';
@@ -18,21 +18,24 @@ export const configRouter = createRouter()
   })
   .mutation('create', {
     input: z.object({ projectId: z.string(), configName: z.string() }),
-    resolve: ({ input }) => createConfig(input.projectId, input.configName),
+    resolve: ({ ctx, input }) => firstValueFrom(createConfig$(ctx.user.id, input.projectId, input.configName)),
   })
   .mutation('duplicate', {
     input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
-    resolve: ({ input }) => firstValueFrom(duplicateConfig$(input.projectId, input.targetConfig, input.configName)),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(duplicateConfig$(ctx.user.id, input.projectId, input.targetConfig, input.configName)),
   })
   .mutation('link', {
     input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
-    resolve: ({ input }) => linkedConfig(input.projectId, input.targetConfig, input.configName),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(linkedConfig$(ctx.user.id, input.projectId, input.targetConfig, input.configName)),
   })
   .mutation('update', {
     input: z.object({ projectId: z.string(), configId: z.string(), values: ZConfigValue }),
-    resolve: ({ input }) => updateConfig(input.projectId, input.configId, input.values),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(updateConfig$(ctx.user.id, input.projectId, input.configId, input.values)),
   })
   .mutation('delete', {
     input: z.object({ projectId: z.string(), configId: z.string() }),
-    resolve: ({ input }) => deleteConfig(input.projectId, input.configId),
+    resolve: ({ ctx, input }) => firstValueFrom(deleteConfig$(ctx.user.id, input.projectId, input.configId)),
   });

@@ -1,6 +1,6 @@
 import { prisma } from '@backend/prisma';
 import { configToEnvString, configToJsonObject, PrismaConfigWithParent, transformConfigs } from '@backend/utils/config';
-import { decryptConfig, encryptConfig } from '@backend/utils/crypt';
+import { encryptConfig } from '@backend/utils/crypt';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
@@ -32,6 +32,28 @@ const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[]) => {
   return result;
 };
 
+const getProjectConfig$ = (userId: string, projectId: string, configId: string) =>
+  from(
+    prisma.usersOnProject.findUnique({
+      where: { projectId_userId: { projectId, userId } },
+      include: { project: { include: { configs: { include: { linkedParent: true } } } } },
+    })
+  ).pipe(
+    map((foundProject) => {
+      if (!foundProject) {
+        throw new trpc.TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+      }
+
+      const config = foundProject.project.configs.find((c) => c.id === configId);
+
+      if (!config) {
+        throw new trpc.TRPCError({ code: 'NOT_FOUND', message: 'Target config was not found on project' });
+      }
+
+      return config;
+    })
+  );
+
 export const getExpandedConfigs$ = (userId: string, projectId: string) =>
   from(
     prisma.usersOnProject.findUnique({
@@ -52,24 +74,21 @@ export const getExpandedConfigs$ = (userId: string, projectId: string) =>
     map(transformConfigs)
   );
 
-export const createConfig = async (projectId: string, configName: string) =>
-  prisma.config.create({ data: { projectId, name: configName, values: '' } });
-
-export const duplicateConfig$ = (projectId: string, targetConfigId: string, configName: string) =>
+export const createConfig$ = (userId: string, projectId: string, configName: string) =>
   from(
-    prisma.config.findUnique({
-      where: { id_projectId: { projectId, id: targetConfigId } },
-      include: { linkedParent: true },
-    })
+    prisma.usersOnProject.findUnique({ select: { project: true }, where: { projectId_userId: { projectId, userId } } })
   ).pipe(
-    map((config) => {
-      if (!config) {
-        throw new trpc.TRPCError({ code: 'NOT_FOUND', message: 'Target config to duplicate was not found' });
+    switchMap((foundProject) => {
+      if (!foundProject) {
+        throw new trpc.TRPCError({ code: 'UNAUTHORIZED', message: 'Not authorized for project' });
       }
 
-      return { ...config, values: decryptConfig(config.values) };
-    }),
-    map((config) => ({ ...config, values: encryptConfig(config.values) })),
+      return prisma.config.create({ data: { projectId, name: configName, values: '' } });
+    })
+  );
+
+export const duplicateConfig$ = (userId: string, projectId: string, targetConfigId: string, configName: string) =>
+  getProjectConfig$(userId, projectId, targetConfigId).pipe(
     switchMap((config) =>
       prisma.config.create({
         data: {
@@ -83,32 +102,44 @@ export const duplicateConfig$ = (projectId: string, targetConfigId: string, conf
     )
   );
 
-export const linkedConfig = async (projectId: string, targetConfigId: string, configName: string) =>
-  prisma.config.create({
-    data: {
-      projectId,
-      name: configName,
-      values: '',
-      linkedProjectConfigId: projectId,
-      linkedConfigId: targetConfigId,
-    },
-  });
+export const linkedConfig$ = (userId: string, projectId: string, targetConfigId: string, configName: string) =>
+  getProjectConfig$(userId, projectId, targetConfigId).pipe(
+    switchMap(() =>
+      prisma.config.create({
+        data: {
+          projectId,
+          name: configName,
+          values: '',
+          linkedProjectConfigId: projectId,
+          linkedConfigId: targetConfigId,
+        },
+      })
+    )
+  );
 
-export const updateConfig = async (projectId: string, configId: string, configValue: ConfigValue) =>
-  prisma.config.update({
-    where: { id_projectId: { id: configId, projectId: projectId } },
-    data: { values: encryptConfig(configValue) },
-  });
+export const updateConfig$ = (userId: string, projectId: string, configId: string, configValue: ConfigValue) =>
+  getProjectConfig$(userId, projectId, configId).pipe(
+    switchMap(() =>
+      prisma.config.update({
+        where: { id_projectId: { id: configId, projectId: projectId } },
+        data: { values: encryptConfig(configValue) },
+      })
+    )
+  );
 
-export const deleteConfig = async (projectId: string, configId: string) =>
-  prisma.config.delete({
-    where: {
-      id_projectId: {
-        projectId,
-        id: configId,
-      },
-    },
-  });
+export const deleteConfig$ = (userId: string, projectId: string, configId: string) =>
+  getProjectConfig$(userId, projectId, configId).pipe(
+    switchMap(() =>
+      prisma.config.delete({
+        where: {
+          id_projectId: {
+            projectId,
+            id: configId,
+          },
+        },
+      })
+    )
+  );
 
 export type ConfigType = 'env' | 'json';
 type ConfigExportType<T> = T extends 'env' ? string : T extends 'json' ? { [key: string]: string } : never;
