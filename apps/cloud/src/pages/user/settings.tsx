@@ -5,13 +5,14 @@ import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/trpc';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
+import { signOut } from 'next-auth/react';
 import React from 'react';
 
 const Token: React.FC<{ user: User }> = ({ user }) => {
   const trpcContext = trpc.useContext();
   const authToken = trpc.useMutation(['user-authToken'], {
     onSuccess: () => {
-      trpcContext.invalidateQueries(['user-getCurrent']);
+      trpcContext.invalidateQueries(['user-current']);
     },
   });
 
@@ -29,7 +30,12 @@ const Token: React.FC<{ user: User }> = ({ user }) => {
 };
 
 const UserSettings: NextPage = () => {
-  const user = trpc.useQuery(['user-getCurrent']);
+  const user = trpc.useQuery(['user-current']);
+  const deleteUser = trpc.useMutation(['user-delete'], {
+    onSuccess: () => {
+      signOut();
+    },
+  });
 
   if (user.isLoading || user.isError || !user.data) {
     return <SecretLoader loadingText="Loading" />;
@@ -43,7 +49,7 @@ const UserSettings: NextPage = () => {
       <Page.Content>
         <Token user={user.data} />
         <div>
-          <Button>Delete account</Button>
+          <Button onClick={() => deleteUser.mutate()}>Delete account</Button>
         </div>
       </Page.Content>
     </Page>
