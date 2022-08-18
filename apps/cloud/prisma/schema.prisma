@@ -42,9 +42,12 @@ model User {
   email          String?          @unique
   emailVerified  DateTime?
   image          String?
+  authToken      String?
   accounts       Account[]
   sessions       Session[]
   UsersOnProject UsersOnProject[]
+
+  @@unique([email, authToken])
 }
 
 model UsersOnProject {

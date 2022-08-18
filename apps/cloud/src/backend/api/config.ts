@@ -172,7 +172,36 @@ const zFormData = z.object({
   projectId: z.string().min(1),
   configId: z.string().min(1),
   type: z.union([z.literal('env'), z.literal('json')]),
+  userEmail: z.string().optional(),
+  userToken: z.string().optional(),
 });
+
+const getUserFromSessionOrRequest = async (req: NextApiRequest, res: NextApiResponse) => {
+  const userSession = (await unstable_getServerSession(req, res, authOptions))?.user as (User & { id: string }) | null;
+  const parseResult = zFormData.safeParse(req.body);
+
+  if (!userSession && !parseResult.success) {
+    return 401;
+  }
+
+  if (userSession) {
+    return userSession;
+  }
+
+  if (parseResult.success) {
+    const dbUser = await prisma.user.findUnique({
+      where: {
+        email_authToken: { email: parseResult.data.userEmail ?? '', authToken: parseResult.data.userToken ?? '' },
+      },
+    });
+
+    if (dbUser) {
+      return dbUser as { id: string };
+    }
+  }
+
+  return 401;
+};
 
 export const handleConfigExport = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -180,9 +209,9 @@ export const handleConfigExport = async (req: NextApiRequest, res: NextApiRespon
     return;
   }
 
-  const user = (await unstable_getServerSession(req, res, authOptions))?.user as (User & { id: string }) | null;
+  const user = await getUserFromSessionOrRequest(req, res);
 
-  if (!user) {
+  if (user === 401) {
     res.status(401).send({});
     return;
   }

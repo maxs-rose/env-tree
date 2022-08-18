@@ -11,6 +11,8 @@ program
   .version('0.0.1 - POC')
   .argument('<projectId>', 'ID for project to get config from')
   .argument('<configId>', 'ID for config')
+  .argument('<userEmail>', 'User email')
+  .argument('<userToken>', 'User auth token')
   .option('-env', '.env file format (default)')
   .option('-json', 'JSON file format')
   .option('-dd, --download-directory <directory>', 'Directory to download file to', '.')
@@ -33,7 +35,7 @@ const getFilename = (filename: string | undefined, downloadType: FileType) => {
   return 'secrets.json';
 };
 
-const [projectId, configId] = program.processedArgs;
+const [projectId, configId, userEmail, userToken] = program.processedArgs;
 const options = program.opts();
 const type: FileType = options.Json ? 'json' : 'env';
 const filename = getFilename(options.filename, type);
@@ -43,7 +45,7 @@ const url = options.url;
 let spinner = ora(
   `Getting configuration ${chalk.green(configId)} from ${chalk.green(url)} for project ${chalk.green(projectId)}`
 ).start();
-const formData = JSON.stringify({ projectId, configId, type });
+const formData = JSON.stringify({ projectId, configId, type, userEmail, userToken });
 
 fetch(`${url}/api/config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: formData })
   .catch((e) => {
