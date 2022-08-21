@@ -9,22 +9,9 @@ export const getProjects$ = (userId: string) =>
 
 export const createProject$ = (userId: string, name: string) =>
   from(
-    prisma.project.findFirst({
-      where: { name },
-    })
-  ).pipe(
-    switchMap((res) => {
-      if (res) {
-        throw new trpc.TRPCError({
-          code: 'CONFLICT',
-          message: 'Project already exists',
-        });
-      }
-
-      return prisma.project.create({
-        data: { name, UsersOnProject: { create: { userId } } },
-        select: { id: true, name: true },
-      });
+    prisma.project.create({
+      data: { name, UsersOnProject: { create: { userId } } },
+      select: { id: true, name: true },
     })
   );
 
