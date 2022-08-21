@@ -109,7 +109,12 @@ const UserDisplay = () => {
         </span>
       ) : undefined}
       <ButtonGroup>
-        <Button auto onClick={() => router.push('/user/settings')} icon={<Settings />} />
+        <Button
+          className="propagate-hover:animate-spin"
+          auto
+          onClick={() => router.push('/user/settings')}
+          icon={<Settings />}
+        />
         <Button auto onClick={() => signOut()} icon={<LogOut />} />
       </ButtonGroup>
     </>

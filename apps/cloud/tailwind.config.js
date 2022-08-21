@@ -14,5 +14,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addVariant }) {
+      addVariant('propagate-hover', '&:hover > *');
+    },
+  ],
 };

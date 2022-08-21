@@ -85,7 +85,12 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
             <Button auto icon={<Plus />} px={0.6} type="success" onClick={() => setAddConfigVisible(true)}>
               Add Configuration
             </Button>
-            <Button auto icon={<Settings />} onClick={() => setProjectSettingsVisible(true)} />
+            <Button
+              className="propagate-hover:animate-spin"
+              auto
+              icon={<Settings />}
+              onClick={() => setProjectSettingsVisible(true)}
+            />
           </div>
         </Page.Header>
         <Page.Content className="flex items-center justify-center">{showContent()}</Page.Content>
