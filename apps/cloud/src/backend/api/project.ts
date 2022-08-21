@@ -2,6 +2,11 @@ import { prisma } from '@backend/prisma';
 import * as trpc from '@trpc/server';
 import { combineLatest, from, map, of, switchMap } from 'rxjs';
 
+const unauthorizedError = new trpc.TRPCError({
+  code: 'UNAUTHORIZED',
+  message: 'User does not have access to this project',
+});
+
 export const getProjects$ = (userId: string) =>
   // TODO: Add user icons into response
   from(prisma.usersOnProject.findMany({ where: { userId }, include: { project: true } })).pipe(
@@ -31,17 +36,26 @@ export const deleteProject$ = (userId: string, projectId: string) =>
     })
   );
 
-export const addUserToProjectRequest$ = (callingUserId: string, projectId: string, userEmail: string) =>
+export const getUsersOnProject$ = (callingUserId: string, projectId: string) =>
+  from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: callingUserId } } })).pipe(
+    switchMap((callingUserAccess) => {
+      if (!callingUserAccess) {
+        throw unauthorizedError;
+      }
+
+      return prisma.usersOnProject.findMany({ where: { projectId }, include: { user: true } });
+    }),
+    map((users) => users.map((u) => ({ id: u.userId, name: u.user.name, image: u.user.image, email: u.user.email })))
+  );
+
+export const addUserToProjectRequest$ = (callingUserId: string, projectId: string, userId: string) =>
   combineLatest([
     from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: callingUserId } } })),
-    from(prisma.user.findUnique({ where: { email: userEmail }, include: { UsersOnProject: true } })),
+    from(prisma.user.findUnique({ where: { id: userId }, include: { UsersOnProject: true } })),
   ]).pipe(
     switchMap(([callingUserCanAccess, targetUser]) => {
       if (!callingUserCanAccess) {
-        throw new trpc.TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User does not have access to this project',
-        });
+        throw unauthorizedError;
       }
 
       if (!targetUser) {
@@ -88,46 +102,23 @@ export const denyProjectRequest$ = (userId: string, requestId: string) =>
     map((removed) => of(removed.count >= 1))
   );
 
-export const removeUser$ = (callingUserId: string, projectId: string, userEmail: string) =>
+export const removeUser$ = (callingUserId: string, projectId: string, userId: string) =>
   combineLatest([
     from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: callingUserId } } })),
-    from(
-      prisma.user.findUnique({
-        where: { email: userEmail },
-        include: { UsersOnProject: { include: { project: { include: { UsersOnProject: true } } } } },
-      })
-    ),
+    from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: userId } } })),
   ]).pipe(
-    map(([callingUserProject, user]) => {
+    map(([callingUserProject, userOnProject]) => {
       if (!callingUserProject) {
-        throw new trpc.TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User does not have access to project',
-        });
+        throw unauthorizedError;
       }
 
-      if (
-        !user ||
-        user.UsersOnProject.length === 0 ||
-        user.UsersOnProject.length ||
-        !user.UsersOnProject.some((p) => p.projectId === projectId)
-      ) {
+      if (!userOnProject) {
         throw new trpc.TRPCError({
           code: 'NOT_FOUND',
           message: 'Project not found',
         });
       }
 
-      return user.UsersOnProject.find((p) => p.projectId === projectId)!;
-    }),
-    switchMap((project) => {
-      if (project.project.UsersOnProject.length === 1) {
-        throw new trpc.TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message: 'Please delete project',
-        });
-      }
-
-      return prisma.usersOnProject.delete({ where: { projectId_userId: { projectId, userId: project.userId } } });
+      return prisma.usersOnProject.delete({ where: { projectId_userId: { projectId, userId } } });
     })
   );

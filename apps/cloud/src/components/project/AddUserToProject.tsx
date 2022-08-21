@@ -1,6 +1,5 @@
-import { Button, Card, Input, Modal, useInput, User } from '@geist-ui/core';
-import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
-import { Check } from '@geist-ui/icons';
+import { Button, Input, useInput, User } from '@geist-ui/core';
+import { Plus } from '@geist-ui/icons';
 import { trpc } from '@utils/trpc';
 import React, { useEffect, useState } from 'react';
 
@@ -21,10 +20,8 @@ const useDebounce = <T,>(value: T, delay: number): T => {
 };
 
 export const AddUserToProjectModal: React.FC<{
-  onCloseModel: () => void;
-  bindings: ModalHooksBindings;
   projectId: string;
-}> = ({ onCloseModel, bindings, projectId }) => {
+}> = ({ projectId }) => {
   const trpcContext = trpc.useContext();
   const [firstLoad, setFirstLoad] = useState(true);
   const { state: inputState, setState: setSearchInputState, bindings: searchInputBindings } = useInput('');
@@ -38,11 +35,11 @@ export const AddUserToProjectModal: React.FC<{
     setFirstLoad(false);
   }, []);
 
-  const addUserToProjectRequest = (userEmail: string) => {
+  const addUserToProjectRequest = (userId: string) => {
     addUserRequest.mutate(
-      { projectId, userEmail },
+      { projectId, userId },
       {
-        onSuccess: closeModal,
+        onSuccess: clearAndInvalidate,
       }
     );
   };
@@ -51,38 +48,26 @@ export const AddUserToProjectModal: React.FC<{
     return (
       foundUsers?.map((user) => {
         return (
-          <Card key={user.email!} style={{ width: '25rem' }}>
-            <Card.Content className="flex gap-2 justify-between">
-              <User
-                style={{ maxWidth: '20rem', textOverflow: 'ellipsis' }}
-                name={user.name}
-                src={user.image || undefined}
-              >
-                {user.email}
-              </User>
-              <Button auto icon={<Check />} onClick={() => addUserToProjectRequest(user.email!)} />
-            </Card.Content>
-          </Card>
+          <div key={user.id} className="w-full flex items-center justify-between">
+            <User name={user.name} src={user.image ?? ''}>
+              {user.email}
+            </User>
+            <Button auto type="abort" icon={<Plus color="green" />} onClick={() => addUserToProjectRequest(user.id)} />
+          </div>
         );
       }) ?? []
     );
   };
 
-  const closeModal = () => {
+  const clearAndInvalidate = () => {
     trpcContext.invalidateQueries(['user-search']);
     setSearchInputState('');
-    onCloseModel();
   };
 
   return (
-    <Modal {...bindings} onClose={closeModal}>
-      <Modal.Title>Add User to Project</Modal.Title>
-      <Modal.Content>
-        <div className="flex flex-col gap-4">
-          <Input {...searchInputBindings} placeholder="Search users" />
-          <div className="flex flex-col gap-2">{displayFoundUsers()}</div>
-        </div>
-      </Modal.Content>
-    </Modal>
+    <div className="flex flex-col gap-4">
+      <Input {...searchInputBindings} width="100%" placeholder="Search users to add" />
+      <div className="flex flex-col gap-2">{displayFoundUsers()}</div>
+    </div>
   );
 };

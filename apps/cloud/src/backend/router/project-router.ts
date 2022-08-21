@@ -6,6 +6,7 @@ import {
   denyProjectRequest$,
   getProjectAddRequests$,
   getProjects$,
+  getUsersOnProject$,
   removeUser$,
 } from '@backend/api/project';
 import { createRouter } from '@backend/createRouter';
@@ -37,10 +38,13 @@ export const projectRouter = createRouter()
     input: z.object({ projectId: z.string() }),
     resolve: ({ ctx, input }) => firstValueFrom(deleteProject$(ctx.user.id, input.projectId)),
   })
+  .query('users', {
+    input: z.object({ projectId: z.string() }),
+    resolve: ({ ctx, input }) => firstValueFrom(getUsersOnProject$(ctx.user.id, input.projectId)),
+  })
   .mutation('add-user-request', {
-    input: z.object({ projectId: z.string(), userEmail: z.string() }),
-    resolve: ({ ctx, input }) =>
-      firstValueFrom(addUserToProjectRequest$(ctx.user.id, input.projectId, input.userEmail)),
+    input: z.object({ projectId: z.string(), userId: z.string() }),
+    resolve: ({ ctx, input }) => firstValueFrom(addUserToProjectRequest$(ctx.user.id, input.projectId, input.userId)),
   })
   .query('get-add-requests', {
     resolve: ({ ctx }) => firstValueFrom(getProjectAddRequests$(ctx.user.id)),
@@ -54,6 +58,6 @@ export const projectRouter = createRouter()
     resolve: ({ ctx, input }) => firstValueFrom(denyProjectRequest$(ctx.user.id, input.requestId)),
   })
   .mutation('remove-user', {
-    input: z.object({ projectId: z.string(), userEmail: z.string().email() }),
-    resolve: ({ ctx, input }) => firstValueFrom(removeUser$(ctx.user.id, input.projectId, input.userEmail)),
+    input: z.object({ projectId: z.string(), userId: z.string() }),
+    resolve: ({ ctx, input }) => firstValueFrom(removeUser$(ctx.user.id, input.projectId, input.userId)),
   });

@@ -44,7 +44,7 @@ export const searchUser$ = (query: string | undefined, projectId: string | undef
   query
     ? from(
         prisma.user.findMany({
-          select: { email: true, name: true, image: true },
+          select: { id: true, email: true, name: true, image: true },
           where: {
             OR: [{ name: { contains: query } }, { email: { contains: query } }],
             // Ensure that the returned users are not already on the project
