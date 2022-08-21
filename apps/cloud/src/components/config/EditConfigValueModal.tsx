@@ -48,8 +48,6 @@ export const EditConfigValueModal: React.FC<{
 
     configMap.set(key, value);
 
-    console.log(config.current);
-
     updateConfig.mutate(
       {
         projectId: config.current!.projectId,
