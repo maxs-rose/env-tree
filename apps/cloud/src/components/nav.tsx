@@ -53,6 +53,7 @@ const UserDisplay = () => {
       }
     },
   });
+  const [isHovering, setIsHovering] = useState(false);
 
   const acceptProjectRequestMutation = trpc.useMutation(['project-accept-request'], {
     onSuccess: () => {
@@ -81,12 +82,18 @@ const UserDisplay = () => {
 
   return (
     <>
-      <User name={user.data?.name ?? ''} src={session.user?.image ?? undefined}>
-        {session.user?.email}
+      <User
+        name={user.data?.name ?? ''}
+        src={session.user?.image ?? undefined}
+        onMouseOver={() => setIsHovering(true)}
+        onMouseOut={() => setIsHovering(false)}
+      >
+        {isHovering ? user.data?.username : session.user?.email}
       </User>
       {userProjectRequests.data?.length ? (
         <span className="mx-2 hover:cursor-pointer active:animate-swing">
           <Popover
+            portalClassName="min-w-[20em]"
             visible={popoverVisible}
             onVisibleChange={setPopoverVisible}
             content={() => UserNofifPopover({ acceptRequest, denyRequest, projectRequests: userProjectRequests.data! })}

@@ -14,7 +14,7 @@ export const getUser$ = (userId: string) =>
   from(
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, image: true, authToken: true },
+      select: { id: true, email: true, name: true, username: true, image: true, authToken: true },
     })
   );
 
@@ -26,6 +26,9 @@ export const generateAuthToken$ = (userId: string) => {
 
 export const renameUser$ = (userId: string, name: string) =>
   from(prisma.user.update({ data: { name }, where: { id: userId } }));
+
+export const updateUsername$ = (userId: string, username: string) =>
+  from(prisma.user.update({ data: { username: username.toLowerCase() }, where: { id: userId } }));
 
 export const deleteUser$ = (userId: string) =>
   from(
@@ -44,9 +47,9 @@ export const searchUser$ = (query: string | undefined, projectId: string | undef
   query
     ? from(
         prisma.user.findMany({
-          select: { id: true, email: true, name: true, image: true },
+          select: { id: true, name: true, username: true, image: true },
           where: {
-            OR: [{ name: { contains: query } }, { email: { contains: query } }],
+            OR: [{ name: { contains: query } }, { username: { contains: query } }],
             // Ensure that the returned users are not already on the project
             UsersOnProject: { none: { projectId: projectId ?? '' } },
             // Ensure that the returned users have not already been quested to be added to be project

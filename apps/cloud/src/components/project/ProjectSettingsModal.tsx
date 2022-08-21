@@ -52,10 +52,10 @@ const ProjectUserList: React.FC<{ projectId: string }> = ({ projectId }) => {
   });
 
   const users = (users: typeof usersOnProject['data']) => {
-    return users!.map((u) => displayUser(u.id, u.name!, u.email!, u.image || ''));
+    return users!.map((u) => displayUser(u.id, u.name!, u.username!, u.image || ''));
   };
 
-  const displayUser = (id: string, name: string, email: string, icon: string) => {
+  const displayUser = (id: string, name: string, username: string, icon: string) => {
     const removeUser = (userId: string) => {
       removeUserFromProject.mutate({ userId, projectId });
     };
@@ -63,7 +63,7 @@ const ProjectUserList: React.FC<{ projectId: string }> = ({ projectId }) => {
     return (
       <div key={id} className="w-full flex items-center justify-between">
         <User name={name} src={icon}>
-          {email}
+          {username}
         </User>
         <Button
           auto

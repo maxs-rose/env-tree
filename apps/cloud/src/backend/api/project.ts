@@ -12,7 +12,7 @@ export const getProjects$ = (userId: string) =>
   from(
     prisma.usersOnProject.findMany({
       where: { userId },
-      include: { project: { include: { UsersOnProject: { include: { user: true } } } } },
+      include: { project: { include: { UsersOnProject: { include: { user: { select: { image: true } } } } } } },
     })
   ).pipe(
     map((userProjects) => userProjects.map((p) => p.project)),
@@ -51,7 +51,9 @@ export const getUsersOnProject$ = (callingUserId: string, projectId: string) =>
 
       return prisma.usersOnProject.findMany({ where: { projectId }, include: { user: true } });
     }),
-    map((users) => users.map((u) => ({ id: u.userId, name: u.user.name, image: u.user.image, email: u.user.email })))
+    map((users) =>
+      users.map((u) => ({ id: u.userId, name: u.user.name, image: u.user.image, username: u.user.username }))
+    )
   );
 
 export const addUserToProjectRequest$ = (callingUserId: string, projectId: string, userId: string) =>

@@ -50,7 +50,7 @@ export const AddUserToProjectModal: React.FC<{
         return (
           <div key={user.id} className="w-full flex items-center justify-between">
             <User name={user.name} src={user.image ?? ''}>
-              {user.email}
+              {user.username}
             </User>
             <Button auto type="abort" icon={<Plus color="green" />} onClick={() => addUserToProjectRequest(user.id)} />
           </div>

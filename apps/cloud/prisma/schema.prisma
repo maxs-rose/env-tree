@@ -42,8 +42,10 @@ model User {
   id             String           @id @default(cuid())
   name           String?
   email          String?          @unique
+  username       String           @unique @default(uuid())
   emailVerified  DateTime?
   image          String?
+  // Note: I wonder if this should be stored encrypted?
   authToken      String?
   accounts       Account[]
   sessions       Session[]

@@ -1,6 +1,6 @@
 import { User } from '@backend/api/user';
 import SecretLoader from '@components/loader';
-import { Button, Input, Page, Snippet, Text, useInput } from '@geist-ui/core';
+import { Button, Input, Page, Snippet, Text, useInput, useToasts } from '@geist-ui/core';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/trpc';
 import { GetServerSideProps, NextPage } from 'next';
@@ -31,6 +31,7 @@ const Token: React.FC<{ user: User }> = ({ user }) => {
 
 const UserSettings: NextPage = () => {
   const trpcContext = trpc.useContext();
+  const toaster = useToasts();
   const {} = useSession();
   const user = trpc.useQuery(['user-current']);
   const deleteUser = trpc.useMutation(['user-delete'], {
@@ -38,15 +39,24 @@ const UserSettings: NextPage = () => {
       signOut();
     },
   });
-  const updateUsername = trpc.useMutation(['user-rename'], {
+  const updateDisplayName = trpc.useMutation(['user-rename'], {
     onSuccess: () => {
       trpcContext.invalidateQueries(['user-current']);
     },
   });
+  const updateUsername = trpc.useMutation(['user-username'], {
+    onSuccess: () => {
+      trpcContext.invalidateQueries(['user-current']);
+    },
+    onError: () => toaster.setToast({ text: 'Username already in use', type: 'error', delay: 10000 }),
+  });
+  const { state: displayNameState, setState: setDisplayNameState, bindings: displayNameBindings } = useInput('');
   const { state: usernameState, setState: setUsernameState, bindings: usernameBindings } = useInput('');
 
   useEffect(() => {
-    setUsernameState(user.data?.name ?? '');
+    setDisplayNameState(user.data?.name ?? '');
+    setUsernameState(user.data?.username ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.data]);
 
   if (user.isLoading || user.isError || !user.data) {
@@ -60,8 +70,12 @@ const UserSettings: NextPage = () => {
       </Page.Header>
       <Page.Content>
         <div className="flex items-center gap-2 flex-wrap">
+          <Input {...displayNameBindings} />
+          <Button onClick={() => updateDisplayName.mutate({ name: displayNameState })}>Update name</Button>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           <Input {...usernameBindings} />
-          <Button onClick={() => updateUsername.mutate({ name: usernameState })}>Update username</Button>
+          <Button onClick={() => updateUsername.mutate({ username: usernameState })}>Update username</Button>
         </div>
         <Token user={user.data} />
         <div>
