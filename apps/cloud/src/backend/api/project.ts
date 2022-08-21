@@ -1,4 +1,5 @@
 import { prisma } from '@backend/prisma';
+import { projectWithUserIcons } from '@backend/utils/project';
 import * as trpc from '@trpc/server';
 import { combineLatest, from, map, of, switchMap } from 'rxjs';
 
@@ -8,9 +9,14 @@ const unauthorizedError = new trpc.TRPCError({
 });
 
 export const getProjects$ = (userId: string) =>
-  // TODO: Add user icons into response
-  from(prisma.usersOnProject.findMany({ where: { userId }, include: { project: true } })).pipe(
-    map((userProjects) => userProjects.map((p) => p.project))
+  from(
+    prisma.usersOnProject.findMany({
+      where: { userId },
+      include: { project: { include: { UsersOnProject: { include: { user: true } } } } },
+    })
+  ).pipe(
+    map((userProjects) => userProjects.map((p) => p.project)),
+    map((projects) => projects.map(projectWithUserIcons))
   );
 
 // TODO: Add project descriptions

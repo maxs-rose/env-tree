@@ -33,6 +33,7 @@ export const configRouter = createRouter()
   // TODO: Add some mechanism to ensure that if multiple users are editing a config someone with an outdated version does not override the new one by accident
   //  maybe good enough to add some kind of "version" into the get response for each config and reject requests with a mismatched version.
   //  The version would have to be regenerated each time the config is updated.
+  // TODO: Add groups to config values
   .mutation('update', {
     input: z.object({ projectId: z.string(), configId: z.string(), values: ZConfigValue }),
     resolve: ({ ctx, input }) =>
