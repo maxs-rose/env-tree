@@ -94,19 +94,16 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
     <>
       {configs.map((c) => (
         <Tabs.Tab label={c.name} key={c.id} value={c.id}>
-          <div className="flex justify-center">
+          <div className="flex justify-center items-center flex-wrap gap-2">
             <Button auto ghost icon={<Plus />} onClick={() => openConfigModal(c)}>
               Add Secret
             </Button>
-            <Spacer inline />
             <Button auto ghost icon={<Copy />} onClick={() => openDuplicateModal(c)}>
               Duplicate Config
             </Button>
-            <Spacer inline />
             <Button auto ghost icon={<Copy />} onClick={() => openLinkModal(c)}>
               Create Linked Config
             </Button>
-            <Spacer inline />
             <ButtonDropdown auto icon={<DownloadCloud />} type="success">
               <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
                 Download Secrets ({downloadType})
@@ -122,7 +119,6 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
                 </span>
               </ButtonDropdown.Item>
             </ButtonDropdown>
-            <Spacer inline />
             <Button auto type="error" icon={<Trash2 />} onClick={() => deleteConfig(c.projectId, c.id)}>
               Delete Configuration
             </Button>

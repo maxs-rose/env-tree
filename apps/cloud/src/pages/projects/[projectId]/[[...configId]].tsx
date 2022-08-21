@@ -3,7 +3,7 @@ import { AddConfigModal } from '@components/config/AddConfigModal';
 import { DisplayProjectConfigs } from '@components/config/DisplayProjectConfigs';
 import SecretLoader from '@components/loader';
 import { ProjectSettingsModal } from '@components/project/ProjectSettingsModal';
-import { Button, Page, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
+import { Button, Page, Spacer, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Settings } from '@geist-ui/icons';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/trpc';
@@ -79,10 +79,9 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
     <>
       <Page className="page-height">
         <Page.Header>
-          <div className="flex items-center gap-3">
-            <Text h2>
-              <Text span>{project?.name}</Text> Configurations
-            </Text>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Text h2>{project?.name}</Text>
+            <Spacer inline />
             <Button auto icon={<Plus />} px={0.6} type="success" onClick={() => setAddConfigVisible(true)}>
               Add Configuration
             </Button>
