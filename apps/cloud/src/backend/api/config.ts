@@ -1,3 +1,4 @@
+import { unauthorizedError } from '@backend/api/project';
 import { prisma } from '@backend/prisma';
 import { configToEnvString, configToJsonObject, PrismaConfigWithParent, transformConfigs } from '@backend/utils/config';
 import { encryptConfig } from '@backend/utils/crypt';
@@ -6,6 +7,7 @@ import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
 import { flattenConfigValues } from '@utils/config';
 import { ConfigValue } from '@utils/types';
+import { randomBytes } from 'crypto';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { unstable_getServerSession, User } from 'next-auth';
 import { firstValueFrom, from, map, Observable, switchMap } from 'rxjs';
@@ -63,14 +65,12 @@ export const getExpandedConfigs$ = (userId: string, projectId: string) =>
   ).pipe(
     map((res) => {
       if (!res) {
-        throw new trpc.TRPCError({ code: 'UNAUTHORIZED', message: 'Not authorized for project' });
+        throw unauthorizedError;
       }
 
       return res.project.configs;
     }),
-    map((configs) => {
-      return configs.map((config) => expandConfig(config, configs));
-    }),
+    map((configs) => configs.map((config) => expandConfig(config, configs))),
     map(transformConfigs)
   );
 
@@ -80,7 +80,7 @@ export const createConfig$ = (userId: string, projectId: string, configName: str
   ).pipe(
     switchMap((foundProject) => {
       if (!foundProject) {
-        throw new trpc.TRPCError({ code: 'UNAUTHORIZED', message: 'Not authorized for project' });
+        throw unauthorizedError;
       }
 
       return prisma.config.create({ data: { projectId, name: configName, values: '' } });
@@ -117,14 +117,27 @@ export const linkedConfig$ = (userId: string, projectId: string, targetConfigId:
     )
   );
 
-export const updateConfig$ = (userId: string, projectId: string, configId: string, configValue: ConfigValue) =>
+export const updateConfig$ = (
+  userId: string,
+  projectId: string,
+  configId: string,
+  configVersion: string | null,
+  configValue: ConfigValue
+) =>
   getProjectConfig$(userId, projectId, configId).pipe(
-    switchMap(() =>
-      prisma.config.update({
+    switchMap((config) => {
+      if (config.version !== configVersion) {
+        throw new trpc.TRPCError({
+          code: 'CONFLICT',
+          message: 'Config version mismatch',
+        });
+      }
+
+      return prisma.config.update({
         where: { id_projectId: { id: configId, projectId: projectId } },
-        data: { values: encryptConfig(configValue) },
-      })
-    )
+        data: { values: encryptConfig(configValue), version: randomBytes(16).toString('hex') },
+      });
+    })
   );
 
 export const deleteConfig$ = (userId: string, projectId: string, configId: string) =>

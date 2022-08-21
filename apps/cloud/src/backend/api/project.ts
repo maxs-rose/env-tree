@@ -3,7 +3,7 @@ import { projectWithUserIcons } from '@backend/utils/project';
 import * as trpc from '@trpc/server';
 import { combineLatest, from, map, of, switchMap } from 'rxjs';
 
-const unauthorizedError = new trpc.TRPCError({
+export const unauthorizedError = new trpc.TRPCError({
   code: 'UNAUTHORIZED',
   message: 'User does not have access to this project',
 });

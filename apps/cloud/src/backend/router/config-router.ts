@@ -30,14 +30,18 @@ export const configRouter = createRouter()
     resolve: ({ ctx, input }) =>
       firstValueFrom(linkedConfig$(ctx.user.id, input.projectId, input.targetConfig, input.configName)),
   })
-  // TODO: Add some mechanism to ensure that if multiple users are editing a config someone with an outdated version does not override the new one by accident
-  //  maybe good enough to add some kind of "version" into the get response for each config and reject requests with a mismatched version.
-  //  The version would have to be regenerated each time the config is updated.
   // TODO: Add groups to config values
   .mutation('update', {
-    input: z.object({ projectId: z.string(), configId: z.string(), values: ZConfigValue }),
+    input: z.object({
+      projectId: z.string(),
+      configId: z.string(),
+      configVersion: z.string().nullable().optional(),
+      values: ZConfigValue,
+    }),
     resolve: ({ ctx, input }) =>
-      firstValueFrom(updateConfig$(ctx.user.id, input.projectId, input.configId, input.values)),
+      firstValueFrom(
+        updateConfig$(ctx.user.id, input.projectId, input.configId, input.configVersion ?? null, input.values)
+      ),
   })
   .mutation('delete', {
     input: z.object({ projectId: z.string(), configId: z.string() }),

@@ -1,4 +1,4 @@
-import { Input, Modal, Spacer, Text, Toggle, useInput } from '@geist-ui/core';
+import { Input, Modal, Spacer, Text, Toggle, useInput, useToasts } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
 import { trpc } from '@utils/trpc';
@@ -14,6 +14,7 @@ export const EditConfigValueModal: React.FC<{
   config: MutableRefObject<Config | undefined>;
   editValue?: string;
 }> = ({ bindings, config, onCloseModel, editValue }) => {
+  const toaster = useToasts();
   const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(editValue ?? '');
   const {
     state: valueValue,
@@ -47,16 +48,34 @@ export const EditConfigValueModal: React.FC<{
 
     configMap.set(key, value);
 
+    console.log(config.current);
+
     updateConfig.mutate(
       {
         projectId: config.current!.projectId,
         configId: config.current!.id,
+        configVersion: config.current!.version,
         values: Object.fromEntries(configMap),
       },
       {
         onSuccess: () => {
           clearInput();
           onCloseModel();
+        },
+        onError: (error) => {
+          if (error.data?.code === 'CONFLICT') {
+            modalClose();
+            setTimeout(() => {
+              toaster.setToast({
+                type: 'error',
+                text: 'Failed to update config due to version mismatch, reloading',
+                delay: 10000,
+              });
+            }, 500);
+          } else {
+            modalClose();
+            toaster.setToast({ type: 'error', text: 'Failed to update config' });
+          }
         },
       }
     );
