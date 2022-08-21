@@ -52,7 +52,7 @@ export const AddConfigModal: React.FC<{
           <></>
         )}
       </Modal.Content>
-      <Modal.Action onClick={() => closeModal}>Cancel</Modal.Action>
+      <Modal.Action onClick={() => closeModal()}>Cancel</Modal.Action>
       <Modal.Action onClick={createConfig}>Create</Modal.Action>
     </Modal>
   );
