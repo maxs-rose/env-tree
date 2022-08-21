@@ -17,6 +17,7 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
 }) => {
   const trpcContext = trpc.useContext();
   const currentConfig = useRef<Config>();
+  const configSelectorRef = useRef() as React.MutableRefObject<HTMLDivElement>;
   const deleteConfigMutation = trpc.useMutation('config-delete');
   const [downloadType, setDownloadType] = useState<ConfigType>('env');
   const [link, setLink] = useState(false);
@@ -90,11 +91,16 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
       .subscribe(([data, filename]) => fileDownload(data, filename));
   };
 
+  const updateDownloadType = (type: ConfigType) => {
+    setDownloadType(type);
+    configSelectorRef.current?.querySelector('.btn-dropdown>details[open]>summary')?.click();
+  };
+
   return (
     <>
       {configs.map((c) => (
         <Tabs.Tab label={c.name} key={c.id} value={c.id}>
-          <div className="flex justify-center items-center flex-wrap gap-2">
+          <div className="flex justify-center items-center flex-wrap gap-2" ref={configSelectorRef}>
             <Button auto ghost icon={<Plus />} onClick={() => openConfigModal(c)}>
               Add Secret
             </Button>
@@ -108,12 +114,12 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
               <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
                 Download Secrets ({downloadType})
               </ButtonDropdown.Item>
-              <ButtonDropdown.Item onClick={() => setDownloadType('env')}>
+              <ButtonDropdown.Item onClick={() => updateDownloadType('env')}>
                 <span className="w-full flex justify-around items-center">
                   ENV {downloadType === 'env' ? <Check /> : <span />}
                 </span>
               </ButtonDropdown.Item>
-              <ButtonDropdown.Item onClick={() => setDownloadType('json')}>
+              <ButtonDropdown.Item onClick={() => updateDownloadType('json')}>
                 <span className="w-full flex justify-around items-center">
                   JSON {downloadType === 'json' ? <Check /> : <span />}
                 </span>
