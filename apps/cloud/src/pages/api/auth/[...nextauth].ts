@@ -2,14 +2,13 @@ import { prisma } from '@backend/prisma';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import { Provider } from 'next-auth/providers';
-import DiscordProvider from 'next-auth/providers/discord';
 import GithubProvider from 'next-auth/providers/github';
 import GitlabProvider from 'next-auth/providers/gitlab';
 
 const getProviders = () => {
   const providers: Provider[] = [];
 
-  // TODO: Add email provider and remove discord
+  // TODO: Add email provider
 
   if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
     providers.push(
@@ -25,15 +24,6 @@ const getProviders = () => {
       GitlabProvider({
         clientId: process.env.GITLAB_ID,
         clientSecret: process.env.GITLAB_SECRET,
-      })
-    );
-  }
-
-  if (process.env.DISCORD_ID && process.env.DISCORD_SECRET) {
-    providers.push(
-      DiscordProvider({
-        clientId: process.env.DISCORD_ID,
-        clientSecret: process.env.DISCORD_SECRET,
       })
     );
   }
