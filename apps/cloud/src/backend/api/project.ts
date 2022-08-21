@@ -3,10 +3,12 @@ import * as trpc from '@trpc/server';
 import { combineLatest, from, map, of, switchMap } from 'rxjs';
 
 export const getProjects$ = (userId: string) =>
+  // TODO: Add user icons into response
   from(prisma.usersOnProject.findMany({ where: { userId }, include: { project: true } })).pipe(
     map((userProjects) => userProjects.map((p) => p.project))
   );
 
+// TODO: Add project descriptions
 export const createProject$ = (userId: string, name: string) =>
   from(
     prisma.project.create({

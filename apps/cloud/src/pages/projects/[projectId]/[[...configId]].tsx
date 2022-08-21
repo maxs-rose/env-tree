@@ -64,6 +64,7 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
     }
   };
 
+  // TODO: Remove user
   const openAddUserModal = () => {
     setAddUserVisible(true);
   };
