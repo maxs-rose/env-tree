@@ -2,6 +2,7 @@ import { prisma } from '@backend/prisma';
 import { AddConfigModal } from '@components/config/AddConfigModal';
 import { DisplayProjectConfigs } from '@components/config/DisplayProjectConfigs';
 import SecretLoader from '@components/loader';
+import { AddUserToProjectModal } from '@components/project/AddUserToProject';
 import { Button, Page, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Trash2 } from '@geist-ui/icons';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
@@ -20,6 +21,7 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
   const trpcContext = trpc.useContext();
   const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
+  const { setVisible: setAddUserVisible, bindings: addUserModalBindings } = useModal();
   const configs = trpc.useQuery(['config-get', { projectId: project?.id ?? '' }]);
   const deleteProjectMutation = trpc.useMutation('project-delete');
 
@@ -62,6 +64,14 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
     }
   };
 
+  const openAddUserModal = () => {
+    setAddUserVisible(true);
+  };
+
+  const closeAddUserModal = () => {
+    setAddUserVisible(false);
+  };
+
   const deleteProject = () => {
     deleteProjectMutation.mutate({ projectId: project.id }, { onSuccess: () => router.push('/projects') });
   };
@@ -84,11 +94,13 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
             </Text>
             <Button auto icon={<Plus />} px={0.6} type="success" onClick={() => setAddConfigVisible(true)} />
             <Button auto icon={<Trash2 />} px={0.6} type="error" onClick={deleteProject} />
+            <Button onClick={openAddUserModal}>Add Users</Button>
           </div>
         </Page.Header>
         <Page.Content className="flex items-center justify-center">{showContent()}</Page.Content>
       </Page>
       <AddConfigModal onCloseModel={closeConfigModal} bindings={addConfigModalBindings} projectId={project.id} />
+      <AddUserToProjectModal onCloseModel={closeAddUserModal} bindings={addUserModalBindings} projectId={project.id} />
     </>
   );
 };

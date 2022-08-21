@@ -1,6 +1,6 @@
 import { prisma } from '@backend/prisma';
 import * as crypto from 'crypto';
-import { from, map, switchMap } from 'rxjs';
+import { from, map, of, switchMap } from 'rxjs';
 
 export interface User {
   id: string;
@@ -39,3 +39,21 @@ export const deleteUser$ = (userId: string) =>
     // Delete the user
     switchMap(() => prisma.user.delete({ where: { id: userId } }))
   );
+
+export const searchUser$ = (query: string | undefined, projectId: string | undefined) =>
+  query
+    ? from(
+        prisma.user.findMany({
+          select: { email: true, name: true, image: true },
+          where: {
+            OR: [{ name: { contains: query } }, { email: { contains: query } }],
+            // Ensure that the returned users are not already on the project
+            UsersOnProject: { none: { projectId: projectId ?? '' } },
+            // Ensure that the returned users have not already been quested to be added to be project
+            UserAddRequest: { none: { projectId: projectId ?? '' } },
+          },
+          distinct: ['id'],
+          take: 20,
+        })
+      )
+    : of([]);

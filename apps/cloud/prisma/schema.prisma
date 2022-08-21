@@ -16,6 +16,7 @@ model Project {
   description    String?
   configs        Config[]
   UsersOnProject UsersOnProject[]
+  UserAddRequest UserAddRequest[]
 }
 
 model Config {
@@ -46,6 +47,7 @@ model User {
   accounts       Account[]
   sessions       Session[]
   UsersOnProject UsersOnProject[]
+  UserAddRequest UserAddRequest[]
 
   @@unique([email, authToken])
 }
@@ -58,6 +60,14 @@ model UsersOnProject {
   userId    String
 
   @@id([projectId, userId])
+}
+
+model UserAddRequest {
+  id        String  @id @default(uuid())
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
 }
 
 model Session {

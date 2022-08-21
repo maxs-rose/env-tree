@@ -26,3 +26,8 @@ body {
 .btn-dropdown > button  {
   height: revert !important;
 }
+
+.user > .names > .name,
+.user > .names > .social {
+  @apply overflow-hidden overflow-ellipsis max-w-[15rem];
+}

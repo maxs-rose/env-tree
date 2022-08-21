@@ -1,4 +1,4 @@
-import { deleteUser$, generateAuthToken$, getUser$, renameUser$ } from '@backend/api/user';
+import { deleteUser$, generateAuthToken$, getUser$, renameUser$, searchUser$ } from '@backend/api/user';
 import { createRouter } from '@backend/createRouter';
 import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
@@ -16,4 +16,8 @@ export const userRouter = createRouter()
   })
   .mutation('delete', {
     resolve: ({ ctx }) => firstValueFrom(deleteUser$(ctx.user.id)),
+  })
+  .query('search', {
+    input: z.object({ query: z.string().optional(), projectId: z.string().optional() }).optional(),
+    resolve: ({ input }) => firstValueFrom(searchUser$(input?.query, input?.projectId)),
   });
