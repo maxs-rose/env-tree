@@ -99,7 +99,7 @@ export const ProjectSettingsModal: React.FC<{
             <Divider />
             <AddUserToProjectModal projectId={project.id} />
           </Collapse>
-          <Collapse title="Danger Zone">
+          <Collapse title="Danger Zone" className="danger-zone">
             <DeleteProject projectId={project.id} projectName={project.name} />
           </Collapse>
         </Collapse.Group>

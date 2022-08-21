@@ -31,3 +31,7 @@ body {
 .user > .names > .social {
   @apply overflow-hidden overflow-ellipsis max-w-[15rem];
 }
+
+.danger-zone div.title {
+  color: red;
+}
