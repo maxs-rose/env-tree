@@ -1,7 +1,7 @@
 import { unauthorizedError } from '@backend/api/project';
 import { prisma } from '@backend/prisma';
 import { configToEnvString, configToJsonObject, PrismaConfigWithParent, transformConfigs } from '@backend/utils/config';
-import { encryptConfig } from '@backend/utils/crypt';
+import { decrypt, encryptConfig } from '@backend/utils/crypt';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
@@ -204,12 +204,16 @@ const getUserFromSessionOrRequest = async (req: NextApiRequest, res: NextApiResp
   if (parseResult.success) {
     const dbUser = await prisma.user.findUnique({
       where: {
-        email_authToken: { email: parseResult.data.userEmail ?? '', authToken: parseResult.data.userToken ?? '' },
+        email: parseResult.data.userEmail,
       },
     });
 
     if (dbUser) {
-      return dbUser as { id: string };
+      if (decrypt(dbUser.authToken) === parseResult.data.userToken) {
+        return dbUser as { id: string };
+      }
+
+      return 401;
     }
   }
 

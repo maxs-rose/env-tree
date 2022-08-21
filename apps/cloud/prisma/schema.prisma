@@ -45,14 +45,11 @@ model User {
   username       String           @unique @default(uuid())
   emailVerified  DateTime?
   image          String?
-  // Note: I wonder if this should be stored encrypted?
   authToken      String?
   accounts       Account[]
   sessions       Session[]
   UsersOnProject UsersOnProject[]
   UserAddRequest UserAddRequest[]
-
-  @@unique([email, authToken])
 }
 
 model UsersOnProject {

@@ -1,4 +1,5 @@
 import { prisma } from '@backend/prisma';
+import { decrypt, encrypt } from '@backend/utils/crypt';
 import * as crypto from 'crypto';
 import { from, map, of, switchMap } from 'rxjs';
 
@@ -16,12 +17,12 @@ export const getUser$ = (userId: string) =>
       where: { id: userId },
       select: { id: true, email: true, name: true, username: true, image: true, authToken: true },
     })
-  );
+  ).pipe(map((user) => (user ? { ...user, authToken: decrypt(user.authToken ?? '') } : user)));
 
 export const generateAuthToken$ = (userId: string) => {
   const authToken = crypto.randomBytes(32).toString('hex');
 
-  return from(prisma.user.update({ where: { id: userId }, data: { authToken } }));
+  return from(prisma.user.update({ where: { id: userId }, data: { authToken: encrypt(authToken) } }));
 };
 
 export const renameUser$ = (userId: string, name: string) =>

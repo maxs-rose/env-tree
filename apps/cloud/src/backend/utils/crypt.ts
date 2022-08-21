@@ -35,10 +35,12 @@ const getDecryptionCipher = (salt: string, iv: string) => {
   return createDecipheriv(algorithm, key, Buffer.from(iv, 'hex'));
 };
 
-export const encryptConfig = (config: ConfigValue): string => {
+export const encryptConfig = (config: ConfigValue): string => encrypt(JSON.stringify(config));
+
+export const encrypt = (data: string) => {
   const { cipher, salt, iv } = getEncryptionCipher();
 
-  return `${cipher.update(JSON.stringify(config), 'utf-8', 'hex') + cipher.final('hex')}-${salt}-${iv}`;
+  return `${cipher.update(data, 'utf-8', 'hex') + cipher.final('hex')}-${salt}-${iv}`;
 };
 
 export const decryptConfig = (config: string): ConfigValue => {
@@ -46,11 +48,15 @@ export const decryptConfig = (config: string): ConfigValue => {
     return {};
   }
 
-  const [cipherText, salt, iv] = config.split('-');
+  return JSON.parse(decrypt(config) || '{}');
+};
 
+export const decrypt = (data?: string | null) => {
+  if (!data) {
+    return '';
+  }
+
+  const [cipherText, salt, iv] = data.split('-');
   const cipher = getDecryptionCipher(salt, iv);
-
-  const result = cipher.update(cipherText, 'hex', 'utf-8') + cipher.final('utf-8');
-
-  return JSON.parse(result || '{}');
+  return cipher.update(cipherText, 'hex', 'utf-8') + cipher.final('utf-8');
 };
