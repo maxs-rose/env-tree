@@ -93,7 +93,9 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
 
   const updateDownloadType = (type: ConfigType) => {
     setDownloadType(type);
-    configSelectorRef.current?.querySelector('.btn-dropdown>details[open]>summary')?.click();
+    (
+      configSelectorRef.current?.querySelector('.btn-dropdown>details[open]>summary') as HTMLElement | undefined
+    )?.click();
   };
 
   return (
