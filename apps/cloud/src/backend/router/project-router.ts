@@ -14,8 +14,6 @@ import * as trpc from '@trpc/server';
 import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
 
-// TODO: Implement project descriptions
-
 export const projectRouter = createRouter()
   .query('get', {
     resolve: ({ ctx }) => firstValueFrom(getProjects$(ctx.user.id)),
@@ -27,7 +25,6 @@ export const projectRouter = createRouter()
   .mutation('update', {
     input: z.object({ projectId: z.string(), newName: z.string().min(3).max(40) }),
     resolve: ({ ctx, input }) => {
-      // TODO: Implement updating project name/description
       throw new trpc.TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Not yet implemented',

@@ -19,7 +19,6 @@ export const getProjects$ = (userId: string) =>
     map((projects) => projects.map(projectWithUserIcons))
   );
 
-// TODO: Add project descriptions
 export const createProject$ = (userId: string, name: string) =>
   from(
     prisma.project.create({

@@ -8,8 +8,6 @@ import GitlabProvider from 'next-auth/providers/gitlab';
 const getProviders = () => {
   const providers: Provider[] = [];
 
-  // TODO: Add email provider
-
   if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
     providers.push(
       GithubProvider({

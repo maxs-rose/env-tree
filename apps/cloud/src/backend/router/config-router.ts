@@ -30,7 +30,6 @@ export const configRouter = createRouter()
     resolve: ({ ctx, input }) =>
       firstValueFrom(linkedConfig$(ctx.user.id, input.projectId, input.targetConfig, input.configName)),
   })
-  // TODO: Add groups to config values
   .mutation('update', {
     input: z.object({
       projectId: z.string(),
