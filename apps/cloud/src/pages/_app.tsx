@@ -1,3 +1,4 @@
+import { Footer } from '@components/footer';
 import Nav from '@components/nav';
 import { ConfigProvider } from '@context/config';
 import { CssBaseline, GeistProvider, useTheme } from '@geist-ui/core';
@@ -41,6 +42,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
 
           <Nav />
           <Component {...pageProps} />
+          <Footer />
         </ConfigProvider>
       </GeistProvider>
     </SessionProvider>
