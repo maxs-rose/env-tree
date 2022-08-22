@@ -12,7 +12,7 @@ body {
 }
 
 .page-height {
-  min-height: calc(100vh - var(--nav-height)) !important;
+  min-height: calc(100vh - var(--nav-height) - 49px) !important;
 }
 
 .nav-tabs .content {
