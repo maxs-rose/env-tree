@@ -39,7 +39,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.SECRET,
   adapter: PrismaAdapter(prisma),
   callbacks: {
     session: async ({ session, token }) => {
