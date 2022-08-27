@@ -147,8 +147,9 @@ export const EditConfigValueModal: React.FC<{
           clearable
           width="100%"
           placeholder="Group"
-          onChange={handleGroupChange}
+          initialValue={getConfigValue<string | null>(config.current, editValue, 'group') || undefined}
           options={groupOptions}
+          onChange={handleGroupChange}
           onSearch={handleSearch}
         />
         <Spacer />
