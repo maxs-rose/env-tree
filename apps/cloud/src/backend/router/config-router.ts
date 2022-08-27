@@ -34,7 +34,7 @@ export const configRouter = createRouter()
     input: z.object({
       projectId: z.string(),
       configId: z.string(),
-      configVersion: z.string().nullable().optional(),
+      configVersion: z.string(),
       values: ZConfigValue,
     }),
     resolve: ({ ctx, input }) =>
