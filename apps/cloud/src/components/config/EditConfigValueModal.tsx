@@ -1,4 +1,4 @@
-import { Input, Modal, Spacer, Text, Toggle, useInput, useToasts } from '@geist-ui/core';
+import { AutoComplete, Input, Modal, Spacer, Text, Toggle, useInput, useToasts } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
 import { trpc } from '@utils/trpc';
@@ -24,16 +24,21 @@ export const EditConfigValueModal: React.FC<{
   const [hidden, setHidden] = useState(getConfigValue<boolean>(config.current, editValue, 'hidden') ?? false);
   const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
+  const [group, setGroup] = useState<string | null>(null);
+  const [groupOptions, setGroupOptions] = useState<Array<{ label: string; value: string }>>([]);
 
   if (!config.current) {
     return <></>;
   }
 
-  const configMap = new Map(Object.entries(config.current.values));
+  const configMap = new Map(Object.entries(config!.current!.values));
+  const allGroupOptions = Array.from(new Set(Array.from(configMap.values()).map((v) => v.group)).values())
+    .filter((g) => g)
+    .map((g) => ({ label: g!, value: g! }));
 
   const tryAddValue = () => {
     const key = keyValue.trim();
-    const value = { value: valueValue, hidden };
+    const value = { value: valueValue, group: group || null, hidden };
 
     if (!key) {
       setKey(key);
@@ -103,6 +108,22 @@ export const EditConfigValueModal: React.FC<{
     };
   };
 
+  const handleSearch = (searchValue: string) => {
+    const currentOptions = allGroupOptions.filter(
+      (g) => g.value.toLowerCase().includes(searchValue.toLowerCase()) || g.label.toLowerCase().includes(searchValue)
+    );
+
+    if (currentOptions.length === 0) {
+      setGroupOptions([{ label: `Create group "${searchValue}"`, value: searchValue }]);
+    } else {
+      setGroupOptions(currentOptions);
+    }
+  };
+
+  const handleGroupChange = (value: string) => {
+    setGroup(value || null);
+  };
+
   return (
     <Modal visible={bindings.visible} onClose={modalClose}>
       <Modal.Title>Add secret</Modal.Title>
@@ -120,6 +141,15 @@ export const EditConfigValueModal: React.FC<{
           value={valueBinding.value}
           onChange={onInputChange(valueBinding.onChange)}
           width="100%"
+        />
+        <Spacer />
+        <AutoComplete
+          clearable
+          width="100%"
+          placeholder="Group"
+          onChange={handleGroupChange}
+          options={groupOptions}
+          onSearch={handleSearch}
         />
         <Spacer />
         <div className="flex items-center gap-2">

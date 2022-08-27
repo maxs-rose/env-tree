@@ -20,10 +20,11 @@ model Project {
 }
 
 model Config {
-  id      String @default(uuid())
+  id      String  @default(uuid())
   name    String
   values  String // JSON string of env values
-  version String @default("1")
+  version String  @default("1")
+  group   String?
 
   // We must be related to a project
   Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)

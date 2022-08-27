@@ -85,8 +85,8 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
           console.error(error);
           return EMPTY;
         }),
-        map((data) => (downloadType === 'json' ? JSON.stringify(data, null, '\t') : data)),
-        withLatestFrom(of(`${config.name}.${downloadType}`))
+        map((data) => (downloadType !== 'env' ? JSON.stringify(data, null, '\t') : data)),
+        withLatestFrom(of(`${config.name}.${downloadType === 'env' ? 'env' : 'json'}`))
       )
       .subscribe(([data, filename]) => fileDownload(data, filename));
   };
@@ -114,7 +114,7 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
             </Button>
             <ButtonDropdown auto icon={<DownloadCloud />} type="success">
               <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
-                Download Secrets ({downloadType})
+                Download Secrets ({downloadType.replaceAll('-', ' ')})
               </ButtonDropdown.Item>
               <ButtonDropdown.Item onClick={() => updateDownloadType('env')}>
                 <span className="w-full flex justify-around items-center">
@@ -124,6 +124,11 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
               <ButtonDropdown.Item onClick={() => updateDownloadType('json')}>
                 <span className="w-full flex justify-around items-center">
                   JSON {downloadType === 'json' ? <Check /> : <span />}
+                </span>
+              </ButtonDropdown.Item>
+              <ButtonDropdown.Item onClick={() => updateDownloadType('json-grouped')}>
+                <span className="w-full flex justify-around items-center">
+                  JSON Grouped {downloadType === 'json-grouped' ? <Check /> : <span />}
                 </span>
               </ButtonDropdown.Item>
             </ButtonDropdown>

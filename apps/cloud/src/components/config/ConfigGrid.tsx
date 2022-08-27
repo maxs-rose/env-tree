@@ -47,6 +47,9 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const tableData = Array.from(Object.entries(flattenConfigValues(config))).map(([property, value]) => ({
     property: propertyName(property, value),
     value: propertyValue(value),
+    group: (
+      <span className="max-w-[200px] whitespace-nowrap overflow-hidden overflow-ellipsis">{value.group || '-'}</span>
+    ),
     editProperty: value.parentName ? undefined : property,
     deleteProperty: value.parentName ? undefined : property,
   }));
@@ -104,6 +107,7 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
       <Table data={tableData} emptyText="-">
         <Table.Column prop="property" label="Property" />
         <Table.Column prop="value" label="Value" />
+        <Table.Column width={200} prop="group" label="Group" />
         <Table.Column width={50} prop="editProperty" render={renderEdit}>
           <div className="w-full text-center">Edit</div>
         </Table.Column>

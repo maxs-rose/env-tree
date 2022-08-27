@@ -2,6 +2,7 @@ import { Config as PrismaConfig, Project as PrismaProject } from '@prisma/client
 import { z } from 'zod';
 
 const ZConfigObject = z.object({
+  group: z.string().nullable(),
   value: z.string().nullable(),
   hidden: z.boolean().optional(),
   parentName: z.string().optional(),
