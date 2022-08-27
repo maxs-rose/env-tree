@@ -15,7 +15,7 @@ export const CreateProjectModal: React.FC<{
     descriptionInvalid?: string;
   }>({});
 
-  const submitProjectName = () => {
+  const submitCreateProject = () => {
     createProject.mutate(
       { name: projectNameBindings.value.trim(), description: projectDescriptionBindings.value.trim() || null },
       {
@@ -77,7 +77,7 @@ export const CreateProjectModal: React.FC<{
       <Modal.Action passive onClick={() => closeModal(false)}>
         Cancel
       </Modal.Action>
-      <Modal.Action passive onClick={submitProjectName}>
+      <Modal.Action passive onClick={submitCreateProject}>
         Create
       </Modal.Action>
     </Modal>

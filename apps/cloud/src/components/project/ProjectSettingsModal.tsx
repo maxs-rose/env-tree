@@ -1,12 +1,76 @@
 import SecretLoader from '@components/loader';
 import { AddUserToProjectModal } from '@components/project/AddUserToProject';
-import { Button, Collapse, Divider, Input, Modal, useInput, User } from '@geist-ui/core';
+import { Button, Collapse, Divider, Input, Modal, Spacer, Text, Textarea, useInput, User } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { Trash2 } from '@geist-ui/icons';
-import { trpc } from '@utils/trpc';
+import { getZodErrorMessage, trpc } from '@utils/trpc';
 import { Project } from '@utils/types';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+
+const UpdateProjectNameAndDescription: React.FC<{ project: Project }> = ({ project }) => {
+  const router = useRouter();
+  const trpcContext = trpc.useContext();
+  const updateProject = trpc.useMutation('project-update');
+  const { bindings: projectNameBindings } = useInput(project.name);
+  const { bindings: projectDescriptionBindings } = useInput(project.description || '');
+  const [updateProjectState, setUpdateProjectSate] = useState<{
+    nameInvalid?: string;
+    descriptionInvalid?: string;
+  }>({});
+
+  const updateProjectDetails = () => {
+    updateProject.mutate(
+      {
+        projectId: project.id,
+        name: projectNameBindings.value.trim(),
+        description: projectDescriptionBindings.value.trim() || null,
+      },
+      {
+        onSuccess: () => {
+          trpcContext.invalidateQueries(['project-get']);
+          trpcContext.invalidateQueries(['project-get-single', { projectId: project.id }]);
+        },
+        onError: (error) => {
+          if (error?.data?.code === 'NOT_FOUND') {
+            router.replace('/projects');
+          }
+
+          const errorMessage = getZodErrorMessage(error.message);
+
+          setUpdateProjectSate({
+            nameInvalid: errorMessage.filter((e) => e.path.some((v) => v === 'name'))?.[0]?.message || undefined,
+            descriptionInvalid:
+              errorMessage.filter((e) => e.path.some((v) => v === 'description'))?.[0]?.message || undefined,
+          });
+        },
+      }
+    );
+  };
+
+  return (
+    <div>
+      <Input width="100%" {...projectNameBindings} type={updateProjectState.nameInvalid ? 'error' : 'default'} />
+      <Spacer inline />
+      <Text span type="error">
+        {updateProjectState.nameInvalid}
+      </Text>
+      <Textarea
+        width="100%"
+        height="120px"
+        placeholder="Project description"
+        type={updateProjectState.descriptionInvalid ? 'error' : 'default'}
+        {...projectDescriptionBindings}
+      />
+      <Spacer inline />
+      <Text span type="error">
+        {updateProjectState.descriptionInvalid}
+      </Text>
+      <Spacer />
+      <Button onClick={updateProjectDetails}>Update</Button>
+    </div>
+  );
+};
 
 const DeleteProject: React.FC<{ projectId: string; projectName: string }> = ({ projectId, projectName }) => {
   const router = useRouter();
@@ -93,7 +157,9 @@ export const ProjectSettingsModal: React.FC<{
       <Modal.Title>Project Settings</Modal.Title>
       <Modal.Content>
         <Collapse.Group accordion={false}>
-          {/*<Collapse title="General" initialVisible={true}></Collapse>*/}
+          <Collapse title="General" initialVisible={true}>
+            <UpdateProjectNameAndDescription project={project} />
+          </Collapse>
           <Collapse title="User Management">
             <ProjectUserList projectId={project.id} />
             <Divider />

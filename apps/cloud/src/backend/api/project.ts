@@ -19,11 +19,45 @@ export const getProjects$ = (userId: string) =>
     map((projects) => projects.map(projectWithUserIcons))
   );
 
+export const getSingleProject$ = (userId: string, projectId: string) =>
+  from(
+    prisma.usersOnProject.findUnique({ where: { projectId_userId: { userId, projectId } }, include: { project: true } })
+  ).pipe(
+    map((data) => {
+      if (!data) {
+        throw new trpc.TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found',
+        });
+      }
+
+      return data.project;
+    })
+  );
+
 export const createProject$ = (userId: string, name: string, description: string | null) =>
   from(
     prisma.project.create({
       data: { name, description, UsersOnProject: { create: { userId } } },
       select: { id: true, name: true, description: true },
+    })
+  );
+
+export const updateProject$ = (userId: string, projectId: string, name: string, description: string | null) =>
+  from(
+    prisma.usersOnProject.findUnique({
+      where: { projectId_userId: { userId, projectId } },
+    })
+  ).pipe(
+    switchMap((data) => {
+      if (!data) {
+        throw new trpc.TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found',
+        });
+      }
+
+      return prisma.project.update({ data: { name, description }, where: { id: projectId } });
     })
   );
 

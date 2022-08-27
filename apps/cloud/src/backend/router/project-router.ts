@@ -6,17 +6,22 @@ import {
   denyProjectRequest$,
   getProjectAddRequests$,
   getProjects$,
+  getSingleProject$,
   getUsersOnProject$,
   removeUser$,
+  updateProject$,
 } from '@backend/api/project';
 import { createRouter } from '@backend/createRouter';
-import * as trpc from '@trpc/server';
 import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
 
 export const projectRouter = createRouter()
   .query('get', {
     resolve: ({ ctx }) => firstValueFrom(getProjects$(ctx.user.id)),
+  })
+  .query('get-single', {
+    input: z.object({ projectId: z.string() }),
+    resolve: ({ ctx, input }) => firstValueFrom(getSingleProject$(ctx.user.id, input.projectId)),
   })
   .mutation('create', {
     input: z.object({
@@ -29,13 +34,16 @@ export const projectRouter = createRouter()
     resolve: ({ input, ctx }) => firstValueFrom(createProject$(ctx.user.id, input.name, input.description)),
   })
   .mutation('update', {
-    input: z.object({ projectId: z.string(), newName: z.string().min(3).max(40) }),
-    resolve: ({ ctx, input }) => {
-      throw new trpc.TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Not yet implemented',
-      });
-    },
+    input: z.object({
+      projectId: z.string(),
+      name: z
+        .string()
+        .min(3, 'Minimum project name length is 3 characters')
+        .max(40, 'Maximum project name length is 40 characters'),
+      description: z.string().max(255, 'Maximum description length is 255 characters').nullable(),
+    }),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(updateProject$(ctx.user.id, input.projectId, input.name, input.description)),
   })
   .mutation('delete', {
     input: z.object({ projectId: z.string() }),

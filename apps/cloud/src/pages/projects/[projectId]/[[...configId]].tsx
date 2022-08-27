@@ -22,6 +22,10 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
   const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
   const { setVisible: setProjectSettingsVisible, bindings: projectSettingsModalBindings } = useModal();
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
+  const currentProject = trpc.useQuery(['project-get-single', { projectId: project.id }], {
+    initialData: project,
+    refetchOnMount: false,
+  });
   const configs = trpc.useQuery(['config-get', { projectId: project?.id ?? '' }]);
 
   useEffect(() => {
@@ -80,7 +84,7 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
       <Page className="page-height">
         <Page.Header>
           <div className="flex items-center gap-2 flex-wrap">
-            <Text h2>{project?.name}</Text>
+            <Text h2>{currentProject!.data!.name}</Text>
             <Spacer inline />
             <Button auto icon={<Plus />} px={0.6} type="success" onClick={() => setAddConfigVisible(true)}>
               Add Configuration
@@ -98,7 +102,7 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
       <ProjectSettingsModal
         onCloseModel={closeProjectSettings}
         bindings={projectSettingsModalBindings}
-        project={project}
+        project={currentProject!.data!}
       />
       <AddConfigModal onCloseModel={closeConfigModal} bindings={addConfigModalBindings} projectId={project.id} />
     </>
