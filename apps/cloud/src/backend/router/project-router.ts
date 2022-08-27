@@ -19,8 +19,14 @@ export const projectRouter = createRouter()
     resolve: ({ ctx }) => firstValueFrom(getProjects$(ctx.user.id)),
   })
   .mutation('create', {
-    input: z.object({ name: z.string().min(3).max(40) }),
-    resolve: ({ input, ctx }) => firstValueFrom(createProject$(ctx.user.id, input.name)),
+    input: z.object({
+      name: z
+        .string()
+        .min(3, 'Minimum project name length is 3 characters')
+        .max(40, 'Maximum project name length is 40 characters'),
+      description: z.string().max(255, 'Maximum description length is 255 characters').nullable(),
+    }),
+    resolve: ({ input, ctx }) => firstValueFrom(createProject$(ctx.user.id, input.name, input.description)),
   })
   .mutation('update', {
     input: z.object({ projectId: z.string(), newName: z.string().min(3).max(40) }),

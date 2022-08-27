@@ -1,6 +1,6 @@
-import { Input, Modal, Spacer, Text, useInput } from '@geist-ui/core';
+import { Input, Modal, Spacer, Text, Textarea, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
-import { trpc } from '@utils/trpc';
+import { getZodErrorMessage, trpc } from '@utils/trpc';
 import React, { useState } from 'react';
 
 export const CreateProjectModal: React.FC<{
@@ -8,37 +8,43 @@ export const CreateProjectModal: React.FC<{
   bindings: ModalHooksBindings;
 }> = ({ onCloseModel, bindings }) => {
   const createProject = trpc.useMutation('project-create');
-  const { setState: setInputState, bindings: inputBindings } = useInput('');
+  const { setState: setProjectNameState, bindings: projectNameBindings } = useInput('');
+  const { setState: setProjectDescriptionState, bindings: projectDescriptionBindings } = useInput('');
   const [createProjectState, setCreateProjectSate] = useState<{
-    valid: boolean;
-    errorMessage?: string;
-  }>({ valid: true });
+    nameInvalid?: string;
+    descriptionInvalid?: string;
+  }>({});
 
   const submitProjectName = () => {
     createProject.mutate(
-      { name: inputBindings.value.trim() },
+      { name: projectNameBindings.value.trim(), description: projectDescriptionBindings.value.trim() || null },
       {
         onSuccess: () => closeModal(true),
         onError: (error) => {
-          setInputState(inputBindings.value.trim());
+          setProjectNameState(projectNameBindings.value.trim());
+
+          const errorMessage = getZodErrorMessage(error.message);
+
           setCreateProjectSate({
-            valid: false,
-            errorMessage: error.data?.code === 'CONFLICT' ? error.message : 'Invalid project name',
+            nameInvalid: errorMessage.filter((e) => e.path.some((v) => v === 'name'))?.[0]?.message || undefined,
+            descriptionInvalid:
+              errorMessage.filter((e) => e.path.some((v) => v === 'description'))?.[0]?.message || undefined,
           });
         },
       }
     );
   };
 
-  const inputChange: typeof inputBindings.onChange = (e) => {
-    setCreateProjectSate({ valid: true });
-    inputBindings.onChange(e);
+  const inputChange: typeof projectNameBindings.onChange = (e) => {
+    setCreateProjectSate({});
+    projectNameBindings.onChange(e);
   };
 
   const closeModal = (status = false) => {
     onCloseModel(status);
-    setCreateProjectSate({ valid: true });
-    setInputState('');
+    setCreateProjectSate({});
+    setProjectNameState('');
+    setProjectDescriptionState('');
   };
 
   return (
@@ -46,22 +52,27 @@ export const CreateProjectModal: React.FC<{
       <Modal.Title>Create Project</Modal.Title>
       <Modal.Content>
         <Input
-          placeholder="Enter Project name"
-          type={createProjectState.valid ? 'default' : 'error'}
-          value={inputBindings.value}
+          placeholder="Project name"
+          type={createProjectState.nameInvalid ? 'error' : 'default'}
+          value={projectNameBindings.value}
           onChange={inputChange}
           width="100%"
         />
-        {createProjectState.valid ? (
-          <></>
-        ) : (
-          <>
-            <Spacer />{' '}
-            <Text span type="error">
-              {createProjectState.errorMessage}
-            </Text>
-          </>
-        )}
+        <Text span type="error">
+          {createProjectState.nameInvalid}
+        </Text>
+        <Spacer inline />
+        <Textarea
+          placeholder="Project description"
+          width="100%"
+          height="100px"
+          type={createProjectState.descriptionInvalid ? 'error' : 'default'}
+          {...projectDescriptionBindings}
+        />
+        <Text span type="error">
+          {createProjectState.descriptionInvalid}
+        </Text>
+        <Spacer inline />
       </Modal.Content>
       <Modal.Action passive onClick={() => closeModal(false)}>
         Cancel

@@ -19,11 +19,11 @@ export const getProjects$ = (userId: string) =>
     map((projects) => projects.map(projectWithUserIcons))
   );
 
-export const createProject$ = (userId: string, name: string) =>
+export const createProject$ = (userId: string, name: string, description: string | null) =>
   from(
     prisma.project.create({
-      data: { name, UsersOnProject: { create: { userId } } },
-      select: { id: true, name: true },
+      data: { name, description, UsersOnProject: { create: { userId } } },
+      select: { id: true, name: true, description: true },
     })
   );
 
