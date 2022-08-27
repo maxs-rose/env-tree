@@ -1,6 +1,12 @@
 import { unauthorizedError } from '@backend/api/project';
 import { prisma } from '@backend/prisma';
-import { configToEnvString, configToJsonObject, PrismaConfigWithParent, transformConfigs } from '@backend/utils/config';
+import {
+  configToEnvString,
+  configToJsonGroupObject,
+  configToJsonObject,
+  PrismaConfigWithParent,
+  transformConfigs,
+} from '@backend/utils/config';
 import { decrypt, encryptConfig } from '@backend/utils/crypt';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { Config as PrismaConfig } from '@prisma/client';
@@ -154,8 +160,14 @@ export const deleteConfig$ = (userId: string, projectId: string, configId: strin
     )
   );
 
-export type ConfigType = 'env' | 'json';
-type ConfigExportType<T> = T extends 'env' ? string : T extends 'json' ? { [key: string]: string } : never;
+export type ConfigType = 'env' | 'json' | 'json-grouped';
+type ConfigExportType<T> = T extends 'env'
+  ? string
+  : T extends 'json'
+  ? { [key: string]: string }
+  : T extends 'json-grouped'
+  ? { [group: string]: ConfigExportType<'json'> }
+  : never;
 
 const exportConfig$ = <T extends ConfigType>(
   userId: string,
@@ -177,6 +189,8 @@ const exportConfig$ = <T extends ConfigType>(
           return configToEnvString(flatValues) as ConfigExportType<T>;
         case 'json':
           return configToJsonObject(flatValues) as ConfigExportType<T>;
+        case 'json-grouped':
+          return configToJsonGroupObject(flatValues) as ConfigExportType<T>;
       }
     })
   );
@@ -184,7 +198,7 @@ const exportConfig$ = <T extends ConfigType>(
 const zFormData = z.object({
   projectId: z.string().min(1),
   configId: z.string().min(1),
-  type: z.union([z.literal('env'), z.literal('json')]),
+  type: z.union([z.literal('env'), z.literal('json'), z.literal('json-grouped')]),
   userEmail: z.string().optional(),
   userToken: z.string().optional(),
 });

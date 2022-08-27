@@ -15,6 +15,7 @@ program
   .argument('<userToken>', 'User auth token')
   .option('-env', '.env file format (default)')
   .option('-json', 'JSON file format')
+  .option('-json-grouped', 'JSON file format preserving property groups')
   .option('-dd, --download-directory <directory>', 'Directory to download file to', '.')
   .option('-f, --filename <filename>', 'Filename for created secrets file (default .env)')
   .option('-u, --url <url>', 'URL of secret cloud', 'http://localhost:3000');
@@ -37,7 +38,7 @@ const getFilename = (filename: string | undefined, downloadType: FileType) => {
 
 const [projectId, configId, userEmail, userToken] = program.processedArgs;
 const options = program.opts();
-const type: FileType = options.Json ? 'json' : 'env';
+const type: FileType = options.Env ? 'env' : 'json';
 const filename = getFilename(options.filename, type);
 const filepath = `${options.downloadDirectory}/${filename}`;
 const url = options.url;
@@ -62,7 +63,7 @@ fetch(`${url}/api/config`, { method: 'POST', headers: { 'Content-Type': 'applica
 
     return res;
   })
-  .then((res) => (type === 'json' ? res.json() : res.text()) as string | object)
+  .then((res) => (type === 'env' ? res.text() : res.json()) as string | object)
   .then((data) => {
     spinner.succeed('Got configuration');
 
@@ -71,7 +72,7 @@ fetch(`${url}/api/config`, { method: 'POST', headers: { 'Content-Type': 'applica
   })
   .then((data) => {
     try {
-      writeFileSync(filepath, type === 'json' ? JSON.stringify(data, null, '\t') : (data as string));
+      writeFileSync(filepath, type === 'env' ? (data as string) : JSON.stringify(data, null, '\t'));
       spinner.succeed();
     } catch (e: any) {
       spinner.fail(`Failed to write file: ${chalk.red(e.message)}`);
