@@ -1,4 +1,4 @@
-import { Config, ConfigValue } from '@utils/types';
+import { Config, ConfigValue } from '@utils/shared/types';
 
 const configNameAndId = (config: Config) => `${config.name} (${config.id})`;
 

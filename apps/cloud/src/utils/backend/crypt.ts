@@ -1,5 +1,5 @@
 import * as trpc from '@trpc/server';
-import { ConfigValue } from '@utils/types';
+import { ConfigValue } from '@utils/shared/types';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 
 const algorithm = 'aes-192-cbc';

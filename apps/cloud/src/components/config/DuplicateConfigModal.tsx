@@ -1,6 +1,6 @@
 import { Input, Modal, Text, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
-import { trpc } from '@utils/trpc';
+import { trpc } from '@utils/shared/trpc';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 

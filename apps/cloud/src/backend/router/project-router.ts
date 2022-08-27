@@ -1,16 +1,12 @@
+import { createProject$, deleteProject$, getProjects$, getSingleProject$, updateProject$ } from '@backend/api/project';
 import {
   acceptProjectRequest$,
   addUserToProjectRequest$,
-  createProject$,
-  deleteProject$,
   denyProjectRequest$,
   getProjectAddRequests$,
-  getProjects$,
-  getSingleProject$,
   getUsersOnProject$,
   removeUser$,
-  updateProject$,
-} from '@backend/api/project';
+} from '@backend/api/projectUsers';
 import { createRouter } from '@backend/createRouter';
 import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';

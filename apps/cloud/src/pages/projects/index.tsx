@@ -3,7 +3,7 @@ import { ProjectsDisplay } from '@components/project/ProjectsDisplay';
 import { Button, Page, Text, useModal } from '@geist-ui/core';
 import { Plus } from '@geist-ui/icons';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
-import { trpc } from '@utils/trpc';
+import { trpc } from '@utils/shared/trpc';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
 import React, { useEffect } from 'react';
@@ -46,6 +46,7 @@ const Projects: NextPage = () => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await unstable_getServerSession(context.req, context.res, authOptions);
 
+  // If we arnt logged in move back to the homepage
   if (!session?.user) {
     return {
       redirect: { destination: '/', permanent: false },
@@ -53,7 +54,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   return {
-    props: { session },
+    props: {},
   };
 };
 

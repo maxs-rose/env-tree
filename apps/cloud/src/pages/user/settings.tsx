@@ -1,12 +1,14 @@
-import { User } from '@backend/api/user';
+import { getUser$ } from '@backend/api/user';
 import SecretLoader from '@components/loader';
 import { Button, Input, Page, Snippet, Text, useInput, useToasts } from '@geist-ui/core';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
-import { trpc } from '@utils/trpc';
+import { trpc } from '@utils/shared/trpc';
+import { AuthUser, User } from '@utils/shared/types';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import React, { useEffect } from 'react';
+import { firstValueFrom } from 'rxjs';
 
 const Token: React.FC<{ user: User }> = ({ user }) => {
   const trpcContext = trpc.useContext();
@@ -29,11 +31,10 @@ const Token: React.FC<{ user: User }> = ({ user }) => {
   );
 };
 
-const UserSettings: NextPage = () => {
-  const trpcContext = trpc.useContext();
+const UserSettings: NextPage<{ currentUser: User }> = ({ currentUser }) => {
   const toaster = useToasts();
-  const {} = useSession();
-  const user = trpc.useQuery(['user-current']);
+  const trpcContext = trpc.useContext();
+  const user = trpc.useQuery(['user-current'], { initialData: currentUser, refetchOnMount: false });
   const deleteUser = trpc.useMutation(['user-delete'], {
     onSuccess: () => {
       signOut();
@@ -87,7 +88,7 @@ const UserSettings: NextPage = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await unstable_getServerSession(context.req, context.res, authOptions);
+  const session = (await unstable_getServerSession(context.req, context.res, authOptions))?.user as AuthUser | null;
 
   if (!session) {
     return {
@@ -96,7 +97,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   return {
-    props: { session },
+    props: {
+      currentUser: await firstValueFrom(getUser$(session.id)),
+    },
   };
 };
 

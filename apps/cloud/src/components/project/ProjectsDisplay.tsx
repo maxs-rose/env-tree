@@ -1,7 +1,7 @@
 import SecretLoader from '@components/loader';
 import { ProjectCard } from '@components/project/ProjectCard';
 import { Grid } from '@geist-ui/core';
-import { trpc } from '@utils/trpc';
+import { trpc } from '@utils/shared/trpc';
 import React from 'react';
 
 export const ProjectsDisplay: React.FC = () => {

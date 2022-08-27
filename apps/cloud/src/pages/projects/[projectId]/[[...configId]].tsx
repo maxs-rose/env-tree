@@ -6,17 +6,14 @@ import { ProjectSettingsModal } from '@components/project/ProjectSettingsModal';
 import { Button, Page, Spacer, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Settings } from '@geist-ui/icons';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
-import { trpc } from '@utils/trpc';
-import { Project } from '@utils/types';
+import { trpc } from '@utils/shared/trpc';
+import { AuthUser, ProjectWithConfigIds } from '@utils/shared/types';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 
-const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: string }> }; configId?: string }> = ({
-  project,
-  configId,
-}) => {
+const ProjectConfigs: NextPage<{ project: ProjectWithConfigIds; configId?: string }> = ({ project, configId }) => {
   const router = useRouter();
   const trpcContext = trpc.useContext();
   const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
@@ -110,7 +107,7 @@ const ProjectConfigs: NextPage<{ project: Project & { configs: Array<{ id: strin
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const user = (await unstable_getServerSession(ctx.req, ctx.res, authOptions))?.user as { id: string } | null;
+  const user = (await unstable_getServerSession(ctx.req, ctx.res, authOptions))?.user as AuthUser | null;
 
   if (!user) {
     return {

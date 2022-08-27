@@ -1,15 +1,7 @@
 import { prisma } from '@backend/prisma';
-import { decrypt, encrypt } from '@backend/utils/crypt';
+import { decrypt, encrypt } from '@utils/backend/crypt';
 import * as crypto from 'crypto';
 import { from, map, of, switchMap } from 'rxjs';
-
-export interface User {
-  id: string;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-  authToken: string | null;
-}
 
 export const getUser$ = (userId: string) =>
   from(

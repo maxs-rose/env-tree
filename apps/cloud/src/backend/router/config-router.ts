@@ -7,7 +7,7 @@ import {
   updateConfig$,
 } from '@backend/api/config';
 import { createRouter } from '@backend/createRouter';
-import { ZConfigValue } from '@utils/types';
+import { ZConfigValue } from '@utils/shared/types';
 import { firstValueFrom } from 'rxjs';
 import { z } from 'zod';
 

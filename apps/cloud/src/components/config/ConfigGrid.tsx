@@ -1,9 +1,9 @@
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
 import { Button, Input, Table, Tooltip, useModal } from '@geist-ui/core';
 import { AlertTriangle, Info, PenTool, Trash2 } from '@geist-ui/icons';
-import { flattenConfigValues } from '@utils/config';
-import { trpc } from '@utils/trpc';
-import { Config, ConfigValue } from '@utils/types';
+import { flattenConfigValues } from '@utils/shared/flattenConfig';
+import { trpc } from '@utils/shared/trpc';
+import { Config, ConfigValue } from '@utils/shared/types';
 import React, { useRef } from 'react';
 
 const propertyName = (property: string, value: ConfigValue[string]) => {
@@ -122,7 +122,7 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
           bindings={addConfigValueModalBindings}
           config={currentConfig}
           onCloseModel={closeConfigValueModal}
-          editValue={editValue.current}
+          configValue={editValue.current}
         />
       ) : (
         <></>

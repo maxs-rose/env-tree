@@ -1,32 +1,35 @@
 import { AutoComplete, Input, Modal, Spacer, Text, Toggle, useInput, useToasts } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
-import { flattenConfigValues } from '@utils/config';
-import { trpc } from '@utils/trpc';
-import { Config, ConfigValue } from '@utils/types';
+import { flattenConfigValues } from '@utils/shared/flattenConfig';
+import { trpc } from '@utils/shared/trpc';
+import { Config, ConfigValue } from '@utils/shared/types';
 import React, { MutableRefObject, useState } from 'react';
 
-const getConfigValue = <T,>(conf: Config | undefined, edit: string | undefined, target: keyof ConfigValue[string]) =>
-  conf?.values?.[edit ?? '']?.[target] as T | undefined;
+const getConfigValue = <T,>(
+  conf: Config | undefined,
+  configValue: string | undefined,
+  target: keyof ConfigValue[string]
+) => conf?.values?.[configValue ?? '']?.[target] as T | undefined;
 
 export const EditConfigValueModal: React.FC<{
   onCloseModel: () => void;
   bindings: ModalHooksBindings;
   config: MutableRefObject<Config | undefined>;
-  editValue?: string;
-}> = ({ bindings, config, onCloseModel, editValue }) => {
+  configValue?: string;
+}> = ({ bindings, config, onCloseModel, configValue }) => {
   const toaster = useToasts();
-  const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(editValue ?? '');
+  const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(configValue ?? '');
   const {
     state: valueValue,
     setState: setValue,
     bindings: valueBinding,
-  } = useInput(getConfigValue<string>(config.current, editValue, 'value') ?? '');
-  const [hidden, setHidden] = useState(getConfigValue<boolean>(config.current, editValue, 'hidden') ?? false);
+  } = useInput(getConfigValue<string>(config.current, configValue, 'value') ?? '');
+  const [hidden, setHidden] = useState(getConfigValue<boolean>(config.current, configValue, 'hidden') ?? false);
   const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
   const [group, setGroup] = useState<string | null>(
-    getConfigValue<string | null>(config.current, editValue, 'group') || null
+    getConfigValue<string | null>(config.current, configValue, 'group') || null
   );
   const [groupOptions, setGroupOptions] = useState<Array<{ label: string; value: string }>>([]);
 
@@ -51,7 +54,7 @@ export const EditConfigValueModal: React.FC<{
       return;
     }
 
-    if (!editValue && configMap.has(key)) {
+    if (!configValue && configMap.has(key)) {
       setInvalid('Property already exists in config');
       return;
     }
@@ -135,7 +138,7 @@ export const EditConfigValueModal: React.FC<{
       <Modal.Title>Add secret</Modal.Title>
       <Modal.Content>
         <Input
-          disabled={!!editValue}
+          disabled={!!configValue}
           placeholder="Property"
           value={propertyBinding.value}
           onChange={onInputChange(propertyBinding.onChange)}
@@ -168,7 +171,7 @@ export const EditConfigValueModal: React.FC<{
         </Text>
       </Modal.Content>
       <Modal.Action onClick={modalClose}>Cancel</Modal.Action>
-      <Modal.Action onClick={tryAddValue}>{!editValue ? 'Create' : 'Update'}</Modal.Action>
+      <Modal.Action onClick={tryAddValue}>{!configValue ? 'Create' : 'Update'}</Modal.Action>
     </Modal>
   );
 };

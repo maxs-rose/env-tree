@@ -3,7 +3,8 @@ import { authOptions } from '@pages/api/auth/[...nextauth]';
 import * as trpc from '@trpc/server';
 import { inferAsyncReturnType } from '@trpc/server';
 import * as trpcNext from '@trpc/server/adapters/next';
-import { unstable_getServerSession, User } from 'next-auth';
+import { AuthUser } from '@utils/shared/types';
+import { unstable_getServerSession } from 'next-auth';
 
 export const createRouterContext = async (opt?: trpcNext.CreateNextContextOptions) => {
   const getUser = async () => {
@@ -17,7 +18,7 @@ export const createRouterContext = async (opt?: trpcNext.CreateNextContextOption
   const user = await getUser();
 
   return {
-    user: user?.user as (User & { id: string }) | null,
+    user: user?.user as AuthUser | null,
   };
 };
 export type RouterContext = inferAsyncReturnType<typeof createRouterContext>;

@@ -1,6 +1,6 @@
 import { Button, Input, useInput, User } from '@geist-ui/core';
 import { Plus } from '@geist-ui/icons';
-import { trpc } from '@utils/trpc';
+import { trpc } from '@utils/shared/trpc';
 import React, { useEffect, useState } from 'react';
 
 const useDebounce = <T,>(value: T, delay: number): T => {

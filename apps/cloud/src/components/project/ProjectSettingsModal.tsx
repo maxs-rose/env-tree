@@ -3,8 +3,8 @@ import { AddUserToProjectModal } from '@components/project/AddUserToProject';
 import { Button, Collapse, Divider, Input, Modal, Spacer, Text, Textarea, useInput, User } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { Trash2 } from '@geist-ui/icons';
-import { getZodErrorMessage, trpc } from '@utils/trpc';
-import { Project } from '@utils/types';
+import { getZodErrorMessage, trpc } from '@utils/shared/trpc';
+import { Project } from '@utils/shared/types';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 

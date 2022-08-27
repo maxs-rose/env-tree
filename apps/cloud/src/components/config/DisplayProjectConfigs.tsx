@@ -1,11 +1,10 @@
-import { ConfigType } from '@backend/api/config';
 import { ConfigGrid } from '@components/config/ConfigGrid';
 import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
 import { Button, ButtonDropdown, Snippet, Spacer, Tabs, useModal } from '@geist-ui/core';
 import { Check, Copy, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
-import { trpc } from '@utils/trpc';
-import { Config } from '@utils/types';
+import { trpc } from '@utils/shared/trpc';
+import { Config, ConfigType } from '@utils/shared/types';
 import fileDownload from 'js-file-download';
 import React, { useRef, useState } from 'react';
 import { catchError, EMPTY, map, of, withLatestFrom } from 'rxjs';
