@@ -93,6 +93,7 @@ export const EditConfigValueModal: React.FC<{
     setInvalid(undefined);
     setKey('');
     setValue('');
+    setGroup(null);
     setHidden(false);
   };
 
