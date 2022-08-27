@@ -1,6 +1,7 @@
 import { AutoComplete, Input, Modal, Spacer, Text, Toggle, useInput, useToasts } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
+import { flattenConfigValues } from '@utils/config';
 import { trpc } from '@utils/trpc';
 import { Config, ConfigValue } from '@utils/types';
 import React, { MutableRefObject, useState } from 'react';
@@ -24,7 +25,9 @@ export const EditConfigValueModal: React.FC<{
   const [hidden, setHidden] = useState(getConfigValue<boolean>(config.current, editValue, 'hidden') ?? false);
   const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
-  const [group, setGroup] = useState<string | null>(null);
+  const [group, setGroup] = useState<string | null>(
+    getConfigValue<string | null>(config.current, editValue, 'group') || null
+  );
   const [groupOptions, setGroupOptions] = useState<Array<{ label: string; value: string }>>([]);
 
   if (!config.current) {
@@ -32,7 +35,9 @@ export const EditConfigValueModal: React.FC<{
   }
 
   const configMap = new Map(Object.entries(config!.current!.values));
-  const allGroupOptions = Array.from(new Set(Array.from(configMap.values()).map((v) => v.group)).values())
+  const allGroupOptions = Array.from(
+    new Set(Array.from(Object.entries(flattenConfigValues(config.current!))).map(([, v]) => v.group)).values()
+  )
     .filter((g) => g)
     .map((g) => ({ label: g!, value: g! }));
 
@@ -147,7 +152,7 @@ export const EditConfigValueModal: React.FC<{
           clearable
           width="100%"
           placeholder="Group"
-          initialValue={getConfigValue<string | null>(config.current, editValue, 'group') || undefined}
+          initialValue={group ?? undefined}
           options={groupOptions}
           onChange={handleGroupChange}
           onSearch={handleSearch}
