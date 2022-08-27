@@ -63,6 +63,7 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
         {
           projectId: config.projectId,
           configId: config.id,
+          configVersion: config.version,
           values: newConfig.values,
         },
         {
