@@ -17,7 +17,8 @@ export const EditConfigValueModal: React.FC<{
   bindings: ModalHooksBindings;
   config: MutableRefObject<Config | undefined>;
   configValue?: string;
-}> = ({ bindings, config, onCloseModel, configValue }) => {
+  allowEdit?: boolean;
+}> = ({ bindings, config, onCloseModel, configValue, allowEdit = true }) => {
   const toaster = useToasts();
   const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(configValue ?? '');
   const {
@@ -171,7 +172,7 @@ export const EditConfigValueModal: React.FC<{
         </Text>
       </Modal.Content>
       <Modal.Action onClick={modalClose}>Cancel</Modal.Action>
-      <Modal.Action onClick={tryAddValue}>{!configValue ? 'Create' : 'Update'}</Modal.Action>
+      {allowEdit ? <Modal.Action onClick={tryAddValue}>{!configValue ? 'Create' : 'Update'}</Modal.Action> : undefined}
     </Modal>
   );
 };
