@@ -1,10 +1,24 @@
 import { useConfigs } from '@context/config';
-import { Badge, Button, ButtonGroup, Card, Popover, Spacer, Tabs, Text, User, useTheme } from '@geist-ui/core';
-import { Bell, Check, LogOut, Moon, Settings, Sun, X } from '@geist-ui/icons';
+import {
+  Badge,
+  Button,
+  ButtonGroup,
+  Card,
+  Popover,
+  Spacer,
+  Tabs,
+  Text,
+  useBodyScroll,
+  useMediaQuery,
+  User,
+  useTheme,
+} from '@geist-ui/core';
+import { Bell, Check, LogOut, Menu, Moon, Settings, Sun, X } from '@geist-ui/icons';
 import { Project, UserAddRequest } from '@prisma/client';
 import { addColorAlpha } from '@utils/shared/colours';
 import { trpc } from '@utils/shared/trpc';
 import { signOut, useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
@@ -37,7 +51,7 @@ const UserNofifPopover: React.FC<{
   );
 };
 
-const UserDisplay = () => {
+const UserDisplay: React.FC<{ showNofis?: boolean }> = ({ showNofis = true }) => {
   const router = useRouter();
   const trpcContext = trpc.useContext();
   const { data: session } = useSession();
@@ -90,7 +104,7 @@ const UserDisplay = () => {
       >
         {isHovering ? user.data?.username : session.user?.email}
       </User>
-      {userProjectRequests.data?.length ? (
+      {showNofis && userProjectRequests.data?.length ? (
         <span className="mx-2 hover:cursor-pointer active:animate-swing">
           <Popover
             portalClassName="min-w-[20em]"
@@ -121,11 +135,59 @@ const UserDisplay = () => {
   );
 };
 
+const MenuMobile: React.FC<{ expanded: boolean }> = ({ expanded }) => {
+  const theme = useTheme();
+  const [, setScroll] = useBodyScroll();
+  const { onThemeChange } = useConfigs();
+
+  useEffect(() => {
+    setScroll(expanded);
+  }, [expanded, setScroll]);
+
+  const isLightMode = () => theme.type === 'light';
+
+  const switchTheme = () => {
+    onThemeChange(isLightMode() ? 'dark' : 'light');
+  };
+
+  if (!expanded) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="mobile-menu absolute w-full h-full z-[999] flex flex-col pt-4 gap-4 items-center">
+        <Link href="/">
+          <a className="text-[#666]">Home</a>
+        </Link>
+        <Link href="/projects">
+          <a className="text-[#666]">Projects</a>
+        </Link>
+        <Link href="/docs">
+          <a className="text-[#666]">Docs</a>
+        </Link>
+        <Spacer />
+        <UserDisplay showNofis={false} />
+        <Button auto onClick={switchTheme} icon={isLightMode() ? <Sun /> : <Moon />}>
+          {isLightMode() ? 'Light' : 'Dark'}
+        </Button>
+      </div>
+      <style jsx>{`
+        .mobile-menu {
+          background-color: ${theme.palette.background};
+        }
+      `}</style>
+    </>
+  );
+};
+
 const Nav: React.FC = () => {
   const router = useRouter();
   const [currentUrl, setCurrentUrl] = useState('');
   const theme = useTheme();
   const { onThemeChange } = useConfigs();
+  const isMobile = useMediaQuery('xs', { match: 'down' });
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const tabChange = (tab: string) => {
     setCurrentUrl(tab);
@@ -137,6 +199,22 @@ const Nav: React.FC = () => {
   const switchTheme = () => {
     onThemeChange(isLightMode() ? 'dark' : 'light');
   };
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setMobileExpanded(false);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+
+    return () => router.events.off('routeChangeComplete', handleRouteChange);
+  }, [router.events]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setMobileExpanded(false);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     setCurrentUrl(router.pathname.split('/').filter((f) => !!f)[0]);
@@ -156,7 +234,7 @@ const Nav: React.FC = () => {
             className="content flex items-center justify-between h-[100%] select-none"
             style={{ padding: `0 ${theme.layout.gap}` }}
           >
-            <div className="nav-tabs flex items-center">
+            <div className="nav-tabs flex items-center menu-tabs">
               <Tabs
                 align="center"
                 hideDivider
@@ -170,16 +248,44 @@ const Nav: React.FC = () => {
                 <Tabs.Item label="Docs" value="docs" />
               </Tabs>
             </div>
-            <div className="flex justify-end items-center">
+            <div className="flex justify-end items-center menu-tabs">
               <UserDisplay />
               <Spacer inline />
               <Button auto onClick={switchTheme} icon={isLightMode() ? <Sun /> : <Moon />}>
                 {isLightMode() ? 'Light' : 'Dark'}
               </Button>
             </div>
+            <div className="block w-full flex items-center burger-button">
+              <Button
+                auto
+                type="abort"
+                icon={<Menu size="1.125rem" />}
+                onClick={() => setMobileExpanded(!mobileExpanded)}
+              />
+            </div>
           </div>
         </div>
       </div>
+      <MenuMobile expanded={mobileExpanded} />
+      <style jsx>{`
+        .menu-tabs :global(.content) {
+          display: none;
+        }
+
+        .burger-button {
+          display: none;
+        }
+
+        @media only screen and (max-width: ${theme.breakpoints.xs.max}) {
+          .menu-tabs {
+            display: none;
+          }
+
+          .burger-button {
+            display: block;
+          }
+        }
+      `}</style>
     </>
   );
 };
