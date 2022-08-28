@@ -110,7 +110,7 @@ const UserDisplay = () => {
       ) : undefined}
       <ButtonGroup>
         <Button
-          className="propagate-hover:animate-spin"
+          className="propagate-hover:animate-spinDuration"
           auto
           onClick={() => router.push('/user/settings')}
           icon={<Settings />}

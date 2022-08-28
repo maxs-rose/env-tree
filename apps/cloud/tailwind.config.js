@@ -8,9 +8,14 @@ module.exports = {
           '0%,100%': { transform: 'rotate(15deg)' },
           '50%': { transform: 'rotate(-15deg)' },
         },
+        smallSpin: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(90deg)' },
+        },
       },
       animation: {
         swing: 'swing 1s infinite',
+        spinDuration: 'smallSpin 0.1s linear',
       },
     },
   },

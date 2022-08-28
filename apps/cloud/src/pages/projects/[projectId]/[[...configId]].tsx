@@ -87,7 +87,7 @@ const ProjectConfigs: NextPage<{ project: ProjectWithConfigIds; configId?: strin
               Add Configuration
             </Button>
             <Button
-              className="propagate-hover:animate-spin"
+              className="propagate-hover:animate-spinDuration"
               auto
               icon={<Settings />}
               onClick={() => setProjectSettingsVisible(true)}
