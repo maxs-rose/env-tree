@@ -388,25 +388,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@secrets/cli@workspace:apps/cli":
-  version: 0.0.0-use.local
-  resolution: "@secrets/cli@workspace:apps/cli"
-  dependencies:
-    "@types/node": ^18.7.13
-    chalk: ^5.0.1
-    commander: ^9.4.0
-    eslint: 8.22.0
-    eslint-config-custom: "*"
-    node-fetch: ^3.2.10
-    ora: ^6.1.2
-    title-case: ^3.0.3
-    ts-node: ^10.9.1
-    tsconfig: "*"
-    tsup: ^6.2.3
-    typescript: 4.8.2
-  languageName: unknown
-  linkType: soft
-
 "@secrets/cloud@workspace:apps/cloud":
   version: 0.0.0-use.local
   resolution: "@secrets/cloud@workspace:apps/cloud"
@@ -1323,6 +1304,16 @@ __metadata:
   checksum: d06418b7335897209e77bdd430d04f882189582e67bd1f75a04565f3f07f5b3f119a9d670c943b6697d0afb100f03b866b3b8a1f91d4d02d72c4ecf2bb64b5dd
   languageName: node
   linkType: hard
+
+"cloud-secrets@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "cloud-secrets@workspace:."
+  dependencies:
+    eslint-config-custom: "*"
+    prettier: ^2.7.1
+    turbo: ^1.4.3
+  languageName: unknown
+  linkType: soft
 
 "color-convert@npm:^2.0.1":
   version: 2.0.1
@@ -5099,13 +5090,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"secrets@workspace:.":
+"secret-cli@workspace:apps/cli":
   version: 0.0.0-use.local
-  resolution: "secrets@workspace:."
+  resolution: "secret-cli@workspace:apps/cli"
   dependencies:
+    "@types/node": ^18.7.13
+    chalk: ^5.0.1
+    commander: ^9.4.0
+    eslint: 8.22.0
     eslint-config-custom: "*"
-    prettier: ^2.7.1
-    turbo: ^1.4.3
+    node-fetch: ^3.2.10
+    ora: ^6.1.2
+    title-case: ^3.0.3
+    ts-node: ^10.9.1
+    tsconfig: "*"
+    tsup: ^6.2.3
+    typescript: 4.8.2
+  bin:
+    secret-cli: ./dist/index.js
   languageName: unknown
   linkType: soft
 

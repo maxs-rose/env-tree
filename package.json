@@ -1,5 +1,5 @@
 {
-  "name": "secrets",
+  "name": "cloud-secrets",
   "version": "0.0.0",
   "private": true,
   "workspaces": [
@@ -12,7 +12,7 @@
     "lint": "turbo run lint",
     "start": "yarn workspace @secrets/cloud start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prisma": "yarn workspace @secrets/cloud prisma",
+    "prisma": "yarn workspace secret-cli prisma",
     "prisma:studio": "yarn prisma studio",
     "cloud": "yarn workspace @secrets/cloud"
   },
