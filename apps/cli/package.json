@@ -3,12 +3,13 @@
   "description": "Node based CLI tool to download your secret configurations as .env or .json files",
   "author": {
     "name": "Max Rose",
-    "url": "https://www.max-rose.com/"
+    "url": "https://www.max-rose.com/",
+    "directory": "apps/cli"
   },
   "maintainers": [
     "Max Rose (https://www.max-rose.com/)"
   ],
-  "version": "1.0.0-pre",
+  "version": "1.0.4-pre",
   "exports": "./dist/index.js",
   "bin": "./dist/index.js",
   "type": "module",

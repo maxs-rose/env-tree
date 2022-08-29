@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import chalk from 'chalk';
 import { program } from 'commander';
 import { writeFileSync } from 'fs';
@@ -6,9 +8,9 @@ import ora from 'ora';
 import { exit } from 'process';
 
 program
-  .name('@cloud/secrets CLI')
+  .name('secret-cli')
   .description('CLI tool to download secrets from the cloud')
-  .version('0.0.1 - POC')
+  .version('1.0.4-pre')
   .argument('<projectId>', 'ID for project to get config from')
   .argument('<configId>', 'ID for config')
   .argument('<userEmail>', 'User email')
@@ -18,7 +20,7 @@ program
   .option('-json-grouped', 'JSON file format preserving property groups')
   .option('-dd, --download-directory <directory>', 'Directory to download file to', '.')
   .option('-f, --filename <filename>', 'Filename for created secrets file (default .env)')
-  .option('-u, --url <url>', 'URL of secret cloud', 'http://localhost:3000');
+  .option('-u, --url <url>', 'URL of secret cloud', 'https://secrets-production.up.railway.app/');
 
 program.parse();
 

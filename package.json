@@ -12,7 +12,7 @@
     "lint": "turbo run lint",
     "start": "yarn workspace @secrets/cloud start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prisma": "yarn workspace secret-cli prisma",
+    "prisma": "yarn workspace @secrets/cloud prisma",
     "prisma:studio": "yarn prisma studio",
     "cloud": "yarn workspace @secrets/cloud"
   },
