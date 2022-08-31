@@ -255,7 +255,7 @@ const Nav: React.FC = () => {
                 {isLightMode() ? 'Light' : 'Dark'}
               </Button>
             </div>
-            <div className="block w-full flex items-center burger-button">
+            <div className="block flex items-center burger-button">
               <Button
                 auto
                 type="abort"

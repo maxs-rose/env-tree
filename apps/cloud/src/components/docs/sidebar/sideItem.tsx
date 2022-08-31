@@ -6,7 +6,7 @@ import React, { ReactElement } from 'react';
 export type Sides = {
   name: string;
   url?: string;
-  children?: Sides | Array<Sides>;
+  children?: Array<Sides>;
 };
 
 const SidebarGroupName: React.FC<{ name: string }> = React.memo(({ name, ...props }) => {
@@ -32,8 +32,8 @@ const SidebarPageLink: React.FC<{ onActive?: () => void; href: string; text: str
 );
 SidebarPageLink.displayName = 'SidebarPageLink';
 
-export const SideItem: React.FC<{ children: ReactElement<{ sides?: Sides | Array<Sides> }>; sides: Array<Sides> }> =
-  React.memo(({ children, sides }) => (
+export const SideItem: React.FC<{ children: ReactElement<{ sides?: Array<Sides> }>; sides: Array<Sides> }> = React.memo(
+  ({ children, sides }) => (
     <>
       {sides.map((side, index) => {
         const showChildren = side.children && children;
@@ -58,5 +58,6 @@ export const SideItem: React.FC<{ children: ReactElement<{ sides?: Sides | Array
         );
       })}
     </>
-  ));
+  )
+);
 SideItem.displayName = 'SideItem';
