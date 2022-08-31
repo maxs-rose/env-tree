@@ -18,7 +18,7 @@ program
   .option('-env', '.env file format (default)')
   .option('-json', 'JSON file format')
   .option('-json-grouped', 'JSON file format preserving property groups')
-  .option('-dd, --download-directory <directory>', 'Directory to download file to', '.')
+  .option('-d, --download-directory <directory>', 'Directory to download file to', '.')
   .option('-f, --filename <filename>', 'Filename for created secrets file (default .env)')
   .option('-u, --url <url>', 'URL of secret cloud', 'https://secrets-production.up.railway.app/');
 
