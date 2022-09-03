@@ -7,6 +7,7 @@ import { AuthUser, User } from '@utils/shared/types';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
 import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { firstValueFrom } from 'rxjs';
 
@@ -32,6 +33,7 @@ const Token: React.FC<{ user: User }> = ({ user }) => {
 };
 
 const UserSettings: NextPage<{ currentUser: User }> = ({ currentUser }) => {
+  const router = useRouter();
   const toaster = useToasts();
   const trpcContext = trpc.useContext();
   const user = trpc.useQuery(['user-current'], { initialData: currentUser, refetchOnMount: false });
@@ -79,6 +81,9 @@ const UserSettings: NextPage<{ currentUser: User }> = ({ currentUser }) => {
           <Button onClick={() => updateUsername.mutate({ username: usernameState })}>Update username</Button>
         </div>
         <Token user={user.data} />
+        <div>
+          <Button onClick={() => router.push('/user/login')}>Link Accout</Button>
+        </div>
         <div>
           <Button onClick={() => deleteUser.mutate()}>Delete account</Button>
         </div>
