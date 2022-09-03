@@ -18,18 +18,16 @@ const SidebarGroupName: React.FC<{ name: string }> = React.memo(({ name, ...prop
 });
 SidebarGroupName.displayName = 'SidebarGroupName';
 
-const SidebarPageLink: React.FC<{ onActive?: () => void; href: string; text: string }> = React.memo(
-  ({ href, text }) => {
-    const { pathname } = useRouter();
-    const isActive = pathname === href;
+const SidebarPageLink: React.FC<{ href: string; text: string }> = React.memo(({ href, text }) => {
+  const { pathname } = useRouter();
+  const isActive = pathname === href;
 
-    return (
-      <Link href={href}>
-        <a className={`flex items-baseline text-neutral-400 ${isActive ? 'font-bold' : ''}`}>{text}</a>
-      </Link>
-    );
-  }
-);
+  return (
+    <Link href={href}>
+      <a className={`flex items-baseline text-neutral-400 ${isActive ? 'font-bold' : 'hover:italic'}`}>{text}</a>
+    </Link>
+  );
+});
 SidebarPageLink.displayName = 'SidebarPageLink';
 
 export const SideItem: React.FC<{ children: ReactElement<{ sides?: Array<Sides> }>; sides: Array<Sides> }> = React.memo(
