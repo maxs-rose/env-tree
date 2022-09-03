@@ -11,7 +11,7 @@ const formatValueForEnv = (value: string | null) => {
     return value;
   }
 
-  if (value.includes('#') || value.includes('=')) {
+  if (value.includes('#') || value.includes('=') || /\s/g.test(value)) {
     return `"${value}"`;
   }
 
