@@ -1,5 +1,5 @@
 import { Sidebar } from '@components/docs/sidebar/sidebar';
-import { Divider, Page, useTheme } from '@geist-ui/core';
+import { Collapse, Page, useTheme } from '@geist-ui/core';
 import Head from 'next/head';
 import React from 'react';
 
@@ -14,14 +14,15 @@ export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNo
       <Page className="page-height">
         <Page.Content>
           <div className="flex mobile-layout">
+            <span className="mobile-nav">
+              <Collapse title="Pages">
+                <Sidebar />
+              </Collapse>
+            </span>
             <aside className="w-[200px] desktop-layout">
               <Sidebar />
             </aside>
             <div className="grow">{children}</div>
-            <Divider className="mobile-nav" />
-            <span className="mobile-nav">
-              <Sidebar />
-            </span>
           </div>
         </Page.Content>
       </Page>
