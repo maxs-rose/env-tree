@@ -42,7 +42,7 @@
     "title-case": "^3.0.3"
   },
   "devDependencies": {
-    "@types/node": "^18.7.13",
+    "@types/node": "^18.7.14",
     "eslint": "8.22.0",
     "eslint-config-custom": "*",
     "ts-node": "^10.9.1",
