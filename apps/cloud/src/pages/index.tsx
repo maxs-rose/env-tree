@@ -6,6 +6,62 @@ import React, { useEffect, useState } from 'react';
 
 const colourOptions = ['#ef476f', '#06d6a0', '#ffd166'];
 
+const Home: NextPage = () => {
+  return (
+    <Page className="page-height">
+      <Page.Header center={true}>
+        <Text h1>Env Tree</Text>
+      </Page.Header>
+      <Page.Content className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center">
+          <span className="h-[25vh]">
+            <Tree />
+          </span>
+          <Spacer h="2" />
+          <Text h3 className="max-w-[500px] text-center" type="secondary">
+            The open source system for secure .env storage to easily share configurations across your development team
+            and environments
+          </Text>
+        </div>
+        <Spacer h="10" />
+        <div className="flex gap-10 flex-wrap items-center justify-center max-w-[782pt]">
+          <Card hoverable className="!w-[320px] !h-[160px]">
+            <Text h3 className="flex items-center justify-center gap-2">
+              <Feather /> Free Always
+            </Text>
+            <Text p type="secondary">
+              No matter your size Env Tree is free for all, always
+            </Text>
+          </Card>
+          <NextLink.default href="/docs/misc/selfhost">
+            <span>
+              <Card hoverable className="!w-[320px] !h-[160px] cursor-pointer">
+                <Text h3 className="flex items-center justify-center gap-2">
+                  <HardDrive /> Self Hostable
+                </Text>
+                <Text p type="secondary">
+                  Self hosting Env Tree is welcomed with instructions available in the documentation
+                </Text>
+              </Card>
+            </span>
+          </NextLink.default>
+          <Link href="https://github.com/maxs-rose/secrets" target="_blank">
+            <Card hoverable className="!w-[320px] !h-[160px] cursor-pointer">
+              <Text h3 className="flex items-center justify-center gap-2">
+                <BookOpen />
+                Open Source
+              </Text>
+              <Text p type="secondary">
+                Env Tree is open sourced and available under the GNU GPL V3 licence
+              </Text>
+            </Card>
+          </Link>
+        </div>
+      </Page.Content>
+    </Page>
+  );
+};
+
 const Tree = () => {
   const { palette } = useTheme();
   const [colour, setColour] = useState(palette.background === '#000' ? 'white' : 'black');
@@ -67,60 +123,6 @@ const Tree = () => {
         strokeWidth="6"
       />
     </svg>
-  );
-};
-
-const Home: NextPage = () => {
-  return (
-    <Page className="page-height">
-      <Page.Header center={true}>
-        <Text h1>Env Tree</Text>
-      </Page.Header>
-      <Page.Content className="flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center justify-center">
-          <span className="h-[25vh]">
-            <Tree />
-          </span>
-          <Spacer h="2" />
-          <Text h3 className="max-w-[500px] text-center" type="secondary">
-            The open source system for secure .env storage to easily share configurations across your development team
-            and environments
-          </Text>
-        </div>
-        <Spacer h="10" />
-        <div className="flex gap-10 flex-wrap items-center justify-center max-w-[782pt]">
-          <Card hoverable className="!w-[320px] !h-[160px]">
-            <Text h3 className="flex items-center justify-center gap-2">
-              <Feather /> Free Always
-            </Text>
-            <Text p type="secondary">
-              No matter your size Env Tree is free for all, always
-            </Text>
-          </Card>
-          <NextLink.default href="/docs/misc/selfhost">
-            <Card hoverable className="!w-[320px] !h-[160px] cursor-pointer">
-              <Text h3 className="flex items-center justify-center gap-2">
-                <HardDrive /> Self Hostable
-              </Text>
-              <Text p type="secondary">
-                Self hosting Env Tree is welcomed with instructions available in the documentation
-              </Text>
-            </Card>
-          </NextLink.default>
-          <Link href="https://github.com/maxs-rose/secrets" target="_blank">
-            <Card hoverable className="!w-[320px] !h-[160px] cursor-pointer">
-              <Text h3 className="flex items-center justify-center gap-2">
-                <BookOpen />
-                Open Source
-              </Text>
-              <Text p type="secondary">
-                Env Tree is open sourced and available under the GNU GPL V3 licence
-              </Text>
-            </Card>
-          </Link>
-        </div>
-      </Page.Content>
-    </Page>
   );
 };
 
