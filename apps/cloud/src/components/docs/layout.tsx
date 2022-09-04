@@ -19,7 +19,7 @@ export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNo
                 <Sidebar />
               </Collapse>
             </span>
-            <aside className="w-[200px] desktop-layout">
+            <aside className="w-[260px] desktop-layout">
               <Sidebar />
             </aside>
             <div className="grow">{children}</div>
