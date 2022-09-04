@@ -14,7 +14,7 @@
     "envtree": "./dist/index.js"
   },
   "type": "module",
-  "license": "MIT",
+  "license": "GNU GPL V3",
   "files": [
     "dist",
     "README.md"
