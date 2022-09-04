@@ -8,8 +8,8 @@ import ora from 'ora';
 import { exit } from 'process';
 
 program
-  .name('secret-cli')
-  .description('CLI tool to download secrets from the cloud')
+  .name('Env Tree CLI')
+  .description('CLI tool to download secrets from Env Tree')
   .version('1.0.4-pre')
   .argument('<projectId>', 'ID for project to get config from')
   .argument('<configId>', 'ID for config')
@@ -20,7 +20,7 @@ program
   .option('-json-grouped', 'JSON file format preserving property groups')
   .option('-d, --download-directory <directory>', 'Directory to download file to', '.')
   .option('-f, --filename <filename>', 'Filename for created secrets file (default .env)')
-  .option('-u, --url <url>', 'URL of secret cloud', 'https://secrets-production.up.railway.app/');
+  .option('-u, --url <url>', 'URL of secret cloud', 'https://envtree.net/');
 
 program.parse();
 

@@ -1,6 +1,6 @@
 {
   "name": "secret-cli",
-  "description": "Node based CLI tool to download your secret configurations as .env or .json files",
+  "description": "Node based CLI tool to download your secret configurations as .env or .json files from Env Tree",
   "author": {
     "name": "Max Rose",
     "url": "https://www.max-rose.com/",
@@ -11,7 +11,9 @@
   ],
   "version": "1.0.4-pre",
   "exports": "./dist/index.js",
-  "bin": "./dist/index.js",
+  "bin": {
+    "envtree": "./dist/index.js"
+  },
   "type": "module",
   "license": "MIT",
   "files": [
@@ -23,11 +25,14 @@
     "cloud",
     "download",
     "cli",
+    "env",
+    "tree",
     "typescript"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxs-rose/secrets.git"
+    "url": "github:maxs-rose/secrets",
+    "directory": "apps/cli"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --clean --sourcemap --minify --metafile",

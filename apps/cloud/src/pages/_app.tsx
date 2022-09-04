@@ -36,7 +36,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <ConfigProvider onThemeChange={themeChange}>
           <Head>
             <title>Cloud Secrets</title>
-            <link rel="icon" href="/favicon.png" />
+            <link rel="icon" href="/favicon.svg" />
             <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
           </Head>
 
