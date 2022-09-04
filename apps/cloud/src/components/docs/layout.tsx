@@ -9,7 +9,7 @@ export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNo
   return (
     <>
       <Head>
-        <title>Cloud Secrets Docs - {meta.title}</title>
+        <title>Env Tree Docs - {meta.title}</title>
       </Head>
       <Page className="page-height">
         <Page.Content>

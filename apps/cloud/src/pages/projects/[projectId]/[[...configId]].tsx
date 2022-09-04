@@ -10,6 +10,7 @@ import { trpc } from '@utils/shared/trpc';
 import { AuthUser, ProjectWithConfigIds } from '@utils/shared/types';
 import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 
@@ -78,6 +79,9 @@ const ProjectConfigs: NextPage<{ project: ProjectWithConfigIds; configId?: strin
 
   return (
     <>
+      <Head>
+        <title>Env Tree - {project.name}</title>
+      </Head>
       <Page className="page-height">
         <Page.Header>
           <div className="flex items-center gap-2 flex-wrap">
