@@ -1,15 +1,14 @@
 {
-  "name": "secret-cli",
+  "name": "@envtree/cli",
   "description": "Node based CLI tool to download your secret configurations as .env or .json files from Env Tree",
   "author": {
     "name": "Max Rose",
-    "url": "https://www.max-rose.com/",
-    "directory": "apps/cli"
+    "url": "https://www.max-rose.com/"
   },
   "maintainers": [
     "Max Rose (https://www.max-rose.com/)"
   ],
-  "version": "1.0.4-pre",
+  "version": "1.0.1",
   "exports": "./dist/index.js",
   "bin": {
     "envtree": "./dist/index.js"
@@ -37,6 +36,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --clean --sourcemap --minify --metafile",
     "dev": "tsup src/index.ts --format esm --watch --clean",
+    "test": "dist/index.js",
     "lint": "eslint src/ --fix"
   },
   "dependencies": {

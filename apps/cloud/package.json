@@ -1,5 +1,5 @@
 {
-  "name": "@secrets/cloud",
+  "name": "@envtree/cloud",
   "private": true,
   "scripts": {
     "dev": "next dev",

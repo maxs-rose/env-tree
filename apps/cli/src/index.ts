@@ -8,9 +8,9 @@ import ora from 'ora';
 import { exit } from 'process';
 
 program
-  .name('Env Tree CLI')
+  .name('envtree')
   .description('CLI tool to download secrets from Env Tree')
-  .version('1.0.4-pre')
+  .version('1.0.1', '-v')
   .argument('<projectId>', 'ID for project to get config from')
   .argument('<configId>', 'ID for config')
   .argument('<userEmail>', 'User email')
@@ -20,7 +20,7 @@ program
   .option('-json-grouped', 'JSON file format preserving property groups')
   .option('-d, --download-directory <directory>', 'Directory to download file to', '.')
   .option('-f, --filename <filename>', 'Filename for created secrets file (default .env)')
-  .option('-u, --url <url>', 'URL of secret cloud', 'https://envtree.net/');
+  .option('-u, --url <url>', 'URL of Env Tree', 'https://www.envtree.net');
 
 program.parse();
 
@@ -50,7 +50,11 @@ let spinner = ora(
 ).start();
 const formData = JSON.stringify({ projectId, configId, type, userEmail, userToken });
 
-fetch(`${url}/api/config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: formData })
+fetch(new URL('/api/config', url).href, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: formData,
+})
   .catch((e) => {
     spinner.fail(`Failed to fetch config! Error: ${chalk.red(e.errno)}`);
 

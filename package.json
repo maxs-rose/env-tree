@@ -1,5 +1,5 @@
 {
-  "name": "cloud-secrets",
+  "name": "env-tree",
   "version": "0.0.0",
   "private": true,
   "workspaces": [
@@ -10,11 +10,12 @@
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
-    "start": "yarn workspace @secrets/cloud start",
+    "start": "yarn workspace @envtree/cloud start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prisma": "yarn workspace @secrets/cloud prisma",
+    "prisma": "yarn workspace @envtree/cloud prisma",
     "prisma:studio": "yarn prisma studio",
-    "cloud": "yarn workspace @secrets/cloud"
+    "cloud": "yarn workspace @envtree/cloud",
+    "cli": "yarn workspace @envtree/cli"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
