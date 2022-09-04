@@ -1,19 +1,27 @@
-import { Link, useTheme } from '@geist-ui/core';
+import { Link, Text, useTheme } from '@geist-ui/core';
 import { Github, Zap } from '@geist-ui/icons';
 import React, { useEffect, useState } from 'react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="flex items-center gap-2 justify-end p-3 border-t-[1px] border-[#333333]">
-      <Link href="https://www.buymeacoffee.com/maxrose366R" target="_blank" title="Donate">
-        <Coffee />
-      </Link>
-      <Link href="https://github.com/maxs-rose/secrets" target="_blank" title="Repo">
-        <Github />
-      </Link>
-      <Link href="https://github.com/maxs-rose/secrets/issues" target="_blank" title="Bug Tracker">
-        <Zap />
-      </Link>
+    <footer className="flex items-center gap-2 justify-between p-3 border-t-[1px] border-[#333333]">
+      <Text p className="!h-[24px] m-0">
+        Powered by{' '}
+        <Link href="https://railway.app/" target="_blank" title="Choo Coo!" className="hover:!underline">
+          Railway
+        </Link>
+      </Text>
+      <span className="flex items-center gap-2 justify-center">
+        <Link href="https://www.buymeacoffee.com/maxrose366R" target="_blank" title="Donate">
+          <Coffee />
+        </Link>
+        <Link href="https://github.com/maxs-rose/secrets" target="_blank" title="Github Repo">
+          <Github />
+        </Link>
+        <Link href="https://github.com/maxs-rose/secrets/issues" target="_blank" title="Bug Tracker">
+          <Zap />
+        </Link>
+      </span>
     </footer>
   );
 };
