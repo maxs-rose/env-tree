@@ -1,16 +1,9 @@
 # Cloud Secret storage
 
+A simple system to store, manage, and share `.env` like files across environments or development teams.
+
 ## Tech
-- Yarn
-- Turbo Repo
 - Next.js
-- Prisma
 - TRPC
-
-## Setup POC
-
-- `yarn install`
-- Create `.env` file in `apps/cloud` with `DATABASE_URL="file:./dev.db"` and `CONFIG_ENCRYPTION_SECRET`
-- `yarn primsa migrate dev`
-- `yarn prisma generate`
-- `yarn dev`
+- Prisma
+- Turbo Repo
