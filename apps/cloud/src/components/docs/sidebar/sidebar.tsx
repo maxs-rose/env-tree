@@ -21,7 +21,11 @@ const docsData: Array<Sides> = [
   },
   {
     name: 'Misc',
-    children: [{ name: 'Self Hosting', url: '/docs/misc/selfhost' }],
+    children: [
+      { name: 'Self Hosting', url: '/docs/misc/selfhost' },
+      { name: 'Organisation Usage', url: '/docs/misc/organisation' },
+      { name: 'Changelog', url: '/docs/misc/changelog' },
+    ],
   },
 ];
 
