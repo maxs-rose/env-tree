@@ -4,10 +4,10 @@ import React from 'react';
 
 const docsData: Array<Sides> = [
   {
-    name: 'CLI',
+    name: 'Tooling',
     children: [
-      { name: 'CLI', url: '/docs/cli/cli' },
-      { name: 'Gradle', url: '/docs/cli/gradle' },
+      { name: 'CLI', url: '/tooling/cli/cli' },
+      { name: 'Gradle', url: '/tooling/cli/gradle' },
     ],
   },
   { name: 'API', children: [{ name: '/api/config', url: '/docs/api/api-config' }] },
@@ -18,6 +18,10 @@ const docsData: Array<Sides> = [
       { name: 'Configurations', url: '/docs/usage/configurations' },
       { name: 'User Management', url: '/docs/usage/user-management' },
     ],
+  },
+  {
+    name: 'Misc',
+    children: [{ name: 'Self Hosting', url: '/docs/misc/selfhost' }],
   },
 ];
 

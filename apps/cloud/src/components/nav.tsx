@@ -163,7 +163,7 @@ const MenuMobile: React.FC<{ expanded: boolean }> = ({ expanded }) => {
         <Link href="/projects">
           <a className="text-[#666]">Projects</a>
         </Link>
-        <Link href="/docs">
+        <Link href="/docs/tooling/cli">
           <a className="text-[#666]">Docs</a>
         </Link>
         <Spacer />
