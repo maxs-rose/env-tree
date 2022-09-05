@@ -1,11 +1,33 @@
 import { Layout } from '@components/docs/layout';
 
 export const meta = {
-  title: "CLI"
-}
+  title: 'CLI',
+};
 
 ## CLI
 
-Usage instructions for the CLI tool
+### Login via Website
 
-export default ({ children }) => <Layout meta={meta}>{children}</Layout>
+This feature is planned for a future release of the CLI
+
+### Login via Token Authentication
+
+This method of authentication is intended for scenarios that do not allow for browser interaction, or require zero user interaction.
+
+Required Options:
+
+<CommandSelector command="<project id> <config id> <user email> <user token>" />
+
+Example usage:
+
+<CommandSelector command="abc-abc-abc def-def-def user@email.com ghi-ghi-ghi -json" />
+
+This will download the config from project, `abc-abc-abc`, config, `def-def-def`, to `secrets.json` in the curret directory.
+
+### Help
+
+A help menu can be accessed by
+
+<CommandSelector command="--help" />
+
+export default ({ children }) => <Layout meta={meta}>{children}</Layout>;
