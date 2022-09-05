@@ -7,7 +7,7 @@ const docsData: Array<Sides> = [
     name: 'Tooling',
     children: [
       { name: 'CLI', url: '/docs/tooling/cli' },
-      { name: 'Gradle', url: '/docs/tooling/gradle' },
+      // { name: 'Gradle', url: '/docs/tooling/gradle' },
     ],
   },
   { name: 'API', children: [{ name: '/api/config', url: '/docs/api/api-config' }] },
