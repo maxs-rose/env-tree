@@ -4,7 +4,7 @@ import React from 'react';
 export const CommandSelector: (bindings: ReturnType<typeof useTabs>['bindings']) => React.FC<{ command: string }> = (
   bindings
 ) => {
-  return ({ command }) => {
+  const CommandTabber: React.FC<{ command: string }> = ({ command }) => {
     return (
       <Tabs {...bindings}>
         <Tabs.Item label="npm" value="npm">
@@ -19,4 +19,6 @@ export const CommandSelector: (bindings: ReturnType<typeof useTabs>['bindings'])
       </Tabs>
     );
   };
+
+  return CommandTabber;
 };
