@@ -1,16 +1,30 @@
 import { CommandSelector } from '@components/docs/CommandSelector';
 import { Sidebar } from '@components/docs/sidebar/sidebar';
-import { Collapse, Page, useTabs, useTheme } from '@geist-ui/core';
+import { PMProvider } from '@context/packageManager';
+import { Collapse, Page, useTheme } from '@geist-ui/core';
 import { MDXProvider } from '@mdx-js/react';
 import Head from 'next/head';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNode }> = ({ meta, children }) => {
   const theme = useTheme();
-  const { bindings } = useTabs('npm');
+  const [manager, setManager] = useState<'npm' | 'yarn' | 'global'>('npm');
+
+  const packageManagerChange = (packageManager: 'npm' | 'yarn' | 'global') => {
+    window.localStorage.setItem('packageManager', packageManager);
+    setManager(packageManager);
+  };
+
+  useEffect(() => {
+    const manager = window.localStorage.getItem('packageManager');
+
+    if (manager && (manager === 'npm' || manager === 'yarn' || manager === 'global')) {
+      packageManagerChange(manager);
+    }
+  }, []);
 
   const mdxCompoents = {
-    CommandSelector: CommandSelector(bindings),
+    CommandSelector: CommandSelector,
   };
 
   return (
@@ -30,7 +44,9 @@ export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNo
               <Sidebar />
             </aside>
             <div className="grow">
-              <MDXProvider components={mdxCompoents}>{children}</MDXProvider>
+              <PMProvider onPackageManagerChange={packageManagerChange} packageManager={manager}>
+                <MDXProvider components={mdxCompoents}>{children}</MDXProvider>
+              </PMProvider>
             </div>
           </div>
         </Page.Content>
