@@ -45,8 +45,6 @@ const getUserFromSessionOrRequest = async (req: NextApiRequest, res: NextApiResp
   const userSession = (await unstable_getServerSession(req, res, authOptions))?.user as AuthUser | null;
   const parseResult = zConfigExportOptionalAuth.safeParse(req.body);
 
-  console.log(parseResult);
-
   if (!userSession && !parseResult.success) {
     return 401;
   }
