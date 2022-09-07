@@ -1,19 +1,19 @@
-import { Layout } from '@components/docs/layout'; import { Link, Snippet } from '@geist-ui/core';
+import { Layout } from '@components/docs/layout';
+import { Link, Snippet } from '@geist-ui/core';
 
 export const meta = {
-  title: "Selfhosting",
+  title: 'Selfhosting',
   envSettings: [
-    "DATABASE_URL=\"postgresql://<postgresurl>\"",
-    "CONFIG_ENCRYPTION_SECRET=<secret>",
-    "GITHUB_ID=<id>",
-    "GITHUB_SECRET=<secret>",
-    "GITLAB_ID=<id>",
-    "GITLAB_SECRET=<secret>",
-    "NEXTAUTH_URL=<url>",
-    "NEXTAUTH_SECRET=<secret>"]
-}
-
-<Link href="https://next-auth.js.org/providers/" target="_blank">Next Auth</Link>
+    'DATABASE_URL="postgresql://<postgresurl>"',
+    'CONFIG_ENCRYPTION_SECRET=<secret>',
+    'GITHUB_ID=<id>',
+    'GITHUB_SECRET=<secret>',
+    'GITLAB_ID=<id>',
+    'GITLAB_SECRET=<secret>',
+    'NEXTAUTH_URL=<url>',
+    'NEXTAUTH_SECRET=<secret>',
+  ],
+};
 
 ## Selfhosting
 
@@ -24,16 +24,19 @@ Depending on your requirements you may wish to selfhost Env Tree, this documenta
 ## Basic Setup
 
 To setup a base install for Env Tree:
+
 1. Clone the repo
 2. Run `yarn install`
 3. Under `apps > cloud` create a `.env` file with the following settings:
-<Snippet text={meta.envSettings} ></Snippet>
+
+   <Snippet text={meta.envSettings}></Snippet>
 
 4. Run `yarn prisma generate`
 5. Run `yarn build --filter cloud`
 6. Finally to start the application run `yarn start --filter cloud`
 
 If you also wish to edit the node CLI to default to your selfhosted url:
+
 1. Edit `index.ts` in `apps > cli > src`
 2. Replace `.option('-u, --url <url>', 'URL of secret cloud', 'https://secrets-production.up.railway.app/')` with your custom URL
 3. Run `yarn build --filter cli`
@@ -43,7 +46,11 @@ If you also wish to edit the node CLI to default to your selfhosted url:
 
 If you wish to alter the available login providers this can be done by editing `apps > cli > cloud > src > pages > api > auth > [...nextauth].ts` then editing the `getProviders` function.
 Please refer to the
-<Link href="https://next-auth.js.org/providers/" target="_blank" className="hover:!underline"> Next Auth </Link>
+
+<Link href="https://next-auth.js.org/providers/" target="_blank" className="hover:!underline">
+  {' '}
+  Next Auth{' '}
+</Link>
 documentation for configuration of this section
 
-export default ({ children }) => <Layout meta={meta}>{children}</Layout>
+export default ({ children }) => <Layout meta={meta}>{children}</Layout>;
