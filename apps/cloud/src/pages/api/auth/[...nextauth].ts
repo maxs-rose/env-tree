@@ -54,6 +54,14 @@ export const authOptions: NextAuthOptions = {
 
       return token;
     },
+    redirect: async ({ url, baseUrl }) => {
+      if (url.endsWith('/clilogin')) {
+        console.log(url);
+        return url;
+      }
+
+      return baseUrl;
+    },
   },
 };
 

@@ -16,7 +16,7 @@ const loginProviderIcon = (providerId: string) => {
   }
 };
 
-const Login: NextPage<{ providers: Provider }> = ({ providers }) => {
+const Login: NextPage<{ providers: Provider; cliCallback: string | null }> = ({ providers, cliCallback }) => {
   if (!providers) {
     return <SecretLoader loadingText="Loading login options"></SecretLoader>;
   }
@@ -28,7 +28,7 @@ const Login: NextPage<{ providers: Provider }> = ({ providers }) => {
         icon={loginProviderIcon(provider.id)}
         width={2}
         scale={1.2}
-        onClick={() => signIn(provider.id, { callbackUrl: `${window.location.origin}` })}
+        onClick={() => signIn(provider.id, { callbackUrl: cliCallback || `${window.location.origin}` })}
       >
         {provider.name}
       </Button>
@@ -50,11 +50,11 @@ const Login: NextPage<{ providers: Provider }> = ({ providers }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const providers = await getProviders();
 
   return {
-    props: { providers },
+    props: { providers, cliCallback: query.cliCallback || null },
   };
 };
 
