@@ -11,14 +11,14 @@ const docsData: Array<Sides> = [
     ],
   },
   { name: 'API', children: [{ name: '/api/config', url: '/docs/api/api-config' }] },
-  {
-    name: 'Usage',
-    children: [
-      { name: 'Projects', url: '/docs/usage/projects' },
-      { name: 'Configurations', url: '/docs/usage/configurations' },
-      { name: 'User Management', url: '/docs/usage/user-management' },
-    ],
-  },
+  // {
+  //   name: 'Usage',
+  //   children: [
+  //     { name: 'Projects', url: '/docs/usage/projects' },
+  //     { name: 'Configurations', url: '/docs/usage/configurations' },
+  //     { name: 'User Management', url: '/docs/usage/user-management' },
+  //   ],
+  // },
   {
     name: 'Misc',
     children: [
