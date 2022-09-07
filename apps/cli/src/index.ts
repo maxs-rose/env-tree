@@ -10,7 +10,7 @@ import { exit } from 'process';
 program
   .name('envtree')
   .description('CLI tool to download secrets from Env Tree')
-  .version('1.0.1', '-v')
+  .version('1.0.3', '-v')
   .argument('<projectId>', 'ID for project to get config from')
   .argument('<configId>', 'ID for config')
   .argument('<userEmail>', 'User email')
