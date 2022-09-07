@@ -20,13 +20,18 @@ export type Project = PrismaProject;
 export type ProjectWithConfigIds = Project & { configs: Array<{ id: string }> };
 
 // Config Export
-export const zConfigExportParams = z.object({
-  projectId: z.string().min(1),
-  configId: z.string().min(1),
-  type: z.union([z.literal('env'), z.literal('json'), z.literal('json-grouped')]),
+export const zConfigExportOptionalAuth = z.object({
   userEmail: z.string().optional(),
   userToken: z.string().optional(),
 });
+
+export const zConfigExportParams = z
+  .object({
+    projectId: z.string().min(1),
+    configId: z.string().min(1),
+    type: z.union([z.literal('env'), z.literal('json'), z.literal('json-grouped')]),
+  })
+  .merge(zConfigExportOptionalAuth);
 
 export type ConfigType = 'env' | 'json' | 'json-grouped';
 export type ConfigExportType<T> = T extends 'env'

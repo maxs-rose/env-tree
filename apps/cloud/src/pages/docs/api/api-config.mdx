@@ -1,11 +1,48 @@
 import { Layout } from '@components/docs/layout';
+import { Table } from '@geist-ui/core';
 
 export const meta = {
-  title: "/api/config"
-}
+  title: '/api/config',
+  tableData: [
+    {
+      property: 'userEmail',
+      type: 'email',
+      description: 'User with access to the target config',
+    },
+    {
+      property: 'userToken',
+      type: 'string',
+      description: 'User authorization token',
+    },
+    {
+      property: 'projectId',
+      type: 'string',
+      description: 'Project containing target configuration',
+    },
+    {
+      property: 'configId',
+      type: 'string',
+      description: 'Configuration to download',
+    },
+    {
+      property: 'type',
+      type: 'env | json | json-grouped',
+      description: 'Download type',
+    },
+  ],
+};
 
 ## /api/config
 
-Under construction 🏗️
+To download config values directly you can call `/api/config` with a `POST` request and
+and an **object** with the following properties.
 
-export default ({ children }) => <Layout meta={meta}>{children}</Layout>
+<Table data={meta.tableData}>
+  <Table.Column prop="property" label="Property" />
+  <Table.Column prop="type" label="Type" render={(i) => <code>{i}</code>} />
+  <Table.Column prop="description" label="Description" />
+</Table>
+
+Invalid object requests will be returned with a zod validation error.
+
+export default ({ children }) => <Layout meta={meta}>{children}</Layout>;

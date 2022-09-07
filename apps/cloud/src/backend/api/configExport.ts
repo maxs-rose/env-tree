@@ -4,7 +4,13 @@ import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { decrypt } from '@utils/backend/crypt';
 import { configToEnvString, configToJsonGroupObject, configToJsonObject } from '@utils/shared/configExport';
 import { flattenConfigValues } from '@utils/shared/flattenConfig';
-import { AuthUser, ConfigExportType, ConfigType, zConfigExportParams } from '@utils/shared/types';
+import {
+  AuthUser,
+  ConfigExportType,
+  ConfigType,
+  zConfigExportOptionalAuth,
+  zConfigExportParams,
+} from '@utils/shared/types';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { unstable_getServerSession } from 'next-auth';
 import { firstValueFrom, map, Observable } from 'rxjs';
@@ -37,7 +43,9 @@ const exportConfig$ = <T extends ConfigType>(
 
 const getUserFromSessionOrRequest = async (req: NextApiRequest, res: NextApiResponse) => {
   const userSession = (await unstable_getServerSession(req, res, authOptions))?.user as AuthUser | null;
-  const parseResult = zConfigExportParams.safeParse(req.body);
+  const parseResult = zConfigExportOptionalAuth.safeParse(req.body);
+
+  console.log(parseResult);
 
   if (!userSession && !parseResult.success) {
     return 401;
@@ -48,11 +56,13 @@ const getUserFromSessionOrRequest = async (req: NextApiRequest, res: NextApiResp
   }
 
   if (parseResult.success) {
-    const dbUser = await prisma.user.findUnique({
-      where: {
-        email: parseResult.data.userEmail,
-      },
-    });
+    const dbUser = parseResult.data.userEmail
+      ? await prisma.user.findUnique({
+          where: {
+            email: parseResult.data.userEmail,
+          },
+        })
+      : undefined;
 
     if (dbUser) {
       if (decrypt(dbUser.authToken) === parseResult.data.userToken) {
