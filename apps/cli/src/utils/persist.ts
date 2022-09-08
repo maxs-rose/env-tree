@@ -4,7 +4,10 @@ import { join } from 'node:path';
 import { tmpdir } from 'os';
 
 export const saveAuthToken = (authToken: string) => {
-  mkdirSync(join(tmpdir(), 'envtree'));
+  try {
+    // Throws if dir exists
+    mkdirSync(join(tmpdir(), 'envtree'));
+  } catch {}
 
   return writeFile(join(tmpdir(), 'envtree', 'authTokens.json'), JSON.stringify({ token: authToken }), {
     encoding: 'utf-8',

@@ -22,7 +22,7 @@ export const addCurrentUser = (program: Command) => {
       fetch(`${opts.url}/api/trpc/user-current`, { headers: { Cookie: authToken } })
         .then((data) => {
           if (!data.ok) {
-            spinner.fail('Failed to fetch user data');
+            spinner.fail(`Failed to fetch user data: ${data.status}`);
             exit();
             return;
           }
