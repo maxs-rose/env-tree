@@ -6,8 +6,10 @@ export const getFilename = (filename: string | undefined, downloadType: FileType
   if (trimmedName) {
     return trimmedName;
   }
+
   if (downloadType === 'env') {
     return '.env';
   }
+
   return 'secrets.json';
 };
