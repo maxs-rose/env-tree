@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { addCurrentUser } from '@/commands/currentUser';
+import { addDownload } from '@/commands/download';
 import { addLogin } from '@/commands/login';
 import { addLogout } from '@/commands/logout';
 import { program } from 'commander';
@@ -12,6 +13,7 @@ const cliProgram = program
   .version('2.0.0', '-v');
 
 addClassic(cliProgram);
+addDownload(cliProgram);
 addLogin(cliProgram);
 addLogout(cliProgram);
 addCurrentUser(cliProgram);

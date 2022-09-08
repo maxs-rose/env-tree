@@ -1,8 +1,8 @@
 import { getAuthToken } from '@/utils/persist';
 import { Command } from 'commander';
 import fetch from 'node-fetch';
+import { exit } from 'node:process';
 import ora from 'ora';
-import { exit } from 'process';
 
 export const addCurrentUser = (program: Command) => {
   program
