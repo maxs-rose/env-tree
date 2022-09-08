@@ -38,6 +38,14 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
             <title>Env Tree</title>
             <link rel="icon" href="/favicon.svg" />
             <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover" />
+            <meta name="og:title" content="Env Tree" />
+            <meta
+              name="description"
+              content="The open source system for secure .env storage to easily share configurations across your development team and environments"
+            />
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="https://www.envtree.net/" />
+            <meta property="og:image" content="https://www.envtree.net/envtree.svg" />
           </Head>
 
           <Nav />
