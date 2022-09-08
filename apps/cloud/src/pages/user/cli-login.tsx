@@ -7,11 +7,11 @@ const cliLogin: NextPage<{ cliLoginStateData: string | null }> = ({ cliLoginStat
       <div className="flex items-center justify-center">
         <Card>
           <Text h3 className="text-center">
-            {cliLoginStateData ? 'Failed to login to CLI' : 'Sucessfully logged into CLI'}
+            {cliLoginStateData !== '200' ? 'Failed to login to CLI' : 'Sucessfully logged into CLI'}
           </Text>
           <Divider />
           <Text className="text-center">
-            {cliLoginStateData ? `Status: ${cliLoginStateData}` : 'You may now close this window'}
+            {cliLoginStateData !== '200' ? `Status: ${cliLoginStateData}` : 'You may now close this window'}
           </Text>
         </Card>
       </div>
