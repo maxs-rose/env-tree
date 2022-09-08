@@ -1,5 +1,4 @@
-import { mkdirSync } from 'fs';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rm } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'os';
@@ -21,4 +20,8 @@ export const getAuthToken = (): string | undefined => {
   } catch {
     return undefined;
   }
+};
+
+export const deleteAuthToken = () => {
+  rm(join(tmpdir(), 'envtree'), { force: true, recursive: true }, () => {});
 };

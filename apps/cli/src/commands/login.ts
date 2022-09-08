@@ -9,9 +9,10 @@ import ora from 'ora';
 export const addLogin = (program: Command) => {
   program
     .command('login')
+    .description('Login a user to the cli')
     .option('-u, --url <url>', 'URL of Env Tree', 'https://www.envtree.net')
     .action((opts: { url: string }) => {
-      let spinner = ora('Opening browser to login').stop();
+      let spinner = ora('Opening browser to login').start();
       const url = opts.url;
 
       const svr = http
@@ -26,7 +27,7 @@ export const addLogin = (program: Command) => {
             return;
           }
 
-          fetch(`${url}/api/trpc/user-current`, { headers: { Cookie: requestCookie ?? '' } })
+          fetch(`${url}/api/trpc/user-current`, { headers: { Cookie: requestCookie } })
             .then((data) => {
               res.writeHead(307, { Location: `${url}/user/cli-login?status=${data.status}` });
               res.end();

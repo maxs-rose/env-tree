@@ -10,6 +10,9 @@ import { exit } from 'process';
 export const addClassic = (program: Command) => {
   program
     .command('classic', { isDefault: true })
+    .description(
+      'Classic version of Env Tree CLI. Intended for use in CI like environments and is the default if no command is specified'
+    )
     .argument('<projectId>', 'ID for project to get config from')
     .argument('<configId>', 'ID for config')
     .argument('<userEmail>', 'User email')
