@@ -1,3 +1,4 @@
+import { saveAuthToken } from '@/utils/persist';
 import { Command } from 'commander';
 import * as http from 'http';
 import { AddressInfo } from 'net';
@@ -17,20 +18,21 @@ export const addLogin = (program: Command) => {
         .createServer((req, res) => {
           const requestCookie = req.headers.cookie;
 
+          if (!requestCookie) {
+            res.writeHead(307, { Location: `${url}/user/cli-login?status=500` });
+            res.end();
+
+            spinner.fail('Failed to login');
+            return;
+          }
+
           fetch(`${url}/api/trpc/user-current`, { headers: { Cookie: requestCookie ?? '' } })
             .then((data) => {
-              if (!data.ok) {
-                res.writeHead(data.status, { 'Content-Type': 'application/json' });
-                res.end(
-                  JSON.stringify({
-                    data: 'Failed to login',
-                  })
-                );
+              res.writeHead(307, { Location: `${url}/user/cli-login?status=${data.status}` });
+              res.end();
 
-                spinner.fail('Failed to login');
-              } else {
-                res.writeHead(307, { Location: `${url}` });
-                res.end();
+              if (!data.ok) {
+                spinner.fail(`Failed to login: ${data.status} (${data.statusText})`);
               }
 
               svr.close();
@@ -46,6 +48,12 @@ export const addLogin = (program: Command) => {
             })
             .then(({ result: user }) => {
               spinner.succeed(`Logged in as ${user.data.name} (${user.data.email})`);
+              spinner.start('Saving authorization token');
+
+              return saveAuthToken(requestCookie);
+            })
+            .then(() => {
+              spinner.succeed('Saved authorization token');
             });
         })
         .listen(0, () => {
