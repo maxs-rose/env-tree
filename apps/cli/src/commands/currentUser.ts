@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/utils/persist';
+import chalk from 'chalk';
 import { Command } from 'commander';
 import fetch from 'node-fetch';
-import { exit } from 'node:process';
 import ora from 'ora';
 
 export const addCurrentUser = (program: Command) => {
@@ -9,7 +9,7 @@ export const addCurrentUser = (program: Command) => {
     .command('current')
     .description('Display the current user logged into the cli')
     .option('-u, --url <url>', 'URL of Env Tree', 'https://www.envtree.net')
-    .action((opts: { url: string }) => {
+    .action(async (opts: { url: string }) => {
       let spinner = ora('Getting user information').start();
 
       const authToken = getAuthToken();
@@ -19,25 +19,21 @@ export const addCurrentUser = (program: Command) => {
         return;
       }
 
-      fetch(`${opts.url}/api/trpc/user-current`, { headers: { Cookie: authToken } })
-        .then((data) => {
-          if (!data.ok) {
-            spinner.fail(`Failed to fetch user data: ${data.status}`);
-            exit();
-            return;
-          }
+      try {
+        const fetchResult = await fetch(`${opts.url}/api/trpc/user-current`, { headers: { Cookie: authToken } });
 
-          return data.json() as Promise<{
-            result: {
-              data: {
-                name: string;
-                email: string;
-              };
-            };
-          }>;
-        })
-        .then((result) => {
-          spinner.succeed(`Logged in as ${result?.result.data.name} (${result?.result.data.email})`);
-        });
+        if (!fetchResult.ok) {
+          spinner.fail(`Failed to fetch user data: ${fetchResult.status}`);
+          return;
+        }
+
+        const fetchJson = (await fetchResult.json()) as { result: { data: { name: string; email: string } } };
+
+        spinner.succeed(
+          `Logged in as ${chalk.green(fetchJson.result.data.name)} (${chalk.green.italic(fetchJson.result.data.email)})`
+        );
+      } catch {
+        spinner.fail('Failed to fetch user data');
+      }
     });
 };

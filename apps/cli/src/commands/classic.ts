@@ -2,10 +2,9 @@ import { FileType, isValidFiletype } from '@/utils/fileType';
 import { getFilename } from '@/utils/getFilename';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { writeFileSync } from 'fs';
 import fetch from 'node-fetch';
+import { writeFileSync } from 'node:fs';
 import ora from 'ora';
-import { exit } from 'process';
 
 export const addClassic = (program: Command) => {
   program
@@ -22,7 +21,7 @@ export const addClassic = (program: Command) => {
     .option('-f, --filename <filename>', 'Filename for created secrets file (default ".env")')
     .option('-u, --url <url>', 'URL of Env Tree', 'https://www.envtree.net')
     .action(
-      (
+      async (
         projectId,
         configId,
         userEmail,
@@ -41,44 +40,35 @@ export const addClassic = (program: Command) => {
         ).start();
         const formData = JSON.stringify({ projectId, configId, type, userEmail, userToken });
 
-        fetch(new URL('/api/config', url).href, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: formData,
-        })
-          .catch((e) => {
-            spinner.fail(`Failed to fetch config! Error: ${chalk.red(e.errno)}`);
-
-            exit(1);
-          })
-          .then((res) => {
-            if (res.status !== 200) {
-              spinner.fail(
-                `Failed to fetch a config with id ${chalk.red(configId)} for project ${chalk.red(projectId)}`
-              );
-
-              exit(1);
-            }
-
-            return res;
-          })
-          .then((res) => (type === 'env' ? res.text() : res.json()) as string | object)
-          .then((data) => {
-            spinner.succeed('Got configuration');
-
-            spinner.start(`Writing secret file to ${filepath}`);
-            return data;
-          })
-          .then((data) => {
-            try {
-              writeFileSync(filepath, type === 'env' ? (data as string) : JSON.stringify(data, null, '\t'));
-              spinner.succeed();
-            } catch (e: any) {
-              spinner.fail(`Failed to write file: ${chalk.red(e.message)}`);
-
-              exit(1);
-            }
+        try {
+          const fetchResult = await fetch(new URL('/api/config', url).href, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: formData,
           });
+
+          if (fetchResult.status !== 200) {
+            spinner.fail(`Failed to fetch a config with id ${chalk.red(configId)} for project ${chalk.red(projectId)}`);
+            return;
+          }
+
+          spinner.succeed('Got configuration');
+          spinner.start(`Writing secret file to ${filepath}`);
+
+          const parsedResult = (await (type === 'env' ? fetchResult.text() : fetchResult.json())) as string | object;
+
+          try {
+            writeFileSync(
+              filepath,
+              type === 'env' ? (parsedResult as string) : JSON.stringify(parsedResult, null, '\t')
+            );
+            spinner.succeed();
+          } catch (e: any) {
+            spinner.fail(`Failed to write file: ${chalk.red(e.message)}`);
+          }
+        } catch (e: any) {
+          spinner.fail(`Failed to fetch config! Error: ${chalk.red(e.errno || e)}`);
+        }
       }
     );
 };
