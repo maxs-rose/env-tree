@@ -61,7 +61,7 @@ export const addLogin = (program: Command) => {
     spinner.start('Saving authorization token');
 
     try {
-      await saveAuthToken(requestCookie);
+      saveAuthToken(requestCookie);
 
       spinner.succeed('Saved authorization token');
     } catch {

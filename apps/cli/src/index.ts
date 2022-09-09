@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import { addClassic } from '@/commands/classic';
 import { addCurrentUser } from '@/commands/currentUser';
 import { addDownload } from '@/commands/download';
 import { addLogin } from '@/commands/login';
 import { addLogout } from '@/commands/logout';
 import { program } from 'commander';
-import { addClassic } from './commands/classic';
 
 const cliProgram = program
   .name('envtree')

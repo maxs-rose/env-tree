@@ -1,5 +1,4 @@
-import { mkdirSync, readFileSync, rm } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { mkdirSync, readFileSync, rm, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'os';
 
@@ -9,7 +8,7 @@ export const saveAuthToken = (authToken: string) => {
     mkdirSync(join(tmpdir(), 'envtree'));
   } catch {}
 
-  return writeFile(join(tmpdir(), 'envtree', 'authTokens.json'), JSON.stringify({ token: authToken }), {
+  writeFileSync(join(tmpdir(), 'envtree', 'authTokens.json'), JSON.stringify({ token: authToken }), {
     encoding: 'utf-8',
     flag: 'w+',
   });
