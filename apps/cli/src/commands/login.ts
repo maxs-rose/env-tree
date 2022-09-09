@@ -7,6 +7,14 @@ import open from 'open';
 import ora from 'ora';
 
 export const addLogin = (program: Command) => {
+  const headers = (origin?: string) => ({
+    'Access-Control-Allow-Methods': 'GET,OPTIONS',
+    'Access-Control-Max-Age': 2592000, // 30 days
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Headers': 'Authorization',
+    'Access-Control-Allow-Origin': origin || 'null',
+  });
+
   program
     .command('login')
     .description('Login a user to the cli')
@@ -17,45 +25,54 @@ export const addLogin = (program: Command) => {
 
       const svr = http
         .createServer((req, res) => {
-          const requestCookie = req.headers.cookie;
-
-          if (!requestCookie) {
-            res.writeHead(307, { Location: `${url}/user/cli-login?status=500` });
+          if (req.method?.toLowerCase() === 'options') {
+            res.writeHead(200, headers(req.headers.origin));
             res.end();
-
-            spinner.fail('Failed to login');
             return;
-          }
+          } else if (req.method?.toLowerCase() === 'get') {
+            const requestCookie = req.headers.cookie;
 
-          fetch(`${url}/api/trpc/user-current`, { headers: { Cookie: requestCookie } })
-            .then((data) => {
-              res.writeHead(307, { Location: `${url}/user/cli-login?status=${data.status}` });
+            if (!requestCookie) {
+              res.writeHead(500, headers(req.headers.origin));
               res.end();
 
-              if (!data.ok) {
-                spinner.fail(`Failed to login: ${data.status} (${data.statusText})`);
-              }
-
+              spinner.fail('Failed to login');
               svr.close();
+              return;
+            }
 
-              return data.json() as Promise<{
-                result: {
-                  data: {
-                    name: string;
-                    email: string;
+            fetch(`${url}/api/trpc/user-current`, {
+              headers: { Cookie: requestCookie },
+            })
+              .then((data) => {
+                res.writeHead(data.status, headers(req.headers.origin));
+                res.end();
+
+                if (!data.ok) {
+                  spinner.fail(`Failed to login: ${data.status} (${data.statusText})`);
+                }
+
+                svr.close();
+
+                return data.json() as Promise<{
+                  result: {
+                    data: {
+                      name: string;
+                      email: string;
+                    };
                   };
-                };
-              }>;
-            })
-            .then(({ result: user }) => {
-              spinner.succeed(`Logged in as ${user.data.name} (${user.data.email})`);
-              spinner.start('Saving authorization token');
+                }>;
+              })
+              .then(({ result: user }) => {
+                spinner.succeed(`Logged in as ${user.data.name} (${user.data.email})`);
+                spinner.start('Saving authorization token');
 
-              return saveAuthToken(requestCookie);
-            })
-            .then(() => {
-              spinner.succeed('Saved authorization token');
-            });
+                return saveAuthToken(requestCookie);
+              })
+              .then(() => {
+                spinner.succeed('Saved authorization token');
+              });
+          }
         })
         .listen(0, () => {
           open(`${url}/user/login?cliCallback=http://localhost:${(svr.address() as AddressInfo).port}/clilogin`).then(

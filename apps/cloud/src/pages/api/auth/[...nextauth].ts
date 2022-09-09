@@ -37,7 +37,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  useSecureCookies: false,
   adapter: PrismaAdapter(prisma),
   callbacks: {
     session: async ({ session, token }) => {
@@ -54,13 +53,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       return token;
-    },
-    redirect: async ({ url, baseUrl }) => {
-      if (url.endsWith('/clilogin')) {
-        return url;
-      }
-
-      return baseUrl;
     },
   },
 };

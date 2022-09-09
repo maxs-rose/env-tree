@@ -28,7 +28,13 @@ const Login: NextPage<{ providers: Provider; cliCallback: string | null }> = ({ 
         icon={loginProviderIcon(provider.id)}
         width={2}
         scale={1.2}
-        onClick={() => signIn(provider.id, { callbackUrl: cliCallback || `${window.location.origin}` })}
+        onClick={() =>
+          signIn(provider.id, {
+            callbackUrl: `${window.location.origin}${
+              cliCallback ? `/user/cli-login?${new URLSearchParams({ cliCallback })}` : ''
+            }`,
+          })
+        }
       >
         {provider.name}
       </Button>
