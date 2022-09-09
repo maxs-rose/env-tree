@@ -21,7 +21,7 @@ const CliLogin: NextPage<{ cliCallback: string | null; cookie: string | null }> 
 
   useEffect(() => {
     if (cliCallback) {
-      fetch(cliCallback, { headers: { Authorization: 'auth token' }, credentials: 'include' })
+      fetch(cliCallback, { headers: { Authorization: cookie ?? '' }, credentials: 'include' })
         .then((data) => {
           setStatus(`${data.status}`);
           setLoading(false);

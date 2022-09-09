@@ -30,7 +30,7 @@ export const addLogin = (program: Command) => {
             res.end();
             return;
           } else if (req.method?.toLowerCase() === 'get') {
-            const requestCookie = req.headers.cookie;
+            const requestCookie = req.headers.authorization;
 
             if (!requestCookie) {
               res.writeHead(500, headers(req.headers.origin));
