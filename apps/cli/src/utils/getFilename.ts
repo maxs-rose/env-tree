@@ -1,6 +1,6 @@
-import { FileType } from './fileType';
+import { DownloadType } from './downloadType';
 
-export const getFilename = (filename: string | undefined, downloadType: FileType) => {
+export const getFilename = (filename: string | undefined, downloadType: DownloadType) => {
   const trimmedName = filename?.trim();
 
   if (trimmedName) {

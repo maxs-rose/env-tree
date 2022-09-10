@@ -1,8 +1,8 @@
 import { InvalidArgumentError } from 'commander';
 
-export type FileType = 'env' | 'json' | 'json-grouped';
+export type DownloadType = 'env' | 'json' | 'json-grouped';
 
-export const isValidFiletype = (value: string, previous: string) => {
+export const isValidFiletype = (value: string, _: string) => {
   const validOptions = ['env', 'json', 'json-grouped'];
   if (validOptions.some((v) => v === value.toLowerCase())) {
     return value.toLowerCase();

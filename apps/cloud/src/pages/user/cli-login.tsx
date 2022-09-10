@@ -1,5 +1,6 @@
 import SecretLoader from '@components/loader';
 import { Card, Divider, Page, Text } from '@geist-ui/core';
+import { isArray } from 'lodash-es';
 import { GetServerSideProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 
@@ -47,8 +48,25 @@ const CliLogin: NextPage<{ cliCallback: string | null; cookie: string | null }> 
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query, req }) => {
+  let cliCallback: string | null | string[] = query.cliCallback || null;
+  const validCallbackRegex = /^http:\/\/localhost:\d+\/clilogin$/;
+
+  if (isArray(cliCallback)) {
+    cliCallback = null;
+  }
+
+  if ((cliCallback && !validCallbackRegex.test(cliCallback)) || !req.headers.cookie) {
+    // Redirect to if the cli callback is invalid
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/404',
+      },
+    };
+  }
+
   return {
-    props: { cliCallback: query.cliCallback || null, cookie: req.headers.cookie },
+    props: { cliCallback: cliCallback, cookie: req.headers.cookie },
   };
 };
 

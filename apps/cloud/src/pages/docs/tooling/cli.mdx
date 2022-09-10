@@ -1,4 +1,5 @@
 import { Layout } from '@components/docs/layout';
+import { Collapse, Spacer } from '@geist-ui/core';
 
 export const meta = {
   title: 'CLI',
@@ -6,28 +7,55 @@ export const meta = {
 
 ## CLI
 
-### Login via Website
+<Collapse title="Login via Website" initialVisible={true}>
+To login to the CLI via the website:
 
-This feature is planned for a future release of the CLI
+<CommandSelector command="login" />
 
-### Login via Token Authentication
+This will open a default browser and wait for the user to logins.
 
+To download a configuration you can now run:
+
+<CommandSelector command="download" />
+
+This will take the user through downloading a configuration
+
+To logout run:
+
+<CommandSelector command="logout" />
+</Collapse>
+<Spacer />
+
+<Collapse title="Login via Token Authentication">
 This method of authentication is intended for scenarios that do not allow for browser interaction, or require zero user interaction.
 
 Required Options:
 
-<CommandSelector command="<project id> <config id> <user email> <user token>" />
+<CommandSelector command="classic <project id> <config id> <user email> <user token>" />
 
 Example usage:
 
-<CommandSelector command="abc-abc-abc def-def-def user@email.com ghi-ghi-ghi -json" />
+<CommandSelector command="classic abc-abc-abc def-def-def user@email.com ghi-ghi-ghi -json" />
 
 This will download the config from project, `abc-abc-abc`, config, `def-def-def`, to `secrets.json` in the curret directory.
 
-### Help
+</Collapse>
+<Spacer />
+<Collapse title="Help">
+
+#### Help Menu
 
 A help menu can be accessed by
 
 <CommandSelector command="--help" />
+or
+<CommandSelector command="help <command>" />
+
+<Spacer h={2} />
+#### Specify URL
+
+All commands bar `logout` can be provided with a `-u [url]` or `--url [url]` option to allow to usage with self hosted deployments.
+
+</Collapse>
 
 export default ({ children }) => <Layout meta={meta}>{children}</Layout>;

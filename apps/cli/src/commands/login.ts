@@ -1,4 +1,5 @@
 import { saveAuthToken } from '@/utils/persist';
+import { getUrl, validURL } from '@/utils/url';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import fetch from 'node-fetch';
@@ -43,7 +44,7 @@ export const addLogin = (program: Command) => {
     origin: string | undefined,
     spinner: Ora
   ) => {
-    const userResponse = await fetch(`${url}/api/trpc/user-current`, { headers: { Cookie: requestCookie } });
+    const userResponse = await fetch(getUrl(url, '/api/trpc/user-current'), { headers: { Cookie: requestCookie } });
 
     res.writeHead(userResponse.status, headers(origin));
     res.end();
@@ -72,7 +73,7 @@ export const addLogin = (program: Command) => {
   program
     .command('login')
     .description('Login a user to the cli')
-    .option('-u, --url <url>', 'URL of Env Tree', 'https://www.envtree.net')
+    .option('-u, --url <url>', 'URL of Env Tree', validURL, 'https://www.envtree.net')
     .action((opts: { url: string }) => {
       let spinner = ora('Opening browser to login').start();
       const url = opts.url;

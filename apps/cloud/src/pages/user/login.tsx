@@ -1,6 +1,7 @@
 import SecretLoader from '@components/loader';
 import { Button, Card, Divider, Page, Text } from '@geist-ui/core';
 import { Github, Gitlab, LogIn } from '@geist-ui/icons';
+import { isArray } from 'lodash-es';
 import { GetServerSideProps, NextPage } from 'next';
 import { Provider } from 'next-auth/providers';
 import { getProviders, signIn } from 'next-auth/react';
@@ -57,10 +58,27 @@ const Login: NextPage<{ providers: Provider; cliCallback: string | null }> = ({ 
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+  let cliCallback: string | null | string[] = query.cliCallback || null;
+  const validCallbackRegex = /^http:\/\/localhost:\d+\/clilogin$/;
+
+  if (isArray(cliCallback)) {
+    cliCallback = null;
+  }
+
+  if (cliCallback && !validCallbackRegex.test(cliCallback)) {
+    // Redirect to if the cli callback is invalid
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/404',
+      },
+    };
+  }
+
   const providers = await getProviders();
 
   return {
-    props: { providers, cliCallback: query.cliCallback || null },
+    props: { providers, cliCallback: query.cliCallback },
   };
 };
 

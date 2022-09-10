@@ -1,4 +1,5 @@
 import { getAuthToken } from '@/utils/persist';
+import { getUrl, validURL } from '@/utils/url';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import fetch from 'node-fetch';
@@ -8,7 +9,7 @@ export const addCurrentUser = (program: Command) => {
   program
     .command('current')
     .description('Display the current user logged into the cli')
-    .option('-u, --url <url>', 'URL of Env Tree', 'https://www.envtree.net')
+    .option('-u, --url <url>', 'URL of Env Tree', validURL, 'https://www.envtree.net')
     .action(async (opts: { url: string }) => {
       let spinner = ora('Getting user information').start();
 
@@ -20,7 +21,7 @@ export const addCurrentUser = (program: Command) => {
       }
 
       try {
-        const fetchResult = await fetch(`${opts.url}/api/trpc/user-current`, { headers: { Cookie: authToken } });
+        const fetchResult = await fetch(getUrl(opts.url, '/api/trpc/user-current'), { headers: { Cookie: authToken } });
 
         if (!fetchResult.ok) {
           spinner.fail(`Failed to fetch user data: ${fetchResult.status}`);
