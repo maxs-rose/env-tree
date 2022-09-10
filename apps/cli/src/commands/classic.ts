@@ -1,3 +1,4 @@
+import { defaultUrl } from '@/utils/consts';
 import { downloadConfig } from '@/utils/download-config';
 import { DownloadType, isValidFiletype } from '@/utils/downloadType';
 import { getFilename } from '@/utils/getFilename';
@@ -17,7 +18,7 @@ export const addClassic = (program: Command) => {
     .option('--format <fileFormat>', 'File format to download', isValidFiletype, 'env')
     .option('-d, --download-directory <directory>', 'Directory to download file to', '.')
     .option('-f, --filename <filename>', 'Filename for created secrets file (default ".env")')
-    .option('-u, --url <url>', 'URL of Env Tree', validURL, 'https://www.envtree.net')
+    .option('-u, --url <url>', 'URL of Env Tree', validURL, defaultUrl)
     .action(
       async (
         projectId,

@@ -1,7 +1,7 @@
 import { CommandSelector } from '@components/docs/CommandSelector';
 import { Sidebar } from '@components/docs/sidebar/sidebar';
 import { PMProvider } from '@context/packageManager';
-import { Collapse, Page, useTheme } from '@geist-ui/core';
+import { Collapse, Link, Page, Snippet, useTheme } from '@geist-ui/core';
 import { MDXProvider } from '@mdx-js/react';
 import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
@@ -25,6 +25,8 @@ export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNo
 
   const mdxCompoents = {
     CommandSelector: CommandSelector,
+    Link: Link,
+    Snippet: Snippet,
   };
 
   return (

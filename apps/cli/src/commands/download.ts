@@ -1,3 +1,4 @@
+import { defaultUrl } from '@/utils/consts';
 import { downloadConfig } from '@/utils/download-config';
 import { DownloadType } from '@/utils/downloadType';
 import { getAuthToken } from '@/utils/persist';
@@ -63,7 +64,7 @@ export const addDownload = (program: Command) => {
   program
     .command('download')
     .description('Download a configuration file for a project')
-    .option('-u, --url <url>', 'URL of Env Tree', validURL, 'https://www.envtree.net')
+    .option('-u, --url <url>', 'URL of Env Tree', validURL, defaultUrl)
     .action(async (opts: { url: string }) => {
       const authToken = getAuthToken();
       let spinner = ora();

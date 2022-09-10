@@ -26,6 +26,10 @@ const getProviders = () => {
     );
   }
 
+  if (providers.length === 0) {
+    throw new Error('At least 1 method of authentication must be provided');
+  }
+
   return providers;
 };
 

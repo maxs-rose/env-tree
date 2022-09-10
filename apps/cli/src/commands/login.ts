@@ -1,3 +1,4 @@
+import { defaultUrl } from '@/utils/consts';
 import { saveAuthToken } from '@/utils/persist';
 import { getUrl, validURL } from '@/utils/url';
 import chalk from 'chalk';
@@ -73,7 +74,7 @@ export const addLogin = (program: Command) => {
   program
     .command('login')
     .description('Login a user to the cli')
-    .option('-u, --url <url>', 'URL of Env Tree', validURL, 'https://www.envtree.net')
+    .option('-u, --url <url>', 'URL of Env Tree', validURL, defaultUrl)
     .action((opts: { url: string }) => {
       let spinner = ora('Opening browser to login').start();
       const url = opts.url;
