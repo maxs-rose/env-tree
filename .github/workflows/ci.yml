@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches: ['*']
@@ -12,8 +16,6 @@ jobs:
     name: Lint
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -31,8 +33,6 @@ jobs:
     name: Build Cloud
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -45,7 +45,7 @@ jobs:
         uses: borales/actions-yarn@v3
         with:
           cmd: prisma generate
-      - name : Lint
+      - name : Build
         uses: borales/actions-yarn@v3
         with:
           cmd: build --filter cloud
@@ -54,8 +54,6 @@ jobs:
     name: Build CLI
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -64,7 +62,7 @@ jobs:
         uses: borales/actions-yarn@v3
         with:
           cmd: install
-      - name : Lint
+      - name : Build
         uses: borales/actions-yarn@v3
         with:
           cmd: build --filter cli
