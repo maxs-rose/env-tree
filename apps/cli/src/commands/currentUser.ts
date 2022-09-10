@@ -1,3 +1,4 @@
+import { defaultUrl } from '@/utils/consts';
 import { getAuthToken } from '@/utils/persist';
 import { getUrl, validURL } from '@/utils/url';
 import chalk from 'chalk';
@@ -9,7 +10,7 @@ export const addCurrentUser = (program: Command) => {
   program
     .command('current')
     .description('Display the current user logged into the cli')
-    .option('-u, --url <url>', 'URL of Env Tree', validURL, 'https://www.envtree.net')
+    .option('-u, --url <url>', 'URL of Env Tree', validURL, defaultUrl)
     .action(async (opts: { url: string }) => {
       let spinner = ora('Getting user information').start();
 
