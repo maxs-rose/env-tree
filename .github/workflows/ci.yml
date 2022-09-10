@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['*']
+  push:
+    branches: ['main']
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install deps
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: install
+      - name : Lint
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: lint
+  build-www:
+    runs-on: ubuntu-latest
+    name: Build Cloud
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install deps
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: install
+      - name: Generate Prisma Client
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: prisma generate
+      - name : Lint
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: build --filter cloud
+  build-cli:
+    runs-on: ubuntu-latest
+    name: Build CLI
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install deps
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: install
+      - name : Lint
+        uses: borales/actions-yarn@v3
+        with:
+          cmd: build --filter cli
