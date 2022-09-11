@@ -1,9 +1,9 @@
 import { Avatar, Card, Grid, Text } from '@geist-ui/core';
-import { Project } from '@prisma/client';
+import { ProjectPage } from '@utils/shared/types';
 import Link from 'next/link';
 import React from 'react';
 
-export const ProjectCard: React.FC<{ project: Project & { userIcons: string[] } }> = ({ project }) => {
+export const ProjectCard: React.FC<{ project: ProjectPage }> = ({ project }) => {
   const linkTarget = `/projects/${project.id}`;
 
   return (
