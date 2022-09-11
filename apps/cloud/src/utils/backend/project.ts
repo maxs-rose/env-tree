@@ -1,9 +1,10 @@
-import { Project } from '@prisma/client';
+import { ProjectPage, ProjectWithUsers } from '@utils/shared/types';
 
-export const projectWithUserIcons = (project: Project & { UsersOnProject: { user: { image: string | null } }[] }) => {
+export const projectWithUserIcons = (project: ProjectWithUsers): ProjectPage => {
+  const { UsersOnProject, ...projectData } = project;
+
   return {
-    ...project,
-    UsersOnProject: undefined,
-    userIcons: project.UsersOnProject.map((uop) => uop.user.image ?? ''),
+    ...projectData,
+    userIcons: UsersOnProject.map((uop) => uop.user.image ?? ''),
   };
 };
