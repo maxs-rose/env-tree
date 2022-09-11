@@ -4,6 +4,7 @@ import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { decrypt } from '@utils/backend/crypt';
 import { configToEnvString, configToJsonGroupObject, configToJsonObject } from '@utils/shared/configExport';
 import { flattenConfigValues } from '@utils/shared/flattenConfig';
+import { log } from '@utils/shared/logging';
 import {
   AuthUser,
   ConfigExportType,
@@ -76,6 +77,7 @@ const getUserFromSessionOrRequest = async (req: NextApiRequest, res: NextApiResp
 
 export const handleConfigExport = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
+    log(req.url ?? '', req.method ?? '', true, 'Error 405');
     res.status(405).send({});
     return;
   }
@@ -83,6 +85,7 @@ export const handleConfigExport = async (req: NextApiRequest, res: NextApiRespon
   const user = await getUserFromSessionOrRequest(req, res);
 
   if (user === 401) {
+    log(req.url ?? '', req.method ?? '', true, 'Error 401');
     res.status(401).send({});
     return;
   }
@@ -90,6 +93,7 @@ export const handleConfigExport = async (req: NextApiRequest, res: NextApiRespon
   const parseResult = zConfigExportParams.safeParse(req.body);
 
   if (!parseResult.success) {
+    log(req.url ?? '', req.method ?? '', true, { status: 400, zodMessage: parseResult.error.issues });
     res.status(400).send(parseResult.error.issues);
     return;
   }
@@ -99,10 +103,12 @@ export const handleConfigExport = async (req: NextApiRequest, res: NextApiRespon
   return await firstValueFrom(exportConfig$(user.id, formData.projectId, formData.configId, formData.type))
     .then((data) => {
       if (data === undefined) {
+        log(req.url ?? '', req.method ?? '', true, { status: 404 });
         res.status(404).send('Could not find config');
         return;
       }
 
+      log(req.url ?? '', req.method ?? '');
       res.status(200);
 
       if (formData.type === 'env') {
