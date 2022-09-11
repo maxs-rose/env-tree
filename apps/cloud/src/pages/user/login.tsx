@@ -78,7 +78,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const providers = await getProviders();
 
   return {
-    props: { providers, cliCallback: query.cliCallback },
+    props: { providers, cliCallback },
   };
 };
 
