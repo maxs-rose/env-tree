@@ -4,11 +4,12 @@ import { PMProvider } from '@context/packageManager';
 import { Collapse, Link, Page, Snippet, useTheme } from '@geist-ui/core';
 import { MDXProvider } from '@mdx-js/react';
 import Head from 'next/head';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNode }> = ({ meta, children }) => {
   const theme = useTheme();
   const [manager, setManager] = useState<'npm' | 'yarn' | 'global'>('npm');
+  const windowTitle = useMemo(() => `Env Tree - ${meta.title}`, [meta.title]);
 
   const packageManagerChange = (packageManager: 'npm' | 'yarn' | 'global') => {
     window.localStorage.setItem('packageManager', packageManager);
@@ -32,7 +33,7 @@ export const Layout: React.FC<{ meta: { title: string }; children: React.ReactNo
   return (
     <>
       <Head>
-        <title>Env Tree Docs - {meta.title}</title>
+        <title>{windowTitle}</title>
       </Head>
       <Page className="page-height">
         <Page.Content>
