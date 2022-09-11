@@ -4,6 +4,7 @@ import { BindingsChangeTarget } from '@geist-ui/core/esm/use-input/use-input';
 import { flattenConfigValues } from '@utils/shared/flattenConfig';
 import { trpc } from '@utils/shared/trpc';
 import { Config, ConfigValue } from '@utils/shared/types';
+import dynamic from 'next/dynamic';
 import React, { MutableRefObject, useState } from 'react';
 
 const getConfigValue = <T,>(
@@ -12,7 +13,7 @@ const getConfigValue = <T,>(
   target: keyof ConfigValue[string]
 ) => conf?.values?.[configValue ?? '']?.[target] as T | undefined;
 
-export const EditConfigValueModal: React.FC<{
+const EditConfigValueModalComponent: React.FC<{
   onCloseModel: () => void;
   bindings: ModalHooksBindings;
   config: MutableRefObject<Config | undefined>;
@@ -176,3 +177,5 @@ export const EditConfigValueModal: React.FC<{
     </Modal>
   );
 };
+
+export const EditConfigValueModal = dynamic(() => Promise.resolve(EditConfigValueModalComponent), { ssr: true });

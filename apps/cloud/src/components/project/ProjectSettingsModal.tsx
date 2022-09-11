@@ -5,6 +5,7 @@ import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { Trash2 } from '@geist-ui/icons';
 import { getZodErrorMessage, trpc } from '@utils/shared/trpc';
 import { Project } from '@utils/shared/types';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
@@ -147,7 +148,7 @@ const ProjectUserList: React.FC<{ projectId: string }> = ({ projectId }) => {
   return <div className="flex flex-col gap-2">{users(usersOnProject.data)}</div>;
 };
 
-export const ProjectSettingsModal: React.FC<{
+const ProjectSettingsModalComponent: React.FC<{
   onCloseModel: () => void;
   bindings: ModalHooksBindings;
   project: Project;
@@ -173,3 +174,5 @@ export const ProjectSettingsModal: React.FC<{
     </Modal>
   );
 };
+
+export const ProjectSettingsModal = dynamic(() => Promise.resolve(ProjectSettingsModalComponent), { ssr: true });
