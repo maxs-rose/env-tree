@@ -24,6 +24,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@corex/deepmerge@npm:^4.0.29":
+  version: 4.0.29
+  resolution: "@corex/deepmerge@npm:4.0.29"
+  checksum: 78626fd29cb9cbd2953ce5a06f963132c9b4837bb76397982d255131533b61c3ef447f0d295f300aa6b2c3ead182a6fe2e4763181e06a2124df28c08205de1d2
+  languageName: node
+  linkType: hard
+
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"
@@ -82,6 +89,7 @@ __metadata:
     lodash-es: ^4.17.21
     next: ^12.2.5
     next-auth: ^4.10.3
+    next-sitemap: ^3.1.22
     postcss: ^8.4.16
     prisma: ^4.3.1
     react: 18.2.0
@@ -4322,6 +4330,22 @@ __metadata:
     nodemailer:
       optional: true
   checksum: 7c78fe88a8be3a7fb1947d151ed3cb45e549f652acbf7aeadcae405a4a62998d068656702df88f4e240ad5348b8f8428b0c4d3f5dd5a870fb2e6c1597130b815
+  languageName: node
+  linkType: hard
+
+"next-sitemap@npm:^3.1.22":
+  version: 3.1.22
+  resolution: "next-sitemap@npm:3.1.22"
+  dependencies:
+    "@corex/deepmerge": ^4.0.29
+    minimist: ^1.2.6
+  peerDependencies:
+    "@next/env": "*"
+    next: "*"
+  bin:
+    next-sitemap: bin/next-sitemap.mjs
+    next-sitemap-cjs: bin/next-sitemap.cjs
+  checksum: 115af89121fb3e51dc41916d78cd7a90cc4689d76315acc7acc07b9dfaa246b2688690674ba7ec4dc134a262279486ab3a81f290c6cd5027fdc80d52bfbb119d
   languageName: node
   linkType: hard
 
