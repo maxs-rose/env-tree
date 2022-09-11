@@ -14,6 +14,9 @@ RUN yarn
 RUN yarn prisma generate
 RUN yarn build --filter cloud
 
+# Remove the .next/cache folder as its not needed in the final image
+RUN rm -rf /app/apps/cloud/.next/cache
+
 FROM base as prod-deps
 RUN export NODE_ENV=production
 COPY . .
@@ -26,7 +29,7 @@ FROM base as deploy
 COPY --from=prod-deps /app/node_modules /app/node_modules
 # Grab missing prisma stuff
 COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma /app/node_modules/@prisma
+COPY --from=build /app/node_modules/@prisma/client /app/node_modules/@prisma/client
 
 COPY --from=build /app/apps/cloud/.next /app/apps/cloud/.next
 COPY --from=build /app/apps/cloud/public /app/apps/cloud/public
