@@ -5,8 +5,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  pull_request:
-    branches: ['release/cloud-*']
+  push:
+    branches: ['release']
 
 jobs:
   build-cloud:
