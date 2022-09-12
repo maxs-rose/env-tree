@@ -1,6 +1,8 @@
 import { getUser$ } from '@backend/api/user';
 import SecretLoader from '@components/loader';
-import { Button, Input, Page, Snippet, Text, useInput, useToasts } from '@geist-ui/core';
+import useOnScreen from '@context/useOnScreen';
+import { Button, Collapse, Input, Page, Snippet, Spacer, Text, Tooltip, useInput, useToasts } from '@geist-ui/core';
+import { Info, Trash } from '@geist-ui/icons';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/shared/trpc';
 import { AuthUser, User } from '@utils/shared/types';
@@ -8,7 +10,7 @@ import { GetServerSideProps, NextPage } from 'next';
 import { unstable_getServerSession } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
+import React, { MutableRefObject, useEffect, useRef, useState } from 'react';
 import { firstValueFrom } from 'rxjs';
 
 const Token: React.FC<{ user: User }> = ({ user }) => {
@@ -32,37 +34,98 @@ const Token: React.FC<{ user: User }> = ({ user }) => {
   );
 };
 
-const UserSettings: NextPage<{ currentUser: User }> = ({ currentUser }) => {
-  const router = useRouter();
-  const toaster = useToasts();
-  const trpcContext = trpc.useContext();
-  const user = trpc.useQuery(['user-current'], { initialData: currentUser, refetchOnMount: false });
+const DeleteUser: React.FC = () => {
+  const deleteConfirmText = 'I understand, please delete my account' as const;
+  const { state, setState, bindings } = useInput('');
+  const [canDelete, setCanDelete] = useState(false);
+
+  const ref = useRef<HTMLDivElement>(null);
+  const isVisible = useOnScreen(ref as unknown as MutableRefObject<Element>);
+
   const deleteUser = trpc.useMutation(['user-delete'], {
     onSuccess: () => {
       signOut();
     },
   });
+
+  useEffect(() => {
+    setCanDelete(state === deleteConfirmText);
+  }, [state]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setState('');
+    }
+  }, [isVisible, setState]);
+
+  return (
+    <div className="max-w-md flex flex-col" ref={ref}>
+      <Text p>
+        <Text b type="error">
+          Warning!
+        </Text>{' '}
+        Deleting your account cannot be undone and will <Text b>delete all projects</Text> that you are the last member
+        of. If you are sure please type:
+      </Text>
+      <Text blockquote width="100%">
+        {deleteConfirmText}
+      </Text>
+      <Input {...bindings} placeholder="Delete account" width="100%" clearable />
+      <Spacer />
+      <Button type="error" disabled={!canDelete} icon={<Trash />} onClick={() => deleteUser.mutate()}>
+        Delete Account
+      </Button>
+    </div>
+  );
+};
+
+const UserSettings: NextPage<{ currentUser: User }> = ({ currentUser }) => {
+  const router = useRouter();
+  const toaster = useToasts();
+  const trpcContext = trpc.useContext();
+  const { data: userData, ...user } = trpc.useQuery(['user-current'], {
+    initialData: currentUser,
+    refetchOnMount: false,
+  });
+
   const updateDisplayName = trpc.useMutation(['user-rename'], {
     onSuccess: () => {
       trpcContext.invalidateQueries(['user-current']);
+      toaster.setToast({ text: 'Updated name', type: 'success', delay: 10000 });
+    },
+    onError: () => {
+      setDisplayNameState(`${userData?.name}`);
+      toaster.setToast({ text: 'Failed to updated name', type: 'error', delay: 10000 });
     },
   });
   const updateUsername = trpc.useMutation(['user-username'], {
     onSuccess: () => {
       trpcContext.invalidateQueries(['user-current']);
+      toaster.setToast({ text: 'Updated username', type: 'success', delay: 10000 });
     },
     onError: () => toaster.setToast({ text: 'Username already in use', type: 'error', delay: 10000 }),
   });
+  const [nameUpdate, setNameUpdate] = useState('');
   const { state: displayNameState, setState: setDisplayNameState, bindings: displayNameBindings } = useInput('');
   const { state: usernameState, setState: setUsernameState, bindings: usernameBindings } = useInput('');
 
   useEffect(() => {
-    setDisplayNameState(user.data?.name ?? '');
-    setUsernameState(user.data?.username ?? '');
+    setDisplayNameState(`${userData?.name}`);
+    setUsernameState(`${userData?.username}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.data]);
+  }, [userData]);
 
-  if (user.isLoading || user.isError || !user.data) {
+  const blurName = () => {
+    setNameUpdate(displayNameState);
+    setDisplayNameState(`${userData?.name}`);
+  };
+
+  const blurUsername = () => {
+    setNameUpdate(usernameState);
+    setUsernameState(`${userData?.username}`);
+  };
+
+  if (user.isLoading || user.isError || !userData) {
     return <SecretLoader loadingText="Loading" />;
   }
 
@@ -72,21 +135,30 @@ const UserSettings: NextPage<{ currentUser: User }> = ({ currentUser }) => {
         <Text h2>User settings</Text>
       </Page.Header>
       <Page.Content>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Input {...displayNameBindings} />
-          <Button onClick={() => updateDisplayName.mutate({ name: displayNameState })}>Update name</Button>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Input {...usernameBindings} />
-          <Button onClick={() => updateUsername.mutate({ username: usernameState })}>Update username</Button>
-        </div>
-        <Token user={user.data} />
-        <div>
-          <Button onClick={() => router.push('/user/login')}>Link Accout</Button>
-        </div>
-        <div>
-          <Button onClick={() => deleteUser.mutate()}>Delete account</Button>
-        </div>
+        <Collapse title="General" initialVisible>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input {...displayNameBindings} onBlur={blurName} />
+            <Button onClick={() => updateDisplayName.mutate({ name: nameUpdate })}>Update name</Button>
+          </div>
+          <Spacer />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input {...usernameBindings} onBlur={blurUsername} />
+            <Button onClick={() => updateUsername.mutate({ username: nameUpdate })}>Update username</Button>
+          </div>
+        </Collapse>
+        <Collapse title="Security">
+          <Token user={userData} />
+
+          <div className="flex items-center gap-2">
+            <Button onClick={() => router.push('/user/login')}>Link Account</Button>
+            <Tooltip text="Link your account with another authentication provider">
+              <Info color="#0070f3" />
+            </Tooltip>
+          </div>
+        </Collapse>
+        <Collapse title="Danger Zone" className="danger-zone">
+          <DeleteUser />
+        </Collapse>
       </Page.Content>
     </Page>
   );
