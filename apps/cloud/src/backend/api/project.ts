@@ -7,7 +7,9 @@ export const getProjects$ = (userId: string) =>
   from(
     prisma.usersOnProject.findMany({
       where: { userId },
-      include: { project: { include: { UsersOnProject: { include: { user: { select: { image: true } } } } } } },
+      include: {
+        project: { include: { UsersOnProject: { include: { user: { select: { image: true, email: true } } } } } },
+      },
     })
   ).pipe(
     map((userProjects) => userProjects.map((p) => p.project)),

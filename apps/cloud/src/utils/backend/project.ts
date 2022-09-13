@@ -1,3 +1,4 @@
+import { getUserIcon } from '@utils/backend/userIcons';
 import { ProjectPage, ProjectWithUsers } from '@utils/shared/types';
 
 export const projectWithUserIcons = (project: ProjectWithUsers): ProjectPage => {
@@ -5,6 +6,6 @@ export const projectWithUserIcons = (project: ProjectWithUsers): ProjectPage => 
 
   return {
     ...projectData,
-    userIcons: UsersOnProject.map((uop) => uop.user.image ?? ''),
+    userIcons: UsersOnProject.map((uop) => getUserIcon(uop.user.email, uop.user.image)),
   };
 };
