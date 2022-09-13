@@ -1,5 +1,6 @@
 import { prisma } from '@backend/prisma';
 import { decrypt, encrypt } from '@utils/backend/crypt';
+import { getUserIcon } from '@utils/backend/userIcons';
 import * as crypto from 'crypto';
 import { from, map, of, switchMap } from 'rxjs';
 
@@ -9,7 +10,11 @@ export const getUser$ = (userId: string) =>
       where: { id: userId },
       select: { id: true, email: true, name: true, username: true, image: true, authToken: true },
     })
-  ).pipe(map((user) => (user ? { ...user, authToken: decrypt(user.authToken ?? '') } : user)));
+  ).pipe(
+    map((user) =>
+      user ? { ...user, image: getUserIcon(user.email, user.image), authToken: decrypt(user.authToken ?? '') } : user
+    )
+  );
 
 export const generateAuthToken$ = (userId: string) => {
   const authToken = crypto.randomBytes(32).toString('hex');
@@ -40,7 +45,7 @@ export const searchUser$ = (query: string | undefined, projectId: string | undef
   query
     ? from(
         prisma.user.findMany({
-          select: { id: true, name: true, username: true, image: true },
+          select: { id: true, name: true, username: true, image: true, email: true },
           where: {
             OR: [{ name: { contains: query } }, { username: { contains: query } }],
             // Ensure that the returned users are not already on the project
@@ -51,5 +56,13 @@ export const searchUser$ = (query: string | undefined, projectId: string | undef
           distinct: ['id'],
           take: 20,
         })
+      ).pipe(
+        map((users) =>
+          users.map((u) => {
+            const { email, ...user } = u;
+
+            return { ...user, image: getUserIcon(email, u.image) };
+          })
+        )
       )
     : of([]);

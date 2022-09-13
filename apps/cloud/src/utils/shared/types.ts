@@ -18,7 +18,9 @@ export type Config = Omit<PrismaConfig, 'values'> & { values: ConfigValue; linke
 // Project
 export type Project = PrismaProject;
 export type ProjectWithConfigIds = Project & { configs: Array<{ id: string }> };
-export type ProjectWithUsers = Project & { UsersOnProject: Array<{ user: { image: string | null } }> };
+export type ProjectWithUsers = Project & {
+  UsersOnProject: Array<{ user: { image: string | null; email: string | null } }>;
+};
 export type ProjectPage = Omit<Project, 'UsersOnProject'> & { userIcons: string[] };
 
 // Config Export
