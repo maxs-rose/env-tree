@@ -1,23 +1,6 @@
 import { ConfigValue } from '@utils/shared/types';
 import { groupBy, map } from 'lodash-es';
 
-const formatValueForEnv = (value: string | null) => {
-  if (!value) {
-    return '';
-  }
-
-  // Dont double wrap with " or '
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-    return value;
-  }
-
-  if (value.includes('#') || value.includes('=') || /\s/g.test(value)) {
-    return `"${value}"`;
-  }
-
-  return value;
-};
-
 const formatValueForJson = (value: string | null) => {
   if (!value) {
     return null;
@@ -37,7 +20,7 @@ const writeGroupToString = (group: string | null, config: ConfigValue) => {
   return (
     groupName +
     Object.entries(config)
-      .map(([k, v]) => `${k}=${formatValueForEnv(v.value)}`)
+      .map(([k, v]) => `${k}=${v.value}`)
       .join('\n')
   );
 };
