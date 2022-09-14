@@ -1,9 +1,10 @@
 import { Input, Modal, Text, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { trpc } from '@utils/shared/trpc';
+import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 
-export const AddConfigModal: React.FC<{
+const AddConfigModalComponent: React.FC<{
   onCloseModel: (projectId?: string) => void;
   bindings: ModalHooksBindings;
   projectId: string;
@@ -57,3 +58,5 @@ export const AddConfigModal: React.FC<{
     </Modal>
   );
 };
+
+export const AddConfigModal = dynamic(() => Promise.resolve(AddConfigModalComponent), { ssr: false });

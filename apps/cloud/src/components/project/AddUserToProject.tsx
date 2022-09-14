@@ -1,6 +1,7 @@
 import { Button, Input, useInput, User } from '@geist-ui/core';
 import { Plus } from '@geist-ui/icons';
 import { trpc } from '@utils/shared/trpc';
+import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 
 const useDebounce = <T,>(value: T, delay: number): T => {
@@ -19,7 +20,7 @@ const useDebounce = <T,>(value: T, delay: number): T => {
   return debounced;
 };
 
-export const AddUserToProjectModal: React.FC<{
+const AddUserToProjectModalComponent: React.FC<{
   projectId: string;
 }> = ({ projectId }) => {
   const trpcContext = trpc.useContext();
@@ -71,3 +72,5 @@ export const AddUserToProjectModal: React.FC<{
     </div>
   );
 };
+
+export const AddUserToProjectModal = dynamic(() => Promise.resolve(AddUserToProjectModalComponent), { ssr: false });

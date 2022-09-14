@@ -1,9 +1,10 @@
 import { Input, Modal, Spacer, Text, Textarea, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { getZodErrorMessage, trpc } from '@utils/shared/trpc';
+import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 
-export const CreateProjectModal: React.FC<{
+const CreateProjectModalComponent: React.FC<{
   onCloseModel: (status: boolean) => void;
   bindings: ModalHooksBindings;
 }> = ({ onCloseModel, bindings }) => {
@@ -83,3 +84,5 @@ export const CreateProjectModal: React.FC<{
     </Modal>
   );
 };
+
+export const CreateProjectModal = dynamic(() => Promise.resolve(CreateProjectModalComponent), { ssr: true });

@@ -10,6 +10,14 @@ Changelog for all supported components and future plans
 
 ### Cloud
 
+- 1.2.0 - (14/09/2022)
+
+  - Added: Search box on project page
+  - Change: Improve user settings page UI/UX
+  - Change: User icons will first check icon provided by gravatar before defaulting to icon form authentication provider. A default icon will be given if the user does not have a gravatar icon
+  - Change: Config values will no longer be edited when exporting as .env
+  - Docker image is now available for selfhosting, see <Link href="/docs/misc/selfhost" className="hover:!underline font-bold">Self Hosting</Link> for details
+
 - 1.1.1 - (2022/09/11)
 
   - Fix: Addressed memory leak caused by creating multiple prisma clients
@@ -24,8 +32,6 @@ Changelog for all supported components and future plans
 
 - Planned features
   - Email only login
-  - Search bar for projects page
-  - Improve user settings page UI/UX
   - Audit log for config changes
   - Project Icons
 

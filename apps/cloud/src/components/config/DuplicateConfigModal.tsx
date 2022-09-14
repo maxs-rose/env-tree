@@ -1,10 +1,11 @@
 import { Input, Modal, Text, useInput } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { trpc } from '@utils/shared/trpc';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 
-export const DuplicateConfigModal: React.FC<{
+const DuplicateConfigModalComponent: React.FC<{
   onCloseModel: (configId?: string) => void;
   bindings: ModalHooksBindings;
   projectId: string;
@@ -69,3 +70,5 @@ export const DuplicateConfigModal: React.FC<{
     </Modal>
   );
 };
+
+export const DuplicateConfigModal = dynamic(() => Promise.resolve(DuplicateConfigModalComponent), { ssr: true });
