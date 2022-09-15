@@ -3,7 +3,7 @@ import { AddConfigModal } from '@components/config/AddConfigModal';
 import { DisplayProjectConfigs } from '@components/config/DisplayProjectConfigs';
 import SecretLoader from '@components/loader';
 import { ProjectSettingsModal } from '@components/project/ProjectSettingsModal';
-import { Button, Page, Spacer, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
+import { Avatar, Button, Page, Spacer, Tabs, Text, useModal, useTabs } from '@geist-ui/core';
 import { Plus, Settings } from '@geist-ui/icons';
 import { authOptions } from '@pages/api/auth/[...nextauth]';
 import { trpc } from '@utils/shared/trpc';
@@ -20,7 +20,7 @@ const ProjectConfigs: NextPage<{ project: ProjectWithConfigIds; configId?: strin
   const { setState: setTabState, bindings: tabBindings } = useTabs(configId ?? '');
   const { setVisible: setProjectSettingsVisible, bindings: projectSettingsModalBindings } = useModal();
   const { setVisible: setAddConfigVisible, bindings: addConfigModalBindings } = useModal();
-  const currentProject = trpc.useQuery(['project-get-single', { projectId: project.id }], {
+  const { data: currentProject } = trpc.useQuery(['project-get-single', { projectId: project.id }], {
     initialData: project,
     refetchOnMount: false,
   });
@@ -80,12 +80,13 @@ const ProjectConfigs: NextPage<{ project: ProjectWithConfigIds; configId?: strin
   return (
     <>
       <Head>
-        <title>Env Tree - {project.name}</title>
+        <title>Env Tree - {currentProject?.name}</title>
       </Head>
       <Page className="page-height">
         <Page.Header>
           <div className="flex items-center gap-2 flex-wrap">
-            <Text h2>{currentProject!.data!.name}</Text>
+            {currentProject?.projectImage && <Avatar src={currentProject?.projectImage} width={1.5} height={1.5} />}
+            <Text h2>{currentProject!.name}</Text>
             <Spacer inline />
             <Button auto icon={<Plus />} px={0.6} type="success" onClick={() => setAddConfigVisible(true)}>
               Add Configuration
@@ -103,7 +104,7 @@ const ProjectConfigs: NextPage<{ project: ProjectWithConfigIds; configId?: strin
       <ProjectSettingsModal
         onCloseModel={closeProjectSettings}
         bindings={projectSettingsModalBindings}
-        project={currentProject!.data!}
+        project={currentProject!}
       />
       <AddConfigModal onCloseModel={closeConfigModal} bindings={addConfigModalBindings} projectId={project.id} />
     </>
