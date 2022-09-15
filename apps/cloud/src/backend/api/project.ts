@@ -52,6 +52,21 @@ export const updateProject$ = (userId: string, projectId: string, name: string, 
     })
   );
 
+export const updateProjectImage$ = (userId: string, projectId: string, image: string | null) =>
+  from(
+    prisma.usersOnProject.findUnique({
+      where: { projectId_userId: { userId, projectId } },
+    })
+  ).pipe(
+    switchMap((data) => {
+      if (!data) {
+        throw projectNotFoundError;
+      }
+
+      return prisma.project.update({ data: { projectImage: image ?? '' }, where: { id: projectId } });
+    })
+  );
+
 export const deleteProject$ = (userId: string, projectId: string) =>
   from(prisma.project.findFirst({ where: { id: projectId, UsersOnProject: { some: { userId } } } })).pipe(
     map((project) => {

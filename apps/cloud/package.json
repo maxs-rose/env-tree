@@ -20,6 +20,7 @@
     "@trpc/next": "^9.27.2",
     "@trpc/react": "^9.27.2",
     "@trpc/server": "^9.27.2",
+    "formidable": "^2.0.1",
     "js-file-download": "^0.4.12",
     "lodash-es": "^4.17.21",
     "next": "^12.3.0",
@@ -32,6 +33,7 @@
     "zod": "^3.19.1"
   },
   "devDependencies": {
+    "@types/formidable": "^2.0.5",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "18.7.18",
     "@types/react": "18.0.20",
