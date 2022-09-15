@@ -3,6 +3,7 @@ import Nav from '@components/nav';
 import { ConfigProvider } from '@context/config';
 import { CssBaseline, GeistProvider, useTheme } from '@geist-ui/core';
 import { withTRPC } from '@trpc/next';
+import { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
@@ -10,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { AppRouter } from 'src/backend/router';
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   const theme = useTheme();
   const [themeType, setThemeType] = useState(theme.type);
 
@@ -30,7 +31,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   }, []);
 
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={pageProps.session}>
       <GeistProvider themeType={themeType}>
         <CssBaseline />
         <ConfigProvider onThemeChange={themeChange}>
