@@ -2,5 +2,5 @@
 module.exports = {
   siteUrl: 'https://www.envtree.net',
   generateRobotsTxt: true,
-  exclude: ['/user/*', '/projects/*'],
+  exclude: ['/user/*', '/projects/*', '/api/*'],
 };
