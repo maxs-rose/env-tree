@@ -8,7 +8,7 @@ import { isArray } from 'lodash-es';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { unstable_getServerSession } from 'next-auth';
 
-export default async function (req: NextApiRequest, res: NextApiResponse) {
+export default async function projectIcon(req: NextApiRequest, res: NextApiResponse) {
   if (req.method?.toLowerCase() !== 'post') {
     res.status(405).send('');
     return;

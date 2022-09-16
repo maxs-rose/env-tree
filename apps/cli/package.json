@@ -50,7 +50,7 @@
   "devDependencies": {
     "@types/inquirer": "^9.0.1",
     "@types/node": "^18.7.18",
-    "eslint": "8.22.0",
+    "eslint": "8.23.1",
     "eslint-config-custom": "*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
