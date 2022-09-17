@@ -256,4 +256,4 @@ const ProjectSettingsModalComponent: React.FC<{
   );
 };
 
-export const ProjectSettingsModal = dynamic(() => Promise.resolve(ProjectSettingsModalComponent), { ssr: true });
+export const ProjectSettingsModal = dynamic(() => Promise.resolve(ProjectSettingsModalComponent), { ssr: false });
