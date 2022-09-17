@@ -23,6 +23,7 @@ export const projectRouter = createRouter()
     input: z.object({
       name: z
         .string()
+        .trim()
         .min(3, 'Minimum project name length is 3 characters')
         .max(40, 'Maximum project name length is 40 characters'),
       description: z.string().max(255, 'Maximum description length is 255 characters').nullable(),
@@ -34,6 +35,7 @@ export const projectRouter = createRouter()
       projectId: z.string(),
       name: z
         .string()
+        .trim()
         .min(3, 'Minimum project name length is 3 characters')
         .max(40, 'Maximum project name length is 40 characters'),
       description: z.string().max(255, 'Maximum description length is 255 characters').nullable(),

@@ -4,6 +4,7 @@ import {
   duplicateConfig$,
   getExpandedConfigs$,
   linkedConfig$,
+  renameConfig$,
   updateConfig$,
 } from '@backend/api/config';
 import { createRouter } from '@backend/createRouter';
@@ -17,7 +18,7 @@ export const configRouter = createRouter()
     resolve: ({ ctx, input }) => firstValueFrom(getExpandedConfigs$(ctx.user.id, input.projectId)),
   })
   .mutation('create', {
-    input: z.object({ projectId: z.string(), configName: z.string() }),
+    input: z.object({ projectId: z.string(), configName: z.string().trim().min(1) }),
     resolve: ({ ctx, input }) => firstValueFrom(createConfig$(ctx.user.id, input.projectId, input.configName)),
   })
   .mutation('duplicate', {
@@ -40,6 +41,18 @@ export const configRouter = createRouter()
     resolve: ({ ctx, input }) =>
       firstValueFrom(
         updateConfig$(ctx.user.id, input.projectId, input.configId, input.configVersion ?? null, input.values)
+      ),
+  })
+  .mutation('rename', {
+    input: z.object({
+      projectId: z.string(),
+      configId: z.string(),
+      configVersion: z.string(),
+      configName: z.string().trim().min(1),
+    }),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(
+        renameConfig$(ctx.user.id, input.projectId, input.configId, input.configVersion ?? null, input.configName)
       ),
   })
   .mutation('delete', {
