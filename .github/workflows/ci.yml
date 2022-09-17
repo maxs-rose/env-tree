@@ -22,13 +22,9 @@ jobs:
           node-version: 16
           cache: 'yarn'
       - name: Install deps
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: install
-      - name : Lint
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: lint
+        run: yarn install
+      - name: Lint
+        run: yarn lint
   build-www:
     runs-on: ubuntu-latest
     name: Build Cloud
@@ -41,17 +37,11 @@ jobs:
           node-version: 16
           cache: 'yarn'
       - name: Install deps
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: install
+        run: yarn install
       - name: Generate Prisma Client
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: prisma generate
+        run: yarn prisma generate
       - name : Build
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: build --filter cloud
+        run: yarn build --filter cloud
   build-cli:
     runs-on: ubuntu-latest
     name: Build CLI
@@ -64,10 +54,6 @@ jobs:
           node-version: 16
           cache: 'yarn'
       - name: Install deps
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: install
+        run: yarn install
       - name : Build
-        uses: borales/actions-yarn@v3
-        with:
-          cmd: build --filter cli
+        run: yarn build --filter cli

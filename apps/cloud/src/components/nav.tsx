@@ -6,7 +6,6 @@ import {
   Card,
   Popover,
   Spacer,
-  Tabs,
   Text,
   useBodyScroll,
   useMediaQuery,
@@ -21,6 +20,13 @@ import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+
+const navItemStyle = 'text-[#666] hover:text-bold rounded p-1.5 nav-item';
+
+const getNavItemThemeActiveColours = (type: string) => (type === 'light' ? 'text-black' : 'text-white');
+
+const getNavItemThemeHoverColours = (type: string) =>
+  type === 'light' ? 'hover:text-black hover:bg-[#eaeaea]' : 'hover:text-white hover:bg-[#333]';
 
 const UserNofifPopover: React.FC<{
   acceptRequest: (requestId: string) => void;
@@ -135,8 +141,9 @@ const UserDisplay: React.FC<{ showNofis?: boolean }> = ({ showNofis = true }) =>
   );
 };
 
-const MenuMobile: React.FC<{ expanded: boolean }> = ({ expanded }) => {
+const MenuMobile: React.FC<{ expanded: boolean; currentUrl: string }> = ({ expanded, currentUrl }) => {
   const theme = useTheme();
+  const { status: authStatus } = useSession();
   const [, setScroll] = useBodyScroll();
   const { onThemeChange } = useConfigs();
 
@@ -158,13 +165,33 @@ const MenuMobile: React.FC<{ expanded: boolean }> = ({ expanded }) => {
     <>
       <div className="mobile-menu absolute w-full h-full z-[999] flex flex-col pt-4 gap-4 items-center">
         <Link href="/">
-          <a className="text-[#666]">Home</a>
+          <a
+            className={`${navItemStyle} ${
+              !currentUrl ? getNavItemThemeActiveColours(theme.type) : ''
+            } ${getNavItemThemeHoverColours(theme.type)}`}
+          >
+            Home
+          </a>
         </Link>
-        <Link href="/projects">
-          <a className="text-[#666]">Projects</a>
-        </Link>
+        {authStatus === 'authenticated' && (
+          <Link href="/projects">
+            <a
+              className={`${navItemStyle} ${
+                currentUrl === 'projects' ? getNavItemThemeActiveColours(theme.type) : ''
+              } ${getNavItemThemeHoverColours(theme.type)}`}
+            >
+              Projects
+            </a>
+          </Link>
+        )}
         <Link href="/docs/tooling/cli">
-          <a className="text-[#666]">Docs</a>
+          <a
+            className={`${navItemStyle} ${
+              currentUrl === 'docs' ? getNavItemThemeActiveColours(theme.type) : ''
+            } ${getNavItemThemeHoverColours(theme.type)}`}
+          >
+            Docs
+          </a>
         </Link>
         <Spacer />
         <UserDisplay showNofis={false} />
@@ -183,16 +210,12 @@ const MenuMobile: React.FC<{ expanded: boolean }> = ({ expanded }) => {
 
 const Nav: React.FC = () => {
   const router = useRouter();
+  const { status: authStatus } = useSession();
   const [currentUrl, setCurrentUrl] = useState('');
   const theme = useTheme();
   const { onThemeChange } = useConfigs();
   const isMobile = useMediaQuery('xs', { match: 'down' });
   const [mobileExpanded, setMobileExpanded] = useState(false);
-
-  const tabChange = (tab: string) => {
-    setCurrentUrl(tab);
-    router.push(`/${tab}`);
-  };
 
   const isLightMode = () => theme.type === 'light';
 
@@ -234,19 +257,36 @@ const Nav: React.FC = () => {
             className="content flex items-center justify-between h-[100%] select-none"
             style={{ padding: `0 ${theme.layout.gap}` }}
           >
-            <div className="nav-tabs flex items-center menu-tabs">
-              <Tabs
-                align="center"
-                hideDivider
-                hideBorder
-                onChange={tabChange}
-                value={currentUrl}
-                activeClassName="current"
-              >
-                <Tabs.Item label="Home" value="" />
-                <Tabs.Item label="Projects" value="projects" />
-                <Tabs.Item label="Docs" value="docs" />
-              </Tabs>
+            <div className="nav-tabs flex items-center menu-tabs gap-4">
+              <Link href="/">
+                <a
+                  className={`${navItemStyle} ${
+                    !currentUrl ? getNavItemThemeActiveColours(theme.type) : ''
+                  } ${getNavItemThemeHoverColours(theme.type)}`}
+                >
+                  Home
+                </a>
+              </Link>
+              {authStatus === 'authenticated' && (
+                <Link href="/projects">
+                  <a
+                    className={`${navItemStyle} ${
+                      currentUrl === 'projects' ? getNavItemThemeActiveColours(theme.type) : ''
+                    } ${getNavItemThemeHoverColours(theme.type)}`}
+                  >
+                    Projects
+                  </a>
+                </Link>
+              )}
+              <Link href="/docs/tooling/cli">
+                <a
+                  className={`${navItemStyle} ${
+                    currentUrl === 'docs' ? getNavItemThemeActiveColours(theme.type) : ''
+                  } ${getNavItemThemeHoverColours(theme.type)}`}
+                >
+                  Docs
+                </a>
+              </Link>
             </div>
             <div className="flex justify-end items-center menu-tabs">
               <UserDisplay />
@@ -266,8 +306,12 @@ const Nav: React.FC = () => {
           </div>
         </div>
       </div>
-      <MenuMobile expanded={mobileExpanded} />
+      <MenuMobile expanded={mobileExpanded} currentUrl={currentUrl} />
       <style jsx>{`
+        .nav-item {
+          transition: color 300ms ease-in, background-color 200ms ease-in;
+        }
+
         .menu-tabs :global(.content) {
           display: none;
         }

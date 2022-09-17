@@ -85,4 +85,4 @@ const CreateProjectModalComponent: React.FC<{
   );
 };
 
-export const CreateProjectModal = dynamic(() => Promise.resolve(CreateProjectModalComponent), { ssr: true });
+export const CreateProjectModal = dynamic(() => Promise.resolve(CreateProjectModalComponent), { ssr: false });

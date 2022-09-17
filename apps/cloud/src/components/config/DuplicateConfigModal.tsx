@@ -71,4 +71,4 @@ const DuplicateConfigModalComponent: React.FC<{
   );
 };
 
-export const DuplicateConfigModal = dynamic(() => Promise.resolve(DuplicateConfigModalComponent), { ssr: true });
+export const DuplicateConfigModal = dynamic(() => Promise.resolve(DuplicateConfigModalComponent), { ssr: false });

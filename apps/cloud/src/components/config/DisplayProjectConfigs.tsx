@@ -1,8 +1,8 @@
 import { ConfigGrid } from '@components/config/ConfigGrid';
-import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
+import { ConfigOptionsModal } from '@components/config/ConfigOptionsModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
 import { Button, ButtonDropdown, Snippet, Spacer, Tabs, useModal } from '@geist-ui/core';
-import { Check, Copy, DownloadCloud, Plus, Trash2 } from '@geist-ui/icons';
+import { Check, DownloadCloud, Plus, Settings } from '@geist-ui/icons';
 import { trpc } from '@utils/shared/trpc';
 import { Config, ConfigType } from '@utils/shared/types';
 import fileDownload from 'js-file-download';
@@ -10,65 +10,14 @@ import React, { useRef, useState } from 'react';
 import { catchError, EMPTY, map, of, withLatestFrom } from 'rxjs';
 import { fromFetch } from 'rxjs/internal/observable/dom/fetch';
 
-export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (configId: string) => void }> = ({
-  configs,
-  updateTab,
-}) => {
-  const trpcContext = trpc.useContext();
-  const currentConfig = useRef<Config>();
-  const configSelectorRef = useRef() as React.MutableRefObject<HTMLDivElement>;
-  const deleteConfigMutation = trpc.useMutation('config-delete');
+const ConfigDownloadButton: React.FC<{ config: Config }> = ({ config }) => {
   const [downloadType, setDownloadType] = useState<ConfigType>('env');
-  const [link, setLink] = useState(false);
-  const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings } = useModal();
-  const { setVisible: setDuplicateConfigVisible, bindings: duplicateConfigModalBindings } = useModal();
-
-  const openConfigModal = (conf: Config) => {
-    currentConfig.current = conf;
-    setAddConfigValueVisible(true);
+  const updateDownloadType = (type: ConfigType, event?: { target: HTMLElement }) => {
+    setDownloadType(type);
+    (event?.target.closest('details[open]')?.querySelector('summary') as HTMLElement | undefined)?.click();
   };
 
-  const openDuplicateModal = (conf: Config) => {
-    setLink(false);
-    currentConfig.current = conf;
-    setDuplicateConfigVisible(true);
-  };
-
-  const openLinkModal = (conf: Config) => {
-    setLink(true);
-    currentConfig.current = conf;
-    setDuplicateConfigVisible(true);
-  };
-
-  const closeConfigValueModal = (invalidate = true) => {
-    if (invalidate) {
-      trpcContext.invalidateQueries(['config-get']);
-    }
-    setAddConfigValueVisible(false);
-    setDuplicateConfigVisible(false);
-  };
-
-  const closeDuplicateModal = (newConfigId?: string) => {
-    closeConfigValueModal(!!newConfigId);
-    if (newConfigId) {
-      updateTab(newConfigId);
-    }
-  };
-
-  const deleteConfig = (pId: string, cId: string) => {
-    deleteConfigMutation.mutate(
-      { projectId: pId, configId: cId },
-      {
-        onSuccess: () => {
-          trpcContext.invalidateQueries(['config-get']).then(() => {
-            window.location.reload();
-          });
-        },
-      }
-    );
-  };
-
-  const downloadSecrets = (config: Config) => {
+  const downloadSecrets = () => {
     const baseUrl = window.location.origin;
 
     const formData = JSON.stringify({ projectId: config.projectId, configId: config.id, type: downloadType });
@@ -90,50 +39,77 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
       .subscribe(([data, filename]) => fileDownload(data, filename));
   };
 
-  const updateDownloadType = (type: ConfigType) => {
-    setDownloadType(type);
-    (
-      configSelectorRef.current?.querySelector('.btn-dropdown>details[open]>summary') as HTMLElement | undefined
-    )?.click();
+  return (
+    <ButtonDropdown auto icon={<DownloadCloud />} type="success">
+      <ButtonDropdown.Item main onClick={downloadSecrets}>
+        Download ({downloadType.replaceAll('-', ' ')})
+      </ButtonDropdown.Item>
+      <ButtonDropdown.Item onClick={(event) => updateDownloadType('env', event as unknown as { target: HTMLElement })}>
+        <span className="w-full flex justify-around items-center">
+          ENV {downloadType === 'env' ? <Check /> : <span />}
+        </span>
+      </ButtonDropdown.Item>
+      <ButtonDropdown.Item onClick={(event) => updateDownloadType('json', event as unknown as { target: HTMLElement })}>
+        <span className="w-full flex justify-around items-center">
+          JSON {downloadType === 'json' ? <Check /> : <span />}
+        </span>
+      </ButtonDropdown.Item>
+      <ButtonDropdown.Item
+        onClick={(event) => updateDownloadType('json-grouped', event as unknown as { target: HTMLElement })}
+      >
+        <span className="w-full flex justify-around items-center">
+          JSON Grouped {downloadType === 'json-grouped' ? <Check /> : <span />}
+        </span>
+      </ButtonDropdown.Item>
+    </ButtonDropdown>
+  );
+};
+
+export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (configId: string) => void }> = ({
+  configs,
+  updateTab,
+}) => {
+  const trpcContext = trpc.useContext();
+  const currentConfig = useRef<Config>();
+  const configSelectorRef = useRef() as React.MutableRefObject<HTMLDivElement>;
+  const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings } = useModal();
+  const { setVisible: setConfigSettingsVisible, bindings: addConfigSettingsModalBindings } = useModal();
+
+  const openAddSecretModal = (conf: Config) => {
+    currentConfig.current = conf;
+    setAddConfigValueVisible(true);
+  };
+
+  const openOptionsModal = (conf: Config) => {
+    currentConfig.current = conf;
+    setConfigSettingsVisible(true);
+  };
+
+  const closeConfigValueModal = (invalidate = true) => {
+    if (invalidate) {
+      trpcContext.invalidateQueries(['config-get']);
+    }
+    setAddConfigValueVisible(false);
+    setConfigSettingsVisible(false);
   };
 
   return (
     <>
       {configs.map((c) => (
         <Tabs.Tab label={c.name} key={c.id} value={c.id}>
-          <div className="flex justify-center items-center flex-wrap gap-2" ref={configSelectorRef}>
-            <Button auto ghost icon={<Plus />} onClick={() => openConfigModal(c)}>
-              Add Secret
-            </Button>
-            <Button auto ghost icon={<Copy />} onClick={() => openDuplicateModal(c)}>
-              Duplicate Config
-            </Button>
-            <Button auto ghost icon={<Copy />} onClick={() => openLinkModal(c)}>
-              Create Linked Config
-            </Button>
-            <ButtonDropdown auto icon={<DownloadCloud />} type="success">
-              <ButtonDropdown.Item main onClick={() => downloadSecrets(c)}>
-                Download Secrets ({downloadType.replaceAll('-', ' ')})
-              </ButtonDropdown.Item>
-              <ButtonDropdown.Item onClick={() => updateDownloadType('env')}>
-                <span className="w-full flex justify-around items-center">
-                  ENV {downloadType === 'env' ? <Check /> : <span />}
-                </span>
-              </ButtonDropdown.Item>
-              <ButtonDropdown.Item onClick={() => updateDownloadType('json')}>
-                <span className="w-full flex justify-around items-center">
-                  JSON {downloadType === 'json' ? <Check /> : <span />}
-                </span>
-              </ButtonDropdown.Item>
-              <ButtonDropdown.Item onClick={() => updateDownloadType('json-grouped')}>
-                <span className="w-full flex justify-around items-center">
-                  JSON Grouped {downloadType === 'json-grouped' ? <Check /> : <span />}
-                </span>
-              </ButtonDropdown.Item>
-            </ButtonDropdown>
-            <Button auto type="error" icon={<Trash2 />} onClick={() => deleteConfig(c.projectId, c.id)}>
-              Delete Configuration
-            </Button>
+          <div className="flex items-center flex-wrap justify-between gap-2" ref={configSelectorRef}>
+            <span className="flex items-center flex-wrap gap-2">
+              <Button auto ghost icon={<Plus />} onClick={() => openAddSecretModal(c)}>
+                Add Secret
+              </Button>
+              <ConfigDownloadButton config={c} />
+            </span>
+            <Button
+              auto
+              icon={<Settings />}
+              className="propagate-hover:animate-spinDuration"
+              onClick={() => openOptionsModal(c)}
+            />
           </div>
           <Spacer />
           <ConfigGrid config={c} />
@@ -142,19 +118,22 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
         </Tabs.Tab>
       ))}
 
-      <DuplicateConfigModal
-        bindings={duplicateConfigModalBindings}
-        projectId={currentConfig.current?.projectId ?? ''}
-        configId={currentConfig.current?.id ?? ''}
-        onCloseModel={closeDuplicateModal}
-        link={link}
-      />
+      {currentConfig.current && (
+        <ConfigOptionsModal
+          bindings={addConfigSettingsModalBindings}
+          config={currentConfig.current}
+          updateTab={updateTab}
+          closeConfigValueModal={closeConfigValueModal}
+        ></ConfigOptionsModal>
+      )}
 
-      <EditConfigValueModal
-        bindings={addConfigValueModalBindings}
-        config={currentConfig}
-        onCloseModel={closeConfigValueModal}
-      />
+      {currentConfig.current && (
+        <EditConfigValueModal
+          bindings={addConfigValueModalBindings}
+          config={currentConfig.current}
+          onCloseModel={closeConfigValueModal}
+        />
+      )}
     </>
   );
 };
