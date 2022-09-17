@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: ['*']
   push:
-    branches: ['main', 'remove-actions-yarn']
+    branches: ['main']
 
 jobs:
   lint:
