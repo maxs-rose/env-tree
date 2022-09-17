@@ -5,7 +5,7 @@ import { flattenConfigValues } from '@utils/shared/flattenConfig';
 import { trpc } from '@utils/shared/trpc';
 import { Config, ConfigValue } from '@utils/shared/types';
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const getConfigValue = <T,>(
   conf: Config | undefined,
@@ -21,7 +21,7 @@ const EditConfigValueModalComponent: React.FC<{
   allowEdit?: boolean;
 }> = ({ bindings, config, onCloseModel, configValue, allowEdit = true }) => {
   const toaster = useToasts();
-  const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput(configValue ?? '');
+  const { state: keyValue, setState: setKey, bindings: propertyBinding } = useInput('');
   const {
     state: valueValue,
     setState: setValue,
@@ -34,6 +34,14 @@ const EditConfigValueModalComponent: React.FC<{
     getConfigValue<string | null>(config, configValue, 'group') || null
   );
   const [groupOptions, setGroupOptions] = useState<Array<{ label: string; value: string }>>([]);
+
+  useEffect(() => {
+    setKey(configValue ?? '');
+    setValue(getConfigValue<string>(config, configValue, 'value') ?? '');
+    setGroup(getConfigValue<string>(config, configValue, 'group') || null);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, configValue]);
 
   const configMap = new Map(Object.entries(config.values));
   const allGroupOptions = Array.from(
@@ -68,7 +76,7 @@ const EditConfigValueModalComponent: React.FC<{
       },
       {
         onSuccess: () => {
-          clearInput();
+          setInvalid(undefined);
           onCloseModel();
         },
         onError: (error) => {
@@ -90,19 +98,19 @@ const EditConfigValueModalComponent: React.FC<{
     );
   };
 
-  const clearInput = () => {
-    setInvalid(undefined);
-    setKey('');
-    setValue('');
-    setGroup(null);
-    setHidden(false);
-  };
-
   const modalClose = () => {
-    clearInput();
+    setInvalid(undefined);
 
     if (bindings.onClose) {
       bindings.onClose();
+    }
+
+    if (!configValue) {
+      setInvalid(undefined);
+      setKey('');
+      setValue('');
+      setGroup(null);
+      setHidden(false);
     }
 
     onCloseModel();
