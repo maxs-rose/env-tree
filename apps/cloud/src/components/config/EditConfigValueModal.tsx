@@ -5,7 +5,7 @@ import { flattenConfigValues } from '@utils/shared/flattenConfig';
 import { trpc } from '@utils/shared/trpc';
 import { Config, ConfigValue } from '@utils/shared/types';
 import dynamic from 'next/dynamic';
-import React, { MutableRefObject, useState } from 'react';
+import React, { useState } from 'react';
 
 const getConfigValue = <T,>(
   conf: Config | undefined,
@@ -16,7 +16,7 @@ const getConfigValue = <T,>(
 const EditConfigValueModalComponent: React.FC<{
   onCloseModel: () => void;
   bindings: ModalHooksBindings;
-  config: MutableRefObject<Config | undefined>;
+  config: Config;
   configValue?: string;
   allowEdit?: boolean;
 }> = ({ bindings, config, onCloseModel, configValue, allowEdit = true }) => {
@@ -26,22 +26,18 @@ const EditConfigValueModalComponent: React.FC<{
     state: valueValue,
     setState: setValue,
     bindings: valueBinding,
-  } = useInput(getConfigValue<string>(config.current, configValue, 'value') ?? '');
-  const [hidden, setHidden] = useState(getConfigValue<boolean>(config.current, configValue, 'hidden') ?? false);
+  } = useInput(getConfigValue<string>(config, configValue, 'value') ?? '');
+  const [hidden, setHidden] = useState(getConfigValue<boolean>(config, configValue, 'hidden') ?? false);
   const updateConfig = trpc.useMutation('config-update');
   const [invalid, setInvalid] = useState<undefined | string>(undefined);
   const [group, setGroup] = useState<string | null>(
-    getConfigValue<string | null>(config.current, configValue, 'group') || null
+    getConfigValue<string | null>(config, configValue, 'group') || null
   );
   const [groupOptions, setGroupOptions] = useState<Array<{ label: string; value: string }>>([]);
 
-  if (!config.current) {
-    return <></>;
-  }
-
-  const configMap = new Map(Object.entries(config!.current!.values));
+  const configMap = new Map(Object.entries(config.values));
   const allGroupOptions = Array.from(
-    new Set(Array.from(Object.entries(flattenConfigValues(config.current!))).map(([, v]) => v.group)).values()
+    new Set(Array.from(Object.entries(flattenConfigValues(config))).map(([, v]) => v.group)).values()
   )
     .filter((g) => g)
     .map((g) => ({ label: g!, value: g! }));
@@ -65,9 +61,9 @@ const EditConfigValueModalComponent: React.FC<{
 
     updateConfig.mutate(
       {
-        projectId: config.current!.projectId,
-        configId: config.current!.id,
-        configVersion: config.current!.version,
+        projectId: config.projectId,
+        configId: config.id,
+        configVersion: config.version,
         values: Object.fromEntries(configMap),
       },
       {
@@ -178,4 +174,4 @@ const EditConfigValueModalComponent: React.FC<{
   );
 };
 
-export const EditConfigValueModal = dynamic(() => Promise.resolve(EditConfigValueModalComponent), { ssr: true });
+export const EditConfigValueModal = dynamic(() => Promise.resolve(EditConfigValueModalComponent), { ssr: false });
