@@ -5,7 +5,7 @@ import { AlertTriangle, Eye, Info, PenTool, Trash2 } from '@geist-ui/icons';
 import { flattenConfigValues } from '@utils/shared/flattenConfig';
 import { trpc } from '@utils/shared/trpc';
 import { Config, ConfigValue } from '@utils/shared/types';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 const propertyName = (property: string, value: ConfigValue[string]) => {
   if (value.parentName || value.overrides) {
@@ -42,7 +42,7 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const trpcContext = trpc.useContext();
   const updateConfig = trpc.useMutation('config-update');
 
-  const editValue = useRef<string | undefined>(undefined);
+  const [editValue, setEditValue] = useState<string | undefined>(undefined);
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
   const [allowConfigEdit, setAllowConfigEdit] = useState(true);
 
@@ -91,7 +91,7 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
 
   const renderEdit = (value?: string) => {
     const editConfig = () => {
-      editValue.current = value;
+      setEditValue(value);
       setAddConfigValueVisible(true);
     };
 
@@ -102,7 +102,7 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
 
   const renderEditDelete: TableColumnRender<typeof tableData[number]> = (_, row) => {
     const openShowConfig = () => {
-      editValue.current = row.mobileProperty;
+      setEditValue(row.mobileProperty);
       setAllowConfigEdit(false);
       setAddConfigValueVisible(true);
     };
@@ -149,15 +149,13 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
         </Table>
       </div>
 
-      {visible && (
-        <EditConfigValueModal
-          bindings={addConfigValueModalBindings}
-          config={config}
-          onCloseModel={closeConfigValueModal}
-          configValue={editValue.current}
-          allowEdit={allowConfigEdit}
-        />
-      )}
+      <EditConfigValueModal
+        bindings={addConfigValueModalBindings}
+        config={config}
+        onCloseModel={closeConfigValueModal}
+        configValue={editValue}
+        allowEdit={allowConfigEdit}
+      />
 
       <style jsx>{`
         .mobile-display {
