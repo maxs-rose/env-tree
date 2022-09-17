@@ -43,7 +43,6 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
   const updateConfig = trpc.useMutation('config-update');
 
   const editValue = useRef<string | undefined>(undefined);
-  const currentConfig = useRef(config);
   const { setVisible: setAddConfigValueVisible, bindings: addConfigValueModalBindings, visible } = useModal();
   const [allowConfigEdit, setAllowConfigEdit] = useState(true);
 
@@ -92,7 +91,6 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
 
   const renderEdit = (value?: string) => {
     const editConfig = () => {
-      currentConfig.current = config;
       editValue.current = value;
       setAddConfigValueVisible(true);
     };
@@ -104,7 +102,6 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
 
   const renderEditDelete: TableColumnRender<typeof tableData[number]> = (_, row) => {
     const openShowConfig = () => {
-      currentConfig.current = config;
       editValue.current = row.mobileProperty;
       setAllowConfigEdit(false);
       setAddConfigValueVisible(true);
@@ -152,16 +149,14 @@ export const ConfigGrid: React.FC<{ config: Config }> = ({ config }) => {
         </Table>
       </div>
 
-      {visible ? (
+      {visible && (
         <EditConfigValueModal
           bindings={addConfigValueModalBindings}
-          config={currentConfig}
+          config={config}
           onCloseModel={closeConfigValueModal}
           configValue={editValue.current}
           allowEdit={allowConfigEdit}
         />
-      ) : (
-        <></>
       )}
 
       <style jsx>{`
