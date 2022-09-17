@@ -135,6 +135,29 @@ export const updateConfig$ = (
     })
   );
 
+export const renameConfig$ = (
+  userId: string,
+  projectId: string,
+  configId: string,
+  configVersion: string | null,
+  configName: string
+) =>
+  getProjectConfig$(userId, projectId, configId).pipe(
+    switchMap((config) => {
+      if (config.version !== configVersion) {
+        throw new trpc.TRPCError({
+          code: 'CONFLICT',
+          message: 'Config version mismatch',
+        });
+      }
+
+      return prisma.config.update({
+        where: { id_projectId: { id: configId, projectId: projectId } },
+        data: { name: configName, version: randomBytes(16).toString('hex') },
+      });
+    })
+  );
+
 export const deleteConfig$ = (userId: string, projectId: string, configId: string) =>
   getProjectConfig$(userId, projectId, configId).pipe(
     switchMap(() =>
