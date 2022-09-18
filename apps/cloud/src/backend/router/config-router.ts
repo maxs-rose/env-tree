@@ -1,4 +1,5 @@
 import {
+  changeConfigLink$,
   createConfig$,
   deleteConfig$,
   duplicateConfig$,
@@ -36,6 +37,18 @@ export const configRouter = createRouter()
     input: z.object({ projectId: z.string(), configId: z.string(), configVersion: z.string() }),
     resolve: ({ ctx, input }) =>
       firstValueFrom(unlinkConfig$(ctx.user.id, input.projectId, input.configId, input.configVersion)),
+  })
+  .mutation('relink', {
+    input: z.object({
+      projectId: z.string(),
+      configId: z.string(),
+      configVersion: z.string(),
+      targetConfig: z.string(),
+    }),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(
+        changeConfigLink$(ctx.user.id, input.projectId, input.configId, input.targetConfig, input.configVersion)
+      ),
   })
   .mutation('update', {
     input: z.object({
