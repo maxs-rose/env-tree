@@ -9,12 +9,12 @@ import {
   projectNotFoundError,
   unauthorizedError,
 } from '@utils/backend/trpcErrorHelpers';
-import { flattenConfigValues } from '@utils/shared/flattenConfig';
+import { flattenConfigValues, isLinkCycle } from '@utils/shared/flattenConfig';
 import { ConfigValue } from '@utils/shared/types';
 import { randomBytes } from 'crypto';
-import { from, map, switchMap } from 'rxjs';
+import { combineLatest, from, map, switchMap } from 'rxjs';
 
-const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[]) => {
+const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[], seenIds?: string[]) => {
   // Create a new object so we don't edit the original
   const result = { ...config } as PrismaConfigWithParent;
 
@@ -23,9 +23,10 @@ const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[]) => {
   if (config.linkedConfigId) {
     const parentConfig = projectConfigs.find((c) => c.id === config.linkedConfigId);
 
-    if (parentConfig) {
+    // Prevent the function not returning if a cycle does occur
+    if (parentConfig && !seenIds?.some((id) => config.id === id)) {
       // Expand the parents parent configs
-      const expandedParent = expandConfig(parentConfig, projectConfigs);
+      const expandedParent = expandConfig(parentConfig, projectConfigs, [...(seenIds ?? []), config.id]);
       result.linkedParent = expandedParent ?? null;
     } else {
       result.linkedParent = null;
@@ -118,6 +119,47 @@ export const linkedConfig$ = (userId: string, projectId: string, targetConfigId:
     )
   );
 
+export const changeConfigLink$ = (
+  userId: string,
+  projectId: string,
+  configId: string,
+  targetConfigId: string,
+  configVersion: string
+) =>
+  combineLatest([getProjectConfig$(userId, projectId, configId), getExpandedConfigs$(userId, projectId)]).pipe(
+    map(([config, configs]) => {
+      if (!configs.some((c) => c.id === targetConfigId)) {
+        throw configNotFoundError;
+      }
+
+      if (isLinkCycle(configId, targetConfigId, configs)) {
+        throw new trpc.TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Linking would create a cycle',
+        });
+      }
+
+      return config;
+    }),
+    switchMap((config) => {
+      if (config.version !== configVersion) {
+        throw new trpc.TRPCError({
+          code: 'CONFLICT',
+          message: 'Config version mismatch',
+        });
+      }
+
+      return prisma.config.update({
+        where: { id_projectId: { id: configId, projectId } },
+        data: {
+          version: randomBytes(16).toString('hex'),
+          linkedProjectConfigId: projectId,
+          linkedConfigId: targetConfigId,
+        },
+      });
+    })
+  );
+
 export const unlinkConfig$ = (userId: string, projectId: string, configId: string, configVersion: string) => {
   return getExpandedConfigs$(userId, projectId).pipe(
     map((configs) => {
@@ -134,10 +176,12 @@ export const unlinkConfig$ = (userId: string, projectId: string, configId: strin
         });
       }
 
-      return flattenConfigValues(targetConfig);
+      return targetConfig;
     }),
+    map(flattenConfigValues),
+    map(Object.entries),
     map((values) => {
-      return Object.entries(values).map(([k, v]) => {
+      return values.map(([k, v]) => {
         // The parent name and overrides don't make sense to exist here
         const { parentName, overrides, ...data } = v;
         return [k, data];

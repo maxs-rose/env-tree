@@ -1,8 +1,9 @@
 import { DuplicateConfigModal } from '@components/config/DuplicateConfigModal';
-import { Button, Collapse, Input, Modal, Spacer, Text, useInput, useModal, useToasts } from '@geist-ui/core';
+import { Button, Collapse, Input, Modal, Select, Spacer, Text, useInput, useModal, useToasts } from '@geist-ui/core';
 import { ModalHooksBindings } from '@geist-ui/core/dist/use-modal';
 import { Copy, Trash2 } from '@geist-ui/icons';
 import Link from '@geist-ui/icons/link';
+import { isLinkCycle } from '@utils/shared/flattenConfig';
 import { trpc } from '@utils/shared/trpc';
 import { Config } from '@utils/shared/types';
 import dynamic from 'next/dynamic';
@@ -68,6 +69,81 @@ const UpdateName: React.FC<{ config: Config; closeModal: () => void }> = ({ conf
   );
 };
 
+const LinkConfig: React.FC<{ config: Config; configs: Config[]; closeAndInvalidate: () => void }> = ({
+  config,
+  configs,
+  closeAndInvalidate,
+}) => {
+  const toaster = useToasts();
+  const relinkConfig = trpc.useMutation(['config-relink']);
+  const [linkUpdate, setLinkUpdate] = useState('');
+  const [validOptions, setValueOptions] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    setValueOptions(
+      configs
+        .filter((c) => c.linkedConfigId !== config.id && !isLinkCycle(config.id, c.id, configs))
+        .map((c) => ({ id: c.id, name: c.name }))
+    );
+  }, [config, configs]);
+
+  const optionList = () =>
+    validOptions.map((c) => (
+      <Select.Option key={c.id} value={c.id}>
+        {c.name}
+      </Select.Option>
+    ));
+
+  const selectHandler = (change: string | string[]) => {
+    setLinkUpdate(change as string);
+  };
+
+  const applyLink = () => {
+    relinkConfig.mutate(
+      {
+        projectId: config.projectId,
+        configId: config.id,
+        targetConfig: linkUpdate,
+        configVersion: config.version,
+      },
+      {
+        onError: (error) => {
+          if (error.data?.code === 'CONFLICT') {
+            toaster.setToast({
+              type: 'error',
+              delay: 10000,
+              text: 'Failed to link config due to version mismatch, reloading',
+            });
+          } else {
+            toaster.setToast({
+              type: 'error',
+              delay: 10000,
+              text: 'Failed to link config, reloading',
+            });
+          }
+        },
+        onSettled: () => {
+          closeAndInvalidate();
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Text>
+        {config.linkedConfigId ? 'Change' : 'Link'} Configuration{config.linkedConfigId ? ' link' : ' to'}
+      </Text>
+      <Select placeholder="Set configuration link" value={linkUpdate} onChange={selectHandler}>
+        {optionList()}
+      </Select>
+      <Button disabled={!linkUpdate} onClick={applyLink}>
+        Link
+      </Button>
+    </div>
+  );
+};
+
 const DeleteConfig: React.FC<{ config: Config; closeModal: () => void }> = ({ config, closeModal }) => {
   const [canDelete, setCanDelete] = useState(false);
   const { state: deleteInput, bindings: deleteInputBindings } = useInput('');
@@ -104,9 +180,10 @@ const DeleteConfig: React.FC<{ config: Config; closeModal: () => void }> = ({ co
 const ConfigOptionsModalComponent: React.FC<{
   bindings: ModalHooksBindings;
   config: Config;
+  allConfigs: Config[];
   updateTab: (configId: string) => void;
   closeConfigValueModal: (invalidate: boolean) => void;
-}> = ({ bindings, config, updateTab, closeConfigValueModal }) => {
+}> = ({ bindings, config, allConfigs, updateTab, closeConfigValueModal }) => {
   const [link, setLink] = useState(false);
   const { setVisible: setDuplicateConfigVisible, bindings: duplicateConfigModalBindings } = useModal();
   const unlinkConfig = trpc.useMutation(['config-unlink']);
@@ -168,6 +245,7 @@ const ConfigOptionsModalComponent: React.FC<{
               <Button auto ghost icon={<Link />} onClick={openLinkModal}>
                 Create Linked Config
               </Button>
+              <LinkConfig config={config} configs={allConfigs} closeAndInvalidate={() => closeConfigValueModal(true)} />
             </div>
           </Collapse>
           <Collapse title="Danger Zone" className="danger-zone">
