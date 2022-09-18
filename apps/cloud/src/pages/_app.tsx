@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { AppRouter } from 'src/backend/router';
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps }: AppProps<{ session: Session }>) {
+function MyApp({ Component, pageProps, ackeeEnabled }: AppProps<{ session: Session }> & { ackeeEnabled: boolean }) {
   const theme = useTheme();
   const [themeType, setThemeType] = useState(theme.type);
 
@@ -34,7 +34,7 @@ function MyApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.location.origin === 'https://www.envtree.net') {
       const w = window as unknown as { ackee: AckeeInstance };
       w.ackee = ackee.create('https://ackee.max-rose.com');
 
@@ -62,7 +62,6 @@ function MyApp({ Component, pageProps }: AppProps<{ session: Session }>) {
             <meta property="og:url" content="https://www.envtree.net/" />
             <meta property="og:image" content="https://www.envtree.net/envtree.svg" />
           </Head>
-
           <Nav />
           <Component {...pageProps} />
           <Footer />
