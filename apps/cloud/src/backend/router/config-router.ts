@@ -1,10 +1,12 @@
 import {
+  changeConfigLink$,
   createConfig$,
   deleteConfig$,
   duplicateConfig$,
   getExpandedConfigs$,
   linkedConfig$,
   renameConfig$,
+  unlinkConfig$,
   updateConfig$,
 } from '@backend/api/config';
 import { createRouter } from '@backend/createRouter';
@@ -30,6 +32,23 @@ export const configRouter = createRouter()
     input: z.object({ projectId: z.string(), targetConfig: z.string(), configName: z.string() }),
     resolve: ({ ctx, input }) =>
       firstValueFrom(linkedConfig$(ctx.user.id, input.projectId, input.targetConfig, input.configName)),
+  })
+  .mutation('unlink', {
+    input: z.object({ projectId: z.string(), configId: z.string(), configVersion: z.string() }),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(unlinkConfig$(ctx.user.id, input.projectId, input.configId, input.configVersion)),
+  })
+  .mutation('relink', {
+    input: z.object({
+      projectId: z.string(),
+      configId: z.string(),
+      configVersion: z.string(),
+      targetConfig: z.string(),
+    }),
+    resolve: ({ ctx, input }) =>
+      firstValueFrom(
+        changeConfigLink$(ctx.user.id, input.projectId, input.configId, input.targetConfig, input.configVersion)
+      ),
   })
   .mutation('update', {
     input: z.object({

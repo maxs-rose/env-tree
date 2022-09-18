@@ -11,3 +11,4 @@ export const unauthorizedError = trpcError('UNAUTHORIZED', 'User does not have a
 
 export const notFoundError = (message: string) => trpcError('NOT_FOUND', message);
 export const projectNotFoundError = notFoundError('Project not found');
+export const configNotFoundError = notFoundError('Config not found');

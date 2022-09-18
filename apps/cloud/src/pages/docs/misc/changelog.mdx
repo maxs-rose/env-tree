@@ -10,6 +10,12 @@ Changelog for all supported components and future plans
 
 ### Cloud
 
+- 1.4.0 - (19/09/2022)
+
+  - Added: Option to unlink configurations
+  - Added: Option to change the link between configurations after creation
+    - When changing a link cycles will be prevented, for example, a setup with `a` -> `b` -> `c`, `a` cannot be linked to `c` as it would create a cycle
+
 - 1.3.1 - (17/09/2022)
 
   - Fix: Fixed scrollbar not being re-enabled after editing a configuration value

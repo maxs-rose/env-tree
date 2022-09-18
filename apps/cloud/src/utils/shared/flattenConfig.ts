@@ -44,6 +44,24 @@ const sortedValues = (values: ConfigValue) => {
   return Object.fromEntries(data.sort(composedSortFuncs));
 };
 
+export const isLinkCycle = (configId: string, targetId: string, configs: Config[]) => {
+  const cycle = (config: string, seenConfigs: string[]): boolean => {
+    if (seenConfigs.some((c) => c === config)) {
+      return true;
+    }
+
+    const nextParent = configs.find((c) => c.id === config)?.linkedParent?.id;
+
+    if (!nextParent) {
+      return false;
+    }
+
+    return cycle(nextParent, [...seenConfigs, configId]);
+  };
+
+  return cycle(targetId, [configId]);
+};
+
 export const flattenConfigValues = (config: Config) => {
   const getParentValues = (parent?: Config | null): ConfigValue => {
     if (parent) {

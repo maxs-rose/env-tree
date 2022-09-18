@@ -122,6 +122,7 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
         <ConfigOptionsModal
           bindings={addConfigSettingsModalBindings}
           config={currentConfig.current}
+          allConfigs={configs}
           updateTab={updateTab}
           closeConfigValueModal={closeConfigValueModal}
         ></ConfigOptionsModal>
