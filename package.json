@@ -15,12 +15,14 @@
     "prisma": "yarn workspace @envtree/cloud prisma",
     "prisma:studio": "yarn prisma studio",
     "cloud": "yarn workspace @envtree/cloud",
-    "cli": "yarn workspace @envtree/cli"
+    "cli": "yarn workspace @envtree/cli",
+    "dockerfile": "node ./scripts/dockerbuild.mjs"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
     "prettier": "^2.7.1",
-    "turbo": "^1.4.6"
+    "turbo": "^1.4.6",
+    "zx": "^7.0.8"
   },
   "engines": {
     "npm": ">=7.0.0",
