@@ -3,7 +3,13 @@ import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
 import { PrismaConfigWithParent, transformConfigs } from '@utils/backend/config';
 import { encryptConfig } from '@utils/backend/crypt';
-import { notFoundError, projectNotFoundError, unauthorizedError } from '@utils/backend/trpcErrorHelpers';
+import {
+  configNotFoundError,
+  notFoundError,
+  projectNotFoundError,
+  unauthorizedError,
+} from '@utils/backend/trpcErrorHelpers';
+import { flattenConfigValues } from '@utils/shared/flattenConfig';
 import { ConfigValue } from '@utils/shared/types';
 import { randomBytes } from 'crypto';
 import { from, map, switchMap } from 'rxjs';
@@ -111,6 +117,46 @@ export const linkedConfig$ = (userId: string, projectId: string, targetConfigId:
       })
     )
   );
+
+export const unlinkConfig$ = (userId: string, projectId: string, configId: string, configVersion: string) => {
+  return getExpandedConfigs$(userId, projectId).pipe(
+    map((configs) => {
+      const targetConfig = configs.find((c) => c.id === configId);
+
+      if (!targetConfig) {
+        throw configNotFoundError;
+      }
+
+      if (targetConfig.version !== configVersion) {
+        throw new trpc.TRPCError({
+          code: 'CONFLICT',
+          message: 'Config version mismatch',
+        });
+      }
+
+      return flattenConfigValues(targetConfig);
+    }),
+    map((values) => {
+      return Object.entries(values).map(([k, v]) => {
+        // The parent name and overrides don't make sense to exist here
+        const { parentName, overrides, ...data } = v;
+        return [k, data];
+      });
+    }),
+    map(Object.fromEntries),
+    switchMap((values) =>
+      prisma.config.update({
+        where: { id_projectId: { id: configId, projectId: projectId } },
+        data: {
+          values: encryptConfig(values),
+          version: randomBytes(16).toString('hex'),
+          linkedConfigId: null,
+          linkedProjectConfigId: null,
+        },
+      })
+    )
+  );
+};
 
 export const updateConfig$ = (
   userId: string,

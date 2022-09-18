@@ -109,6 +109,7 @@ const ConfigOptionsModalComponent: React.FC<{
 }> = ({ bindings, config, updateTab, closeConfigValueModal }) => {
   const [link, setLink] = useState(false);
   const { setVisible: setDuplicateConfigVisible, bindings: duplicateConfigModalBindings } = useModal();
+  const unlinkConfig = trpc.useMutation(['config-unlink']);
 
   const openLinkModal = () => {
     setLink(true);
@@ -118,6 +119,21 @@ const ConfigOptionsModalComponent: React.FC<{
   const openDuplicateModal = () => {
     setLink(false);
     setDuplicateConfigVisible(true);
+  };
+
+  const unlinkConfiguration = () => {
+    unlinkConfig.mutate(
+      {
+        configId: config.id,
+        projectId: config.projectId,
+        configVersion: config.version,
+      },
+      {
+        onSuccess: () => {
+          closeConfigValueModal(true);
+        },
+      }
+    );
   };
 
   const closeDuplicateModal = (newConfigId?: string) => {
@@ -140,6 +156,15 @@ const ConfigOptionsModalComponent: React.FC<{
               <Button auto ghost icon={<Copy />} onClick={openDuplicateModal}>
                 Duplicate Config
               </Button>
+            </div>
+          </Collapse>
+          <Collapse title="Project Links">
+            <div className="flex flex-col gap-2">
+              {config.linkedConfigId && (
+                <Button auto ghost icon={<Copy />} onClick={unlinkConfiguration}>
+                  Unlink Config
+                </Button>
+              )}
               <Button auto ghost icon={<Link />} onClick={openLinkModal}>
                 Create Linked Config
               </Button>
