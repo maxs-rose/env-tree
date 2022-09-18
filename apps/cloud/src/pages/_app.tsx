@@ -3,10 +3,13 @@ import Nav from '@components/nav';
 import { ConfigProvider } from '@context/config';
 import { CssBaseline, GeistProvider, useTheme } from '@geist-ui/core';
 import { withTRPC } from '@trpc/next';
+import * as ackee from 'ackee-tracker';
+import { AckeeInstance } from 'ackee-tracker';
 import { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import Router from 'next/router';
 import { useEffect, useState } from 'react';
 import { AppRouter } from 'src/backend/router';
 import '../styles/globals.css';
@@ -27,6 +30,17 @@ function MyApp({ Component, pageProps }: AppProps<{ session: Session }>) {
       themeChange(theme);
     } else {
       themeChange('dark');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const w = window as unknown as { ackee: AckeeInstance };
+      w.ackee = ackee.create('https://ackee.max-rose.com');
+
+      w.ackee.record('f130d370-d9d6-4ae5-ae8c-90d0aabe03dc');
+
+      Router.events.on('routeChangeComplete', () => w.ackee.record('f130d370-d9d6-4ae5-ae8c-90d0aabe03dc'));
     }
   }, []);
 

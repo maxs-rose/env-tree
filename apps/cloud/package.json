@@ -20,6 +20,7 @@
     "@trpc/next": "^9.27.2",
     "@trpc/react": "^9.27.2",
     "@trpc/server": "^9.27.2",
+    "ackee-tracker": "^5.1.0",
     "formidable": "^2.0.1",
     "js-file-download": "^0.4.12",
     "lodash-es": "^4.17.21",
@@ -33,6 +34,7 @@
     "zod": "^3.19.1"
   },
   "devDependencies": {
+    "@types/ackee-tracker": "^5.0.2",
     "@types/formidable": "^2.0.5",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "18.7.18",
