@@ -36,7 +36,7 @@ function MyApp({ Component, pageProps, ackeeEnabled }: AppProps<{ session: Sessi
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.origin === 'https://www.envtree.net') {
       const w = window as unknown as { ackee: AckeeInstance };
-      w.ackee = ackee.create('https://ackee.max-rose.com');
+      w.ackee = ackee.create('https://ackee.max-rose.com', { detailed: true });
 
       w.ackee.record('f130d370-d9d6-4ae5-ae8c-90d0aabe03dc');
 
