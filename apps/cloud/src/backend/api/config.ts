@@ -39,7 +39,7 @@ const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[], seen
   return result;
 };
 
-const getProjectConfig$ = (userId: string, projectId: string, configId: string) =>
+export const getProjectConfig$ = (userId: string, projectId: string, configId: string) =>
   from(
     prisma.usersOnProject.findUnique({
       where: { projectId_userId: { projectId, userId } },

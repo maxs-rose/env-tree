@@ -1,13 +1,15 @@
+import { getProjectConfig$ } from '@backend/api/config';
 import { prisma } from '@backend/prisma';
-import { encryptObject } from '@utils/backend/crypt';
-import { Change } from '@utils/shared/types';
+import { decryptObject, encryptObject } from '@utils/backend/crypt';
+import { Change, DBChange } from '@utils/shared/types';
+import { map, mergeMap, switchMap, toArray } from 'rxjs';
 
 const cleanOldLogs = async (configId: string, projectId: string) => {
   const res = await prisma.configAudit.findFirst({
     where: { configId, configProjectId: projectId },
     orderBy: [{ createdAt: 'desc' }],
     select: { createdAt: true },
-    skip: 10,
+    skip: parseInt(process.env.CONFIG_AUDIT_RETENTION ?? '0', 10),
   });
 
   if (res) {
@@ -101,3 +103,21 @@ export const renameConfig = async (
 
   await cleanOldLogs(configId, projectId);
 };
+
+export const getConfigAudit$ = (userId: string, projectId: string, configId: string, page: number) =>
+  getProjectConfig$(userId, projectId, configId).pipe(
+    switchMap(() => {
+      return prisma.configAudit.findMany({
+        where: {
+          configId,
+          configProjectId: projectId,
+        },
+        orderBy: [{ createdAt: 'desc' }],
+        take: 25,
+        skip: (page - 1) * 25,
+      });
+    }),
+    mergeMap((data) => data),
+    map((item) => ({ ...decryptObject<DBChange>(item.data), at: item.createdAt })),
+    toArray()
+  );
