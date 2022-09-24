@@ -37,7 +37,21 @@ model Config {
   linkedParent          Config?  @relation("ConfigLink", fields: [linkedConfigId, linkedProjectConfigId], references: [id, projectId], onDelete: Cascade)
   linkChild             Config[] @relation("ConfigLink")
 
+  // Audit log
+  audit ConfigAudit[]
+
   @@id([id, projectId])
+}
+
+model ConfigAudit {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  data String
+
+  Config          Config @relation(fields: [configId, configProjectId], references: [id, projectId], onDelete: Cascade)
+  configId        String
+  configProjectId String
 }
 
 model User {

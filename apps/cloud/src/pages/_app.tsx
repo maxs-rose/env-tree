@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { AppRouter } from 'src/backend/router';
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps, ackeeEnabled }: AppProps<{ session: Session }> & { ackeeEnabled: boolean }) {
+function MyApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   const theme = useTheme();
   const [themeType, setThemeType] = useState(theme.type);
 
