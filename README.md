@@ -1,8 +1,6 @@
-# Env Tree
+# Cloud Secret storage
 
 A simple system to store, manage, and share `.env` like files across environments or development teams.
-
-[Website](https://www.envtree.net)
 
 ## Features
 
@@ -20,12 +18,6 @@ A simple system to store, manage, and share `.env` like files across environment
 - On-boarding new team members 
 
 > Note: When downloading files in .env format values are formatted **as written** in the UI
-
-## Selfhost
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Oc6pzF?referralCode=cjaUwf)
-
-Details for hosting on your own infrastructure can be found [here](https://www.envtree.net/docs/misc/selfhost)
 
 ## Tech
 - Next.js

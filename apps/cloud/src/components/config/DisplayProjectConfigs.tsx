@@ -1,4 +1,3 @@
-import { AuditLog } from '@components/config/AuditLog';
 import { ConfigGrid } from '@components/config/ConfigGrid';
 import { ConfigOptionsModal } from '@components/config/ConfigOptionsModal';
 import { EditConfigValueModal } from '@components/config/EditConfigValueModal';
@@ -116,7 +115,6 @@ export const DisplayProjectConfigs: React.FC<{ configs: Config[]; updateTab: (co
           <ConfigGrid config={c} />
           <Spacer />
           <Snippet text={`${c.projectId} ${c.id}`} symbol="Project and Config ID:" type="secondary" />
-          <AuditLog config={c} />
         </Tabs.Tab>
       ))}
 

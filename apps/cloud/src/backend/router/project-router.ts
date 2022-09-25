@@ -3,11 +3,9 @@ import {
   acceptProjectRequest$,
   addUserToProjectRequest$,
   denyProjectRequest$,
-  getAddRequestForProject$,
   getProjectAddRequests$,
   getUsersOnProject$,
   removeUser$,
-  rescindProjectRequest$,
 } from '@backend/api/projectUsers';
 import { createRouter } from '@backend/createRouter';
 import { firstValueFrom } from 'rxjs';
@@ -67,15 +65,6 @@ export const projectRouter = createRouter()
   .mutation('deny-request', {
     input: z.object({ requestId: z.string() }),
     resolve: ({ ctx, input }) => firstValueFrom(denyProjectRequest$(ctx.user.id, input.requestId)),
-  })
-  .query('requests-for-project', {
-    input: z.object({ projectId: z.string() }),
-    resolve: ({ ctx, input }) => firstValueFrom(getAddRequestForProject$(ctx.user.id, input.projectId)),
-  })
-  .mutation('rescind-add-request', {
-    input: z.object({ projectId: z.string(), userId: z.string(), requestId: z.string() }),
-    resolve: ({ ctx, input }) =>
-      firstValueFrom(rescindProjectRequest$(ctx.user.id, input.projectId, input.userId, input.requestId)),
   })
   .mutation('remove-user', {
     input: z.object({ projectId: z.string(), userId: z.string() }),

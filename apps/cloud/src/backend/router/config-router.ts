@@ -9,7 +9,6 @@ import {
   unlinkConfig$,
   updateConfig$,
 } from '@backend/api/config';
-import { getConfigAudit$ } from '@backend/api/configDiff';
 import { createRouter } from '@backend/createRouter';
 import { ZConfigValue } from '@utils/shared/types';
 import { firstValueFrom } from 'rxjs';
@@ -78,9 +77,4 @@ export const configRouter = createRouter()
   .mutation('delete', {
     input: z.object({ projectId: z.string(), configId: z.string() }),
     resolve: ({ ctx, input }) => firstValueFrom(deleteConfig$(ctx.user.id, input.projectId, input.configId)),
-  })
-  .query('audit', {
-    input: z.object({ projectId: z.string(), configId: z.string(), cursor: z.string().nullish() }),
-    resolve: ({ ctx, input }) =>
-      firstValueFrom(getConfigAudit$(ctx.user.id, input.projectId, input.configId, input.cursor)),
   });
