@@ -61,3 +61,23 @@ export interface User {
   image: string | null;
   authToken: string | null;
 }
+
+// Diff
+export type ChangeType = 'Updated' | 'Deleted' | 'Created' | 'Unchanged';
+
+export type PotentialChange = {
+  update: ChangeType;
+  originalValue?: string | null | undefined;
+  newValue?: string | null | undefined;
+};
+
+export type Change = Omit<PotentialChange, 'update'> & { update: Exclude<ChangeType, 'Unchanged'>; changeKey: string };
+
+type IDatabaseChange =
+  | Change
+  | { update: 'Changed Link'; newLinkId: string; newLinkName: string; oldLinkId: string; oldLinkName: string }
+  | { update: 'Linked'; newLinkId: string; newLinkName: string }
+  | { update: 'Unlinked'; fromName: string; fromId: string }
+  | { update: 'Renamed'; from: string; to: string };
+
+export type DBChange = IDatabaseChange & { userId: string; username: string | null };

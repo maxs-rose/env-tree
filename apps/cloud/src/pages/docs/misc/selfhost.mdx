@@ -11,6 +11,7 @@ export const meta = {
     'GITLAB_SECRET=<secret>',
     'NEXTAUTH_URL=<url>',
     'NEXTAUTH_SECRET=<secret>',
+    'CONFIG_AUDIT_RETENTION=<integer> # Default 0',
   ],
 };
 
@@ -20,7 +21,25 @@ Information on selfhosting Env Tree
 
 Depending on your requirements you may wish to selfhost Env Tree, this documentation covers setup and possible configuration options for a self hosted enviroment
 
-## Basic Setup
+## With Railway
+
+To host with railway please use the template
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Oc6pzF?referralCode=cjaUwf)
+
+**At least** one method of authentication must be provided
+
+> **GitHub Authentication**
+>
+> Callback url must be set to `https://<railway url>/api/auth/callback/github`
+
+> **GitLab Authentication**
+>
+> Callback url must be set to `https://<railway url>/api/auth/callback/gitlab`
+>
+> Required scopes must be at least `read_user`
+
+## With Docker
 
 To the basic setup will use the docker image provided with Github and Gitlab authentication options.
 
@@ -29,7 +48,17 @@ To the basic setup will use the docker image provided with Github and Gitlab aut
    <Snippet text={meta.envSettings}></Snippet>
 3. Start the container `docker run -d --name env-tree -p 3000:3000 --env-file .env ghcr.io/maxs-rose/env-tree`
 
-> Note: You can omit either the GitHub or GitLab authentication but at least 1 must be provided
+**At least** one method of authentication must be provided
+
+> **GitHub Authentication**
+>
+> Callback url must be set to `https://<url>/api/auth/callback/github`
+
+> **GitLab Authentication**
+>
+> Callback url must be set to `https://<url>/api/auth/callback/gitlab`
+>
+> Required scopes must be at least `read_user`
 
 ## Advanced Setup: Building from Source
 
