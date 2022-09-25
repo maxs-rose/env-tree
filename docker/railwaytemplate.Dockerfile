@@ -1,1 +1,0 @@
-FROM ghcr.io/maxs-rose/env-tree:latest
