@@ -1,34 +1,115 @@
 import SecretLoader from '@components/loader';
-import { Button, Dot, Text } from '@geist-ui/core';
+import { Button, Dot } from '@geist-ui/core';
 import { DotTypes } from '@geist-ui/core/esm/dot';
+import { ArrowUp, Clock, Delete, Italic, Link, Plus, Scissors, Shuffle, User } from '@geist-ui/icons';
 import { trpc } from '@utils/shared/trpc';
 import { Config, DBChange } from '@utils/shared/types';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 
-const formatLogAsString = (data: DBChange) => {
-  switch (data.update) {
+const FormatLogAsString: React.FC<{ log: DBChange }> = ({ log }) => {
+  const classes = 'flex items-center gap-2 flex-wrap';
+
+  switch (log.update) {
     case 'Linked':
-      return `Linked configuration to ${data.newLinkName} ${data.newLinkId}`;
+      return (
+        <span className={classes}>
+          <Link />
+          <b>Linked</b> configuration to <b>{log.newLinkName}</b> (<b>{log.newLinkId}</b>)
+        </span>
+      );
     case 'Updated':
-      return `Updated property ${data.changeKey} value to ${data.newValue}${
-        data.originalValue ? `, previous value was ${data.originalValue || '-'}` : ''
-      }`;
+      return (
+        <span className={classes}>
+          <ArrowUp />
+          <b>Updated</b> property <b>{log.changeKey}</b> value to <b>{log.newValue}</b>
+          {log.originalValue && (
+            <>
+              , previous value was <b>{log.originalValue || '-'}</b>
+            </>
+          )}
+        </span>
+      );
     case 'Deleted':
-      return `Deleted property ${data.changeKey}${
-        data.originalValue ? `, value was ${data.originalValue || '-'}` : ''
-      }`;
+      return (
+        <span className={classes}>
+          <Delete />
+          <b>Deleted</b> property <b>{log.changeKey}</b>
+          {log.originalValue && (
+            <>
+              , value was <b>{log.originalValue || '-'}</b>
+            </>
+          )}
+        </span>
+      );
     case 'Created':
-      return `Created property ${data.changeKey}${data.newValue ? ` with value ${data.newValue}` : ''}`;
+      return (
+        <span className={classes}>
+          <Plus />
+          <b>Created</b> property <b>{log.changeKey}</b>
+          {log.newValue && (
+            <>
+              {' '}
+              with value <b>{log.newValue}</b>
+            </>
+          )}
+        </span>
+      );
     case 'Changed Link':
-      return `Changed configuration link to ${data.newLinkName} (${data.newLinkId})${
-        data.oldLinkId ? `, was previously linked to ${data.oldLinkName} (${data.oldLinkId})` : ''
-      }`;
+      return (
+        <span className={classes}>
+          <Shuffle />
+          <b>Changed</b> configuration link to <b>{log.newLinkName}</b> (<b>{log.newLinkId}</b>)
+          {log.oldLinkId && (
+            <>
+              , was previously linked to <b>{log.oldLinkName}</b> (<b>{log.oldLinkId}</b>)
+            </>
+          )}
+        </span>
+      );
     case 'Unlinked':
-      return `Unlinked configuration from ${data.fromName} (${data.fromId})`;
+      return (
+        <span className={classes}>
+          <Scissors />
+          <b>Unlinked</b> configuration from <b>{log.fromName}</b> (<b>{log.fromId}</b>)
+        </span>
+      );
     case 'Renamed':
-      return `Renamed configuration from ${data.from} to ${data.to}`;
+      return (
+        <span className={classes}>
+          <Italic />
+          <b>Renamed</b> configuration from <b>{log.from}</b> to <b>{log.to}</b>
+        </span>
+      );
   }
+};
+
+const TimeDisplay: React.FC<{ time: string }> = ({ time }) => {
+  const getLag = () => {
+    if (navigator.languages !== undefined) {
+      return navigator.languages[0];
+    }
+
+    return navigator.language ?? 'en';
+  };
+
+  const timeFormat = () => {
+    return Intl.DateTimeFormat(getLag(), { dateStyle: 'medium', timeStyle: 'medium' }).format(new Date(time));
+  };
+
+  return (
+    <span className="flex items-center gap-2">
+      <Clock /> {timeFormat()}
+    </span>
+  );
+};
+
+const UserDisplay: React.FC<{ username?: string | null; userId: string }> = ({ username, userId }) => {
+  return (
+    <span className="flex items-center gap-2">
+      <User /> {username || 'Unknown'} ({userId})
+    </span>
+  );
 };
 
 const AuditLogComponent: React.FC<{ config: Config }> = ({ config }) => {
@@ -39,8 +120,12 @@ const AuditLogComponent: React.FC<{ config: Config }> = ({ config }) => {
   const [logData, setLogData] = useState<Exclude<typeof audit['data'], null | undefined>['pages'][number]['logs']>([]);
 
   useEffect(() => {
-    trpcContext.invalidateQueries('config-audit');
-  }, [config, config.id, trpcContext]);
+    if (!audit.isLoading) {
+      audit.remove();
+      audit.fetchNextPage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, config.id, config.version, trpcContext]);
 
   useEffect(() => {
     if (audit.isLoading) {
@@ -87,7 +172,11 @@ const AuditLogComponent: React.FC<{ config: Config }> = ({ config }) => {
       {logData.map((log) => {
         return (
           <Dot className="z-10" key={`${log.at}-${Math.random()}`} type={dotType(log.update)}>
-            <Text p>{`${log.username} (${log.userId}), ${formatLogAsString(log)}, at ${log.at}`}</Text>
+            <div className="my-4 flex flex-col gap-2">
+              <TimeDisplay time={log.at} />
+              <UserDisplay userId={log.userId} username={log.username} />
+              <FormatLogAsString log={log} />
+            </div>
           </Dot>
         );
       })}
@@ -105,6 +194,7 @@ const AuditLogComponent: React.FC<{ config: Config }> = ({ config }) => {
           height: calc(100% - 2em);
           position: absolute;
           background: #333;
+          border-radius: 1em;
           z-index: 0;
         }
       `}</style>

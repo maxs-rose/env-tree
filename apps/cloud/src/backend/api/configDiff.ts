@@ -104,6 +104,8 @@ export const renameConfig = async (
   await cleanOldLogs(configId, projectId);
 };
 
+const pageSize = 6;
+
 export const getConfigAudit$ = (userId: string, projectId: string, configId: string, page?: string | null) =>
   getProjectConfig$(userId, projectId, configId).pipe(
     switchMap(() => {
@@ -113,15 +115,15 @@ export const getConfigAudit$ = (userId: string, projectId: string, configId: str
           configProjectId: projectId,
         },
         orderBy: [{ createdAt: 'desc' }],
-        take: 26,
+        take: pageSize + 1,
         cursor: page ? { id: page } : undefined,
       });
     }),
     mergeMap((data) => data),
-    map((item) => ({ ...decryptObject<DBChange>(item.data), at: item.createdAt, id: item.id })),
+    map((item) => ({ ...decryptObject<DBChange>(item.data), at: item.createdAt.toString(), id: item.id })),
     toArray(),
     map((data) => {
-      if (data.length > 25) {
+      if (data.length > pageSize) {
         const last = data.pop();
 
         return { logs: data, nextCursor: last?.id };
