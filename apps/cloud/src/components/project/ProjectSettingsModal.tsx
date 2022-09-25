@@ -191,7 +191,56 @@ const ProjectUserList: React.FC<{ projectId: string }> = ({ projectId }) => {
     return <SecretLoader loadingText="Loading users" />;
   }
 
-  return <div className="flex flex-col gap-2">{users(usersOnProject.data)}</div>;
+  return (
+    <div className="flex flex-col gap-2">
+      <Text>Users on project</Text>
+      {users(usersOnProject.data)}
+    </div>
+  );
+};
+
+const ProjectRequestList: React.FC<{ projectId: string }> = ({ projectId }) => {
+  const trpcContext = trpc.useContext();
+  const addRequests = trpc.useQuery(['project-requests-for-project', { projectId }]);
+  const removeUserRequest = trpc.useMutation(['project-rescind-add-request'], {
+    onSuccess: () => {
+      trpcContext.invalidateQueries('project-requests-for-project');
+    },
+  });
+
+  const users = (users: typeof addRequests['data']) => {
+    return users!.map((u) => displayUser(u.id, u.userId, u.user.name!, u.user.username!, u.user.image || ''));
+  };
+
+  const displayUser = (id: string, userId: string, name: string, username: string, icon: string) => {
+    const removeRequest = (requestId: string, userId: string) => {
+      removeUserRequest.mutate({ projectId, requestId, userId });
+    };
+
+    return (
+      <div key={id} className="w-full flex items-center justify-between">
+        <User name={name} src={icon}>
+          {username}
+        </User>
+        <Button auto type="error" icon={<Trash2 />} onClick={() => removeRequest(id, userId)} />
+      </div>
+    );
+  };
+
+  if (addRequests.isLoading) {
+    return <SecretLoader loadingText="Loading users" />;
+  }
+
+  if (!addRequests.data || addRequests.data.length === 0) {
+    return <></>;
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Text>User add requests</Text>
+      {users(addRequests.data)}
+    </div>
+  );
 };
 
 const DeleteProject: React.FC<{ projectId: string; projectName: string }> = ({ projectId, projectName }) => {
@@ -244,6 +293,7 @@ const ProjectSettingsModalComponent: React.FC<{
           </Collapse>
           <Collapse title="User Management">
             <ProjectUserList projectId={project.id} />
+            <ProjectRequestList projectId={project.id} />
             <Divider />
             <AddUserToProjectModal projectId={project.id} />
           </Collapse>
