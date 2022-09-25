@@ -62,6 +62,7 @@ const AddUserToProjectModalComponent: React.FC<{
 
   const clearAndInvalidate = () => {
     trpcContext.invalidateQueries(['user-search']);
+    trpcContext.invalidateQueries(['project-requests-for-project']);
     setSearchInputState('');
   };
 
