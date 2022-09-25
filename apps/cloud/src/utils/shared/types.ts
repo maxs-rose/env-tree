@@ -67,8 +67,10 @@ export type ChangeType = 'Updated' | 'Deleted' | 'Created' | 'Unchanged';
 
 export type PotentialChange = {
   update: ChangeType;
-  originalValue?: string | null | undefined;
-  newValue?: string | null | undefined;
+  originalValue?: string | null;
+  newValue?: string | null;
+  originalHidden?: boolean;
+  newHidden?: boolean;
 };
 
 export type Change = Omit<PotentialChange, 'update'> & { update: Exclude<ChangeType, 'Unchanged'>; changeKey: string };

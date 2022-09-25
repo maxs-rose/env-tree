@@ -1,5 +1,5 @@
 import SecretLoader from '@components/loader';
-import { Button, Dot } from '@geist-ui/core';
+import { Button, Dot, useTheme } from '@geist-ui/core';
 import { DotTypes } from '@geist-ui/core/esm/dot';
 import { ArrowUp, Clock, Delete, Italic, Link, Plus, Scissors, Shuffle, User } from '@geist-ui/icons';
 import { trpc } from '@utils/shared/trpc';
@@ -8,77 +8,94 @@ import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 
 const FormatLogAsString: React.FC<{ log: DBChange }> = ({ log }) => {
+  const { type } = useTheme();
   const classes = 'flex items-center gap-2 flex-wrap';
+  const hiddenValue = `${type === 'dark' ? 'bg-white' : 'bg-black'} hover:bg-transparent rounded`;
 
   switch (log.update) {
     case 'Linked':
       return (
         <span className={classes}>
           <Link />
-          <b>Linked</b> configuration to <b>{log.newLinkName}</b> (<b>{log.newLinkId}</b>)
+          <span>
+            <b>Linked</b> configuration to <b>{log.newLinkName}</b> (<b>{log.newLinkId}</b>)
+          </span>
         </span>
       );
     case 'Updated':
       return (
         <span className={classes}>
           <ArrowUp />
-          <b>Updated</b> property <b>{log.changeKey}</b> value to <b>{log.newValue}</b>
-          {log.originalValue && (
-            <>
-              , previous value was <b>{log.originalValue || '-'}</b>
-            </>
-          )}
+          <span>
+            <b>Updated</b> property <b>{log.changeKey}</b> value to{' '}
+            <b className={log.newHidden ? hiddenValue : ''}>{log.newValue}</b>
+            {log.originalValue && (
+              <>
+                , previous value was <b className={log.originalHidden ? hiddenValue : ''}>{log.originalValue || '-'}</b>
+              </>
+            )}
+          </span>
         </span>
       );
     case 'Deleted':
       return (
         <span className={classes}>
           <Delete />
-          <b>Deleted</b> property <b>{log.changeKey}</b>
-          {log.originalValue && (
-            <>
-              , value was <b>{log.originalValue || '-'}</b>
-            </>
-          )}
+          <span>
+            <b>Deleted</b> property <b>{log.changeKey}</b>
+            {log.originalValue && (
+              <>
+                , value was <b className={log.originalHidden ? hiddenValue : ''}>{log.originalValue || '-'}</b>
+              </>
+            )}
+          </span>
         </span>
       );
     case 'Created':
       return (
         <span className={classes}>
           <Plus />
-          <b>Created</b> property <b>{log.changeKey}</b>
-          {log.newValue && (
-            <>
-              {' '}
-              with value <b>{log.newValue}</b>
-            </>
-          )}
+          <span>
+            <b>Created</b> property <b>{log.changeKey}</b>
+            {log.newValue && (
+              <>
+                {' '}
+                with value <b className={log.newHidden ? hiddenValue : ''}>{log.newValue}</b>
+              </>
+            )}
+          </span>
         </span>
       );
     case 'Changed Link':
       return (
         <span className={classes}>
           <Shuffle />
-          <b>Changed</b> configuration link to <b>{log.newLinkName}</b> (<b>{log.newLinkId}</b>)
-          {log.oldLinkId && (
-            <>
-              , was previously linked to <b>{log.oldLinkName}</b> (<b>{log.oldLinkId}</b>)
-            </>
-          )}
+          <span>
+            <b>Changed</b> configuration link to <b>{log.newLinkName}</b> (<b>{log.newLinkId}</b>)
+            {log.oldLinkId && (
+              <>
+                , was previously linked to <b>{log.oldLinkName}</b> (<b>{log.oldLinkId}</b>)
+              </>
+            )}
+          </span>
         </span>
       );
     case 'Unlinked':
       return (
         <span className={classes}>
           <Scissors />
-          <b>Unlinked</b> configuration from <b>{log.fromName}</b> (<b>{log.fromId}</b>)
+          <span>
+            <b>Unlinked</b> configuration from <b>{log.fromName}</b> (<b>{log.fromId}</b>)
+          </span>
         </span>
       );
     case 'Renamed':
       return (
         <span className={classes}>
           <Italic />
-          <b>Renamed</b> configuration from <b>{log.from}</b> to <b>{log.to}</b>
+          <span>
+            <b>Renamed</b> configuration from <b>{log.from}</b> to <b>{log.to}</b>
+          </span>
         </span>
       );
   }

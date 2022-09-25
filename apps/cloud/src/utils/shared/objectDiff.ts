@@ -21,8 +21,10 @@ const valueDiff = (a: ConfigVType, b: ConfigVType): PotentialChange => {
 
   return {
     update: compareValue(a?.value, b?.value),
+    originalHidden: a?.hidden,
     originalValue: a?.value,
     newValue: b?.value,
+    newHidden: b?.hidden,
   };
 };
 

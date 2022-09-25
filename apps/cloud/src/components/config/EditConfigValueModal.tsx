@@ -39,6 +39,7 @@ const EditConfigValueModalComponent: React.FC<{
     setKey(configValue ?? '');
     setValue(getConfigValue<string>(config, configValue, 'value') ?? '');
     setGroup(getConfigValue<string>(config, configValue, 'group') || null);
+    setHidden(getConfigValue<boolean>(config, configValue, 'hidden') ?? false);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, configValue]);
@@ -100,6 +101,9 @@ const EditConfigValueModalComponent: React.FC<{
 
   const modalClose = () => {
     setInvalid(undefined);
+    setValue(getConfigValue<string>(config, configValue, 'value') ?? '');
+    setGroup(getConfigValue<string>(config, configValue, 'group') || null);
+    setHidden(getConfigValue<boolean>(config, configValue, 'hidden') ?? false);
 
     if (bindings.onClose) {
       bindings.onClose();
