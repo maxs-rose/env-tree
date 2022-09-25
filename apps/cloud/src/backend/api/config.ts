@@ -129,8 +129,12 @@ export const changeConfigLink$ = (
   targetConfigId: string,
   configVersion: string
 ) =>
-  combineLatest([getProjectConfig$(userId, projectId, configId), getExpandedConfigs$(userId, projectId)]).pipe(
-    map(([config, configs]) => {
+  combineLatest([
+    getProjectConfig$(userId, projectId, configId),
+    getExpandedConfigs$(userId, projectId),
+    getUser$(userId),
+  ]).pipe(
+    map(([config, configs, user]) => {
       if (!configs.some((c) => c.id === targetConfigId)) {
         throw configNotFoundError;
       }
@@ -144,8 +148,8 @@ export const changeConfigLink$ = (
 
       // noinspection JSIgnoredPromiseFromCall
       changeLinkConfig(
-        userId,
-        null,
+        user!.username,
+        user?.name || null,
         configId,
         projectId,
         targetConfigId,
@@ -193,7 +197,7 @@ export const unlinkConfig$ = (userId: string, projectId: string, configId: strin
 
       // noinspection JSIgnoredPromiseFromCall
       unlinkConfig(
-        userId,
+        user!.username,
         user?.name || null,
         projectId,
         configId,
@@ -245,15 +249,17 @@ export const updateConfig$ = (
 
       const configDiff = diff(decryptObject(config.values), configValue);
 
-      if (configDiff.length !== 1) {
+      if (configDiff.length > 1) {
         throw new trpc.TRPCError({
           code: 'BAD_REQUEST',
-          message: configDiff.length === 0 ? 'No changes' : 'Too Many changes',
+          message: 'Too Many changes',
         });
       }
 
-      // noinspection JSIgnoredPromiseFromCall
-      insertValueDiff(configDiff[0], userId, user?.name || null, projectId, configId);
+      if (configDiff.length) {
+        // noinspection JSIgnoredPromiseFromCall
+        insertValueDiff(configDiff[0], user!.username, user?.name || null, projectId, configId);
+      }
 
       return prisma.config.update({
         where: { id_projectId: { id: configId, projectId: projectId } },
@@ -279,7 +285,7 @@ export const renameConfig$ = (
       }
 
       // noinspection JSIgnoredPromiseFromCall
-      renameConfig(userId, user?.name || null, projectId, configId, config.name, configName);
+      renameConfig(user!.username, user?.name || null, projectId, configId, config.name, configName);
 
       return prisma.config.update({
         where: { id_projectId: { id: configId, projectId: projectId } },
