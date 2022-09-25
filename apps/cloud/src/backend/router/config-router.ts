@@ -80,7 +80,7 @@ export const configRouter = createRouter()
     resolve: ({ ctx, input }) => firstValueFrom(deleteConfig$(ctx.user.id, input.projectId, input.configId)),
   })
   .query('audit', {
-    input: z.object({ projectId: z.string(), configId: z.string(), page: z.number().min(1) }),
+    input: z.object({ projectId: z.string(), configId: z.string(), cursor: z.string().nullish() }),
     resolve: ({ ctx, input }) =>
-      firstValueFrom(getConfigAudit$(ctx.user.id, input.projectId, input.configId, input.page)),
+      firstValueFrom(getConfigAudit$(ctx.user.id, input.projectId, input.configId, input.cursor)),
   });

@@ -104,7 +104,7 @@ export const renameConfig = async (
   await cleanOldLogs(configId, projectId);
 };
 
-export const getConfigAudit$ = (userId: string, projectId: string, configId: string, page: number) =>
+export const getConfigAudit$ = (userId: string, projectId: string, configId: string, page?: string | null) =>
   getProjectConfig$(userId, projectId, configId).pipe(
     switchMap(() => {
       return prisma.configAudit.findMany({
@@ -113,11 +113,20 @@ export const getConfigAudit$ = (userId: string, projectId: string, configId: str
           configProjectId: projectId,
         },
         orderBy: [{ createdAt: 'desc' }],
-        take: 25,
-        skip: (page - 1) * 25,
+        take: 26,
+        cursor: page ? { id: page } : undefined,
       });
     }),
     mergeMap((data) => data),
-    map((item) => ({ ...decryptObject<DBChange>(item.data), at: item.createdAt })),
-    toArray()
+    map((item) => ({ ...decryptObject<DBChange>(item.data), at: item.createdAt, id: item.id })),
+    toArray(),
+    map((data) => {
+      if (data.length > 25) {
+        const last = data.pop();
+
+        return { logs: data, nextCursor: last?.id };
+      }
+
+      return { logs: data, nextCursor: undefined };
+    })
   );
