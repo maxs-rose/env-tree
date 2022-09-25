@@ -42,15 +42,15 @@
   "dependencies": {
     "chalk": "^5.0.1",
     "commander": "^9.4.0",
-    "inquirer": "^9.1.2",
+    "inquirer": "^9.1.1",
     "node-fetch": "^3.2.10",
     "open": "^8.4.0",
     "ora": "^6.1.2"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.1",
-    "@types/node": "^18.7.19",
-    "eslint": "8.24.0",
+    "@types/node": "^18.7.18",
+    "eslint": "8.23.1",
     "eslint-config-custom": "*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",

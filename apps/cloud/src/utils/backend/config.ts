@@ -1,5 +1,5 @@
 import { Config as PrismaConfig } from '@prisma/client';
-import { decryptObject } from '@utils/backend/crypt';
+import { decryptConfig } from '@utils/backend/crypt';
 import { Config, ConfigValue } from '@utils/shared/types';
 
 export type PrismaConfigWithParent = PrismaConfig & { linkedParent: PrismaConfig | null };
@@ -14,4 +14,4 @@ export const transformConfigWithParent = (config: PrismaConfigWithParent): Confi
   };
 };
 
-export const transformConfigValues = (values: string): ConfigValue => decryptObject(values);
+export const transformConfigValues = (values: string): ConfigValue => decryptConfig(values);
