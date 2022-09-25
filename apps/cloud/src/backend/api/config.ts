@@ -1,8 +1,10 @@
+import { changeLinkConfig, insertValueDiff, renameConfig, unlinkConfig } from '@backend/api/configDiff';
+import { getUser$ } from '@backend/api/user';
 import { prisma } from '@backend/prisma';
 import { Config as PrismaConfig } from '@prisma/client';
 import * as trpc from '@trpc/server';
 import { PrismaConfigWithParent, transformConfigs } from '@utils/backend/config';
-import { encryptConfig } from '@utils/backend/crypt';
+import { decryptObject, encryptObject } from '@utils/backend/crypt';
 import {
   configNotFoundError,
   notFoundError,
@@ -10,6 +12,7 @@ import {
   unauthorizedError,
 } from '@utils/backend/trpcErrorHelpers';
 import { flattenConfigValues, isLinkCycle } from '@utils/shared/flattenConfig';
+import { diff } from '@utils/shared/objectDiff';
 import { ConfigValue } from '@utils/shared/types';
 import { randomBytes } from 'crypto';
 import { combineLatest, from, map, switchMap } from 'rxjs';
@@ -36,7 +39,7 @@ const expandConfig = (config: PrismaConfig, projectConfigs: PrismaConfig[], seen
   return result;
 };
 
-const getProjectConfig$ = (userId: string, projectId: string, configId: string) =>
+export const getProjectConfig$ = (userId: string, projectId: string, configId: string) =>
   from(
     prisma.usersOnProject.findUnique({
       where: { projectId_userId: { projectId, userId } },
@@ -139,6 +142,18 @@ export const changeConfigLink$ = (
         });
       }
 
+      // noinspection JSIgnoredPromiseFromCall
+      changeLinkConfig(
+        userId,
+        null,
+        configId,
+        projectId,
+        targetConfigId,
+        configs.find((c) => c.id === targetConfigId)!.name,
+        config.linkedConfigId,
+        configs.find((c) => c.id === config.linkedConfigId)?.name || null
+      );
+
       return config;
     }),
     switchMap((config) => {
@@ -161,8 +176,8 @@ export const changeConfigLink$ = (
   );
 
 export const unlinkConfig$ = (userId: string, projectId: string, configId: string, configVersion: string) => {
-  return getExpandedConfigs$(userId, projectId).pipe(
-    map((configs) => {
+  return combineLatest([getExpandedConfigs$(userId, projectId), getUser$(userId)]).pipe(
+    map(([configs, user]) => {
       const targetConfig = configs.find((c) => c.id === configId);
 
       if (!targetConfig) {
@@ -175,6 +190,16 @@ export const unlinkConfig$ = (userId: string, projectId: string, configId: strin
           message: 'Config version mismatch',
         });
       }
+
+      // noinspection JSIgnoredPromiseFromCall
+      unlinkConfig(
+        userId,
+        user?.name || null,
+        projectId,
+        configId,
+        targetConfig.linkedParent!.name,
+        targetConfig.linkedConfigId!
+      );
 
       return targetConfig;
     }),
@@ -192,7 +217,7 @@ export const unlinkConfig$ = (userId: string, projectId: string, configId: strin
       prisma.config.update({
         where: { id_projectId: { id: configId, projectId: projectId } },
         data: {
-          values: encryptConfig(values),
+          values: encryptObject(values),
           version: randomBytes(16).toString('hex'),
           linkedConfigId: null,
           linkedProjectConfigId: null,
@@ -209,8 +234,8 @@ export const updateConfig$ = (
   configVersion: string | null,
   configValue: ConfigValue
 ) =>
-  getProjectConfig$(userId, projectId, configId).pipe(
-    switchMap((config) => {
+  combineLatest([getProjectConfig$(userId, projectId, configId), getUser$(userId)]).pipe(
+    switchMap(([config, user]) => {
       if (config.version !== configVersion) {
         throw new trpc.TRPCError({
           code: 'CONFLICT',
@@ -218,9 +243,21 @@ export const updateConfig$ = (
         });
       }
 
+      const configDiff = diff(decryptObject(config.values), configValue);
+
+      if (configDiff.length !== 1) {
+        throw new trpc.TRPCError({
+          code: 'BAD_REQUEST',
+          message: configDiff.length === 0 ? 'No changes' : 'Too Many changes',
+        });
+      }
+
+      // noinspection JSIgnoredPromiseFromCall
+      insertValueDiff(configDiff[0], userId, user?.name || null, projectId, configId);
+
       return prisma.config.update({
         where: { id_projectId: { id: configId, projectId: projectId } },
-        data: { values: encryptConfig(configValue), version: randomBytes(16).toString('hex') },
+        data: { values: encryptObject(configValue), version: randomBytes(16).toString('hex') },
       });
     })
   );
@@ -232,14 +269,17 @@ export const renameConfig$ = (
   configVersion: string | null,
   configName: string
 ) =>
-  getProjectConfig$(userId, projectId, configId).pipe(
-    switchMap((config) => {
+  combineLatest([getProjectConfig$(userId, projectId, configId), getUser$(userId)]).pipe(
+    switchMap(([config, user]) => {
       if (config.version !== configVersion) {
         throw new trpc.TRPCError({
           code: 'CONFLICT',
           message: 'Config version mismatch',
         });
       }
+
+      // noinspection JSIgnoredPromiseFromCall
+      renameConfig(userId, user?.name || null, projectId, configId, config.name, configName);
 
       return prisma.config.update({
         where: { id_projectId: { id: configId, projectId: projectId } },

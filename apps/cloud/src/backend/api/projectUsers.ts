@@ -15,6 +15,7 @@ export const getUsersOnProject$ = (callingUserId: string, projectId: string) =>
       users.map((u) => ({ id: u.userId, name: u.user.name, image: u.user.image, username: u.user.username }))
     )
   );
+
 export const addUserToProjectRequest$ = (callingUserId: string, projectId: string, userId: string) =>
   combineLatest([
     from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: callingUserId } } })),
@@ -36,8 +37,24 @@ export const addUserToProjectRequest$ = (callingUserId: string, projectId: strin
       return prisma.userAddRequest.create({ data: { userId: targetUser.id, projectId } });
     })
   );
+
 export const getProjectAddRequests$ = (userId: string) =>
   from(prisma.userAddRequest.findMany({ where: { userId }, include: { project: true } }));
+
+export const getAddRequestForProject$ = (userId: string, projectId: string) =>
+  combineLatest([
+    from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: userId } } })),
+    from(prisma.userAddRequest.findMany({ where: { projectId }, include: { user: true } })),
+  ]).pipe(
+    map(([callingUserCanAccess, requests]) => {
+      if (!callingUserCanAccess) {
+        throw unauthorizedError;
+      }
+
+      return requests;
+    })
+  );
+
 export const acceptProjectRequest$ = (userId: string, requestId: string) =>
   from(prisma.userAddRequest.findUnique({ where: { id: requestId } })).pipe(
     switchMap((request) => {
@@ -52,10 +69,23 @@ export const acceptProjectRequest$ = (userId: string, requestId: string) =>
     }),
     map(([createResult, deleteResult]) => !(!createResult || !deleteResult))
   );
+
 export const denyProjectRequest$ = (userId: string, requestId: string) =>
   from(prisma.userAddRequest.deleteMany({ where: { userId, id: requestId } })).pipe(
     map((removed) => of(removed.count >= 1))
   );
+
+export const rescindProjectRequest$ = (callingUserId: string, projectId: string, userId: string, requestId: string) =>
+  from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: callingUserId } } })).pipe(
+    switchMap((canAccessProject) => {
+      if (!canAccessProject) {
+        throw unauthorizedError;
+      }
+
+      return prisma.userAddRequest.deleteMany({ where: { userId, id: requestId } });
+    })
+  );
+
 export const removeUser$ = (callingUserId: string, projectId: string, userId: string) =>
   combineLatest([
     from(prisma.usersOnProject.findUnique({ where: { projectId_userId: { projectId, userId: callingUserId } } })),
